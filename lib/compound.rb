@@ -11,32 +11,6 @@ module OpenTox
   class Compound
     include OpenTox
 
-    # OpenBabel FP4 fingerprints
-    # OpenBabel http://open-babel.readthedocs.org/en/latest/Fingerprints/intro.html
-    fp4 = FingerprintSmarts.all
-    unless fp4
-      fp4 = []
-      File.open(File.join(File.dirname(__FILE__),"SMARTS_InteLigand.txt")).each do |l| 
-        l.strip!
-        unless l.empty? or l.match /^#/
-          name,smarts = l.split(': ')
-          fp4 << OpenTox::FingerprintSmarts.find_or_create_by(:name => name, :smarts => smarts) unless smarts.nil?
-        end
-      end
-    end
-    FP4 = fp4
-
-    # TODO investigate other types of fingerprints (MACCS)
-    # OpenBabel http://open-babel.readthedocs.org/en/latest/Fingerprints/intro.html
-    # http://www.dalkescientific.com/writings/diary/archive/2008/06/26/fingerprint_background.html
-    # OpenBabel MNA http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html#multilevel-neighborhoods-of-atoms-mna
-    # Morgan ECFP, FCFP
-    # http://cdk.github.io/cdk/1.5/docs/api/org/openscience/cdk/fingerprint/CircularFingerprinter.html
-    # http://www.rdkit.org/docs/GettingStartedInPython.html
-    # Chemfp
-    # https://chemfp.readthedocs.org/en/latest/using-tools.html
-    # CACTVS/PubChem
-
     field :inchi, type: String
     attr_readonly :inchi
     field :smiles, type: String
@@ -48,21 +22,17 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :fp4, type: Array
     field :fp4_size, type: Integer
-    #belongs_to :dataset
-    #belongs_to :data_entry
 
-    #def  == compound
-      #self.inchi == compound.inchi
-    #end
-
+    # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
       compound = self.find_or_initialize_by params
-      unless compound.fp4
+      unless compound.fp4 and !compound.fp4.empty?
         compound.fp4_size = 0
         compound.fp4 = []
-        Algorithm::Descriptor.smarts_match(compound, FP4.collect{|f| f.smarts}).each_with_index do |m,i|
+        fingerprint = FingerprintSmarts.fingerprint
+        Algorithm::Descriptor.smarts_match(compound, fingerprint).each_with_index do |m,i|
           if m > 0
-            compound.fp4 << FP4[i].id
+            compound.fp4 << fingerprint[i].id
             compound.fp4_size += 1
           end
         end

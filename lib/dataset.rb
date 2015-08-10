@@ -3,39 +3,19 @@ require 'tempfile'
 
 module OpenTox
 
-  class LazarPrediction < Dataset
-    field :creator, type: String
-    field :prediction_feature_id, type: String
-
-    def prediction_feature
-      Feature.find prediction_feature_id
-    end
-
-  end
-
-  class DescriptorDataset < Dataset
-    field :feature_calculation_algorithm, type: String
-  end
-
-  class FminerDataset < DescriptorDataset
-    field :training_algorithm, type: String
-    field :training_dataset_id, type: BSON::ObjectId
-    field :training_feature_id, type: BSON::ObjectId
-    field :training_parameters, type: Hash
-  end
-
   class Dataset
-    include Mongoid::Document
 
     attr_writer :data_entries
 
     # associations like has_many, belongs_to deteriorate performance
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
-    field :data_entries_id, type: BSON::ObjectId
+    field :data_entries_id, type: BSON::ObjectId, default: []
     field :source, type: String
     field :warnings, type: Array, default: []
 
+    # Save all data including data_entries
+    # Should be used instead of save
     def save_all
       dump = Marshal.dump(@data_entries)
       file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
@@ -46,74 +26,32 @@ module OpenTox
 
     # Readers
 
+    # Get all compounds
     def compounds
       @compounds ||= self.compound_ids.collect{|id| OpenTox::Compound.find id}
       @compounds
     end
 
+    # Get all features
     def features
       @features ||= self.feature_ids.collect{|id| OpenTox::Feature.find(id)}
       @features
     end
 
-    def fill_nil_with n
-      (0 .. compound_ids.size-1).each do |i|
-        @data_entries[i] ||= []
-        (0 .. feature_ids.size-1).each do |j|
-          @data_entries[i][j] ||= n
-        end
-      end
-    end
-
-    def [](row,col)
-      @data_entries[row,col]
-    end
-
-    def []=(row,col,v)
-      @data_entries ||= []
-      @data_entries[row] ||= []
-      @data_entries[row][col] = v
-    end
-
-    def correlation_plot training_dataset
-      R.assign "features", data_entries
-      R.assign "activities", training_dataset.data_entries.collect{|de| de.first}
-      R.eval "featurePlot(features,activities)"
-    end
-
-    def density_plot
-      R.assign "acts", data_entries.collect{|r| r.first }#.compact
-      R.eval "plot(density(log(acts),na.rm= TRUE), main='log(#{features.first.name})')"
-      # TODO kill Rserve plots
-    end
-
-    # merge dataset (i.e. append features)
-    def +(dataset)
-      bad_request_error "Dataset merge failed because the argument is not a OpenTox::Dataset but a #{dataset.class}" unless dataset.is_a? Dataset
-      bad_request_error "Dataset merge failed because compounds are unequal in datasets #{self.id} and #{dataset.id}" unless compound_ids == dataset.compound_ids
-      self.feature_ids ||= []
-      self.feature_ids = self.feature_ids + dataset.feature_ids
-      @data_entries ||= Array.new(compound_ids.size){[]}
-      @data_entries.each_with_index do |row,i|
-        @data_entries[i] = row + dataset.fingerprint(compounds[i])
-      end
-      self
-
-    end
-
-    def fingerprint(compound)
-      i = compound_ids.index(compound.id)
-      i.nil? ? nil : data_entries[i] 
-    end
-
+    # Get all data_entries
     def data_entries
       unless @data_entries
         t = Time.now
-        @data_entries = Marshal.load($gridfs.find_one(_id: data_entries_id).data)
-        bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
-        bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
-        bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries..first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
-        $logger.debug "Retrieving data: #{Time.now-t}"
+        data_entry_file = $gridfs.find_one(_id: data_entries_id)
+        if data_entry_file.nil?
+          @data_entries = []
+        else
+          @data_entries = Marshal.load(data_entry_file.data)
+          bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
+          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
+          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries..first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
+          $logger.debug "Retrieving data: #{Time.now-t}"
+        end
       end
       @data_entries
     end
@@ -130,50 +68,21 @@ module OpenTox
 
     # Writers
 
+    # Set compounds
     def compounds=(compounds)
       self.compound_ids = compounds.collect{|c| c.id}
     end
 
-    def add_compound compound
-        self.compound_ids << compound.id
-    end
-
+    # Set features
     def features=(features)
       self.feature_ids = features.collect{|f| f.id}
     end
 
-    def add_feature feature
-      self.feature_ids << feature.id
-    end
+    # Dataset operations
 
-    def self.create compounds, features, warnings=[], source=nil
-      dataset = Dataset.new(:warnings => warnings)
-      dataset.compounds = compounds
-      dataset.features = features
-      dataset
-    end
-
-    # for prediction result datasets
-    # assumes that there are feature_ids with title prediction and confidence
-    # @return [Array] of Hashes with keys { :compound, :value ,:confidence } (compound value is object not uri)
-    # TODO
-    #def predictions
-    #end
-
-    # Serialisation
-    
-    # converts dataset to csv format including compound smiles as first column, other column headers are feature titles
-    # @return [String]
-    def to_csv(inchi=false)
-      CSV.generate() do |csv| #{:force_quotes=>true}
-        csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.title}
-        compounds.each_with_index do |c,i|
-          csv << [inchi ? c.inchi : c.smiles] + data_entries[i]
-        end
-      end
-    end
-
-    # split dataset into n folds
+    # Split a dataset into n folds
+    # @param [Integer] number of folds
+    # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
       len = self.compound_ids.size
       indices = (0..len-1).to_a.shuffle
@@ -199,9 +108,36 @@ module OpenTox
       chunks
     end
 
+    # Diagnostics
 
-    # Adding data methods
-    # (Alternatively, you can directly change @data["feature_ids"] and @data["compounds"])
+    def correlation_plot training_dataset
+      # TODO: create/store svg
+      R.assign "features", data_entries
+      R.assign "activities", training_dataset.data_entries.collect{|de| de.first}
+      R.eval "featurePlot(features,activities)"
+    end
+
+    def density_plot
+      # TODO: create/store svg
+      R.assign "acts", data_entries.collect{|r| r.first }#.compact
+      R.eval "plot(density(log(acts),na.rm= TRUE), main='log(#{features.first.name})')"
+    end
+
+    # Serialisation
+    
+    # converts dataset to csv format including compound smiles as first column, other column headers are feature titles
+    # @return [String]
+    def to_csv(inchi=false)
+      CSV.generate() do |csv| #{:force_quotes=>true}
+        csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.title}
+        compounds.each_with_index do |c,i|
+          csv << [inchi ? c.inchi : c.smiles] + data_entries[i]
+        end
+      end
+    end
+
+
+    # Parsers
 
     # Create a dataset from file (csv,sdf,...)
     # @param filename [String]
@@ -210,6 +146,8 @@ module OpenTox
     #def self.from_sdf_file
     #end
 
+    # Create a dataset from CSV file
+    # TODO: document structure
     def self.from_csv_file file, source=nil, bioassay=true
       source ||= file
       table = CSV.read file, :skip_blanks => true
@@ -221,8 +159,6 @@ module OpenTox
     # parse data in tabular format (e.g. from csv)
     # does a lot of guesswork in order to determine feature types
     def parse_table table, bioassay=true
-
-      # TODO: remove empty entries + write tests
 
       time = Time.now
 
@@ -277,24 +213,21 @@ module OpenTox
       table.each_with_index do |vals,i|
         ct = Time.now
         identifier = vals.shift
-        #if vals.compact.empty?
-          #warnings << "No values for compound at position #{i+2}, all entries are ignored."
-          #@data_entries.pop
-          #next
-        #end
+        warnings << "No feature values for compound at position #{i+2}." if vals.compact.empty?
         begin
+          # TODO parse inchi and catch openbabel errors (and segfaults) in compound.rb
           case compound_format
           when /SMILES/i
             compound = OpenTox::Compound.from_smiles(identifier)
             if compound.inchi.empty?
-              warnings << "Cannot parse #{compound_format} compound '#{compound.strip}' at position #{i+2}, all entries are ignored."
+              warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
               next
             end
           when /InChI/i
             compound = OpenTox::Compound.from_inchi(identifier)
           end
         rescue
-          warnings << "Cannot parse #{compound_format} compound '#{compound}' at position #{i+2}, all entries are ignored."
+          warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
         compound_time += Time.now-ct
@@ -330,5 +263,71 @@ module OpenTox
       $logger.debug "Saving: #{Time.now-time}"
 
     end
+
+=begin
+    # TODO remove
+
+    # Create a dataset with compounds and features
+    def self.create compounds, features, warnings=[], source=nil
+      dataset = Dataset.new(:warnings => warnings)
+      dataset.compounds = compounds
+      dataset.features = features
+      dataset
+    end
+    # merge dataset (i.e. append features)
+    def +(dataset)
+      bad_request_error "Dataset merge failed because the argument is not a OpenTox::Dataset but a #{dataset.class}" unless dataset.is_a? Dataset
+      bad_request_error "Dataset merge failed because compounds are unequal in datasets #{self.id} and #{dataset.id}" unless compound_ids == dataset.compound_ids
+      self.feature_ids ||= []
+      self.feature_ids = self.feature_ids + dataset.feature_ids
+      @data_entries ||= Array.new(compound_ids.size){[]}
+      @data_entries.each_with_index do |row,i|
+        @data_entries[i] = row + dataset.fingerprint(compounds[i])
+      end
+      self
+
+    end
+
+    def fingerprint(compound)
+      i = compound_ids.index(compound.id)
+      i.nil? ? nil : data_entries[i] 
+    end
+=end
+
+    private
+
+    def fill_nil_with n
+      (0 .. compound_ids.size-1).each do |i|
+        @data_entries[i] ||= []
+        (0 .. feature_ids.size-1).each do |j|
+          @data_entries[i][j] ||= n
+        end
+      end
+    end
   end
+
+  # Dataset for lazar predictions
+  class LazarPrediction < Dataset
+    field :creator, type: String
+    field :prediction_feature_id, type: String
+
+    def prediction_feature
+      Feature.find prediction_feature_id
+    end
+
+  end
+
+  # Dataset for descriptors (physchem)
+  class DescriptorDataset < Dataset
+    field :feature_calculation_algorithm, type: String
+  end
+
+  # Dataset for fminer descriptors
+  class FminerDataset < DescriptorDataset
+    field :training_algorithm, type: String
+    field :training_dataset_id, type: BSON::ObjectId
+    field :training_feature_id, type: BSON::ObjectId
+    field :training_parameters, type: Hash
+  end
+
 end
