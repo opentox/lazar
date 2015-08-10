@@ -3,8 +3,6 @@
 #    Could not find contribution data file.
 
 CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
-require 'openbabel'
-require "base64"
 
 module OpenTox
 

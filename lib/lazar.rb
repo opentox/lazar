@@ -6,6 +6,9 @@ require 'json'
 require 'logger'
 require 'mongoid'
 require 'rserve'
+require "nokogiri"
+require "base64"
+
 
 # Mongo setup
 # TODO retrieve correct environment from Rack/Sinatra
@@ -27,8 +30,21 @@ Mongo::Logger.logger = $logger
 Mongo::Logger.level = Logger::WARN 
 #Mongoid.logger = $logger
 
+# Require sub-Repositories
+require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
+require_relative '../libfminer/liblast/last' # 
+require_relative '../last-utils/lu.rb'
+require 'openbabel'
+
+# Fminer environment variables
+ENV['FMINER_SMARTS'] = 'true'
+ENV['FMINER_NO_AROMATIC'] = 'true'
+ENV['FMINER_PVALUES'] = 'true'
+ENV['FMINER_SILENT'] = 'true'
+ENV['FMINER_NR_HITS'] = 'true'
+
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound",  "Dataset", "Validation", "CrossValidation"]# Algorithm and Models are modules
+CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -39,8 +55,15 @@ CLASSES = ["Feature","Compound",  "Dataset", "Validation", "CrossValidation"]# A
   "compound.rb",
   "dataset.rb",
   "descriptor.rb",
-  #"algorithm.rb",
-  #"model.rb",
-  #"validation.rb"
+  "algorithm.rb",
+  "descriptor.rb",
+  "bbrc.rb",
+  "lazar.rb",
+  "similarity.rb",
+  "neighbor.rb",
+  "classification.rb",
+  "regression.rb",
+  "validation.rb",
+  "crossvalidation.rb",
 ].each{ |f| require_relative f }
 

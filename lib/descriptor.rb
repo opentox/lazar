@@ -1,11 +1,12 @@
 require 'digest/md5'
 ENV["JAVA_HOME"] ||= "/usr/lib/jvm/java-7-openjdk" 
-BABEL_3D_CACHE_DIR = File.join(File.dirname(__FILE__),"..",'/babel_3d_cache')
 # TODO store descriptors in mongodb
 
 module OpenTox
 
   module Algorithm 
+    
+    # Class for descriptor calculations
     class Descriptor 
       include OpenTox
 
@@ -39,6 +40,7 @@ module OpenTox
 
       require_relative "unique_descriptors.rb"
 
+      # Description of available descriptors
       def self.description descriptor
         lib = descriptor.split('.').first
         case lib
@@ -54,6 +56,7 @@ module OpenTox
         end
       end
 
+      # Match an array of smarts features 
       def self.smarts_match compounds, smarts_features, count=false
         bad_request_error "Compounds for smarts_match are empty" unless compounds
         bad_request_error "Smarts features for smarts_match are empty" unless smarts_features
@@ -73,7 +76,7 @@ module OpenTox
           # eg. at line 249 of rat_feature_dataset
           # which worked with opentox-client
           # (but no smarts_match)
-          p "'#{compound.inchi}'"
+          #p "'#{compound.inchi}'"
           obconversion.read_string(obmol,compound.inchi)
           @smarts.each_with_index do |smart,s|
             smarts_pattern.init(smart)
@@ -88,49 +91,20 @@ module OpenTox
         serialize 
       end
 
+      # Count matches of an array with smarts features 
       def self.smarts_count compounds, smarts
+        # TODO: non-overlapping matches?
         smarts_match compounds,smarts,true
       end
 
-      def self.serialize
-        case @input_class
-        when "OpenTox::Compound"
-          if @with_names and @physchem_descriptors
-            [@physchem_descriptors,@data_entries.first]
-          else
-            @data_entries.first
-          end
-        when "Array"
-          if @with_names and @physchem_descriptors
-            [@physchem_descriptors,@data_entries.first]
-          else
-            @data_entries
-          end
-        when "OpenTox::Dataset"
-          dataset = OpenTox::DescriptorDataset.new(:compound_ids => @compounds.collect{|c| c.id})
-          if @smarts
-            dataset.feature_ids = @smarts.collect{|smart| Smarts.find_or_create_by(:smarts => smart).id}
-            @count ? algo = "count" : algo = "match"
-            dataset.feature_calculation_algorithm = "#{self}.smarts_#{algo}"
-            
-          elsif @physchem_descriptors
-            dataset.feature_ids = @physchem_descriptors.collect{|d| PhysChemDescriptor.find_or_create_by(:name => d, :creator => __FILE__).id}
-            dataset.data_entries = @data_entries
-            dataset.feature_calculation_algorithm = "#{self}.physchem"
-            #TODO params?
-          end
-          dataset.save_all
-          dataset
-        end
-      end
-
-      def self.physchem compounds, descriptors=UNIQUEDESCRIPTORS, with_names=false
+      # Calculate physchem descriptors
+      # @param [OpenTox::Compound,Array,OpenTox::Dataset] input object, either a compound, an array of compounds or a dataset
+      def self.physchem compounds, descriptors=UNIQUEDESCRIPTORS
         parse compounds
         @data_entries = Array.new(@compounds.size){[]}
         @descriptors = descriptors
         @smarts = nil
         @physchem_descriptors = [] # CDK may return more than one result per descriptor, they are stored as separate features
-        @with_names = with_names
         des = {}
         @descriptors.each do |d|
           lib, descriptor = d.split(".",2)
@@ -173,7 +147,8 @@ module OpenTox
         end
         last_feature_idx = @physchem_descriptors.size
         YAML.load_file("#{sdf}#{lib}.yaml").each_with_index do |calculation,i|
-          $logger.error "Descriptor calculation failed for compound #{compounds[i].inchi}." if calculation.empty?
+          # TODO create warnings
+          #$logger.error "Descriptor calculation failed for compound #{@compounds[i].inchi}." if calculation.empty?
           # CDK Descriptors may calculate multiple values, they are stored in separate features
           @physchem_descriptors += calculation.keys if i == 0
           calculation.keys.each_with_index do |name,j|
@@ -235,6 +210,30 @@ module OpenTox
           @compounds = compounds.compounds
         else
           bad_request_error "Cannot calculate descriptors for #{compounds.class} objects."
+        end
+      end
+
+      def self.serialize
+        case @input_class
+        when "OpenTox::Compound"
+          @data_entries.first
+        when "Array"
+          @data_entries
+        when "OpenTox::Dataset"
+          dataset = OpenTox::DescriptorDataset.new(:compound_ids => @compounds.collect{|c| c.id})
+          if @smarts
+            dataset.feature_ids = @smarts.collect{|smart| Smarts.find_or_create_by(:smarts => smart).id}
+            @count ? algo = "count" : algo = "match"
+            dataset.feature_calculation_algorithm = "#{self}.smarts_#{algo}"
+            
+          elsif @physchem_descriptors
+            dataset.feature_ids = @physchem_descriptors.collect{|d| PhysChemDescriptor.find_or_create_by(:name => d, :creator => __FILE__).id}
+            dataset.data_entries = @data_entries
+            dataset.feature_calculation_algorithm = "#{self}.physchem"
+            #TODO params?
+          end
+          dataset.save_all
+          dataset
         end
       end
 

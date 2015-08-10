@@ -294,8 +294,8 @@ module OpenTox
     end
 =end
 
-    private
-
+    # Fill unset data entries 
+    # @param any value
     def fill_nil_with n
       (0 .. compound_ids.size-1).each do |i|
         @data_entries[i] ||= []

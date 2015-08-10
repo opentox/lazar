@@ -29,6 +29,9 @@ module OpenTox
   # Feature for SMARTS fragments
   class Smarts < NominalFeature
     field :smarts, type: String 
+    def self.from_smarts smarts
+      self.find_or_create_by :smarts => smarts
+    end
   end
 
   # Feature for supervised fragments from Fminer algorithm
