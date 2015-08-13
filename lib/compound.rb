@@ -10,13 +10,13 @@ module OpenTox
     include OpenTox
 
     field :inchi, type: String
-    attr_readonly :inchi
     field :smiles, type: String
     field :inchikey, type: String
     field :names, type: Array
     field :cid, type: String
     field :chemblid, type: String
-    field :image_id, type: BSON::ObjectId
+    field :png_id, type: BSON::ObjectId
+    field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
     field :fp4, type: Array
     field :fp4_size, type: Integer
@@ -46,14 +46,18 @@ module OpenTox
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
       # do not store smiles because it might be noncanonical
-      Compound.find_or_create_by :inchi => obconversion(smiles,"smi","inchi")
+      Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
     end
 
     # Create a compound from inchi string
     # @param inchi [String] smiles InChI string
     # @return [OpenTox::Compound] Compound
     def self.from_inchi inchi
-      Compound.find_or_create_by :inchi => inchi
+      # Temporary workaround for OpenBabels Inchi bug
+      # http://sourceforge.net/p/openbabel/bugs/957/
+      # bug has not been fixed in latest git/development version
+      smiles = `echo "#{inchi}" | babel -iinchi - -ocan`.chomp.strip
+      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
     end
 
     # Create a compound from sdf string
@@ -61,7 +65,7 @@ module OpenTox
     # @return [OpenTox::Compound] Compound
     def self.from_sdf sdf
       # do not store sdf because it might be 2D
-      Compound.find_or_create_by :inchi => obconversion(sdf,"sdf","inchi")
+      Compound.find_or_create_by :smiles => obconversion(sdf,"sdf","can")
     end
 
     # Create a compound from name. Relies on an external service for name lookups.
@@ -70,20 +74,30 @@ module OpenTox
     # @param name [String] can be also an InChI/InChiKey, CAS number, etc
     # @return [OpenTox::Compound] Compound
     def self.from_name name
-      Compound.find_or_create_by :inchi => RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"stdinchi"))
+      Compound.find_or_create_by :smiles => RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"smiles"))
+    end
+
+    # Get InChI
+    # @return [String] InChI string
+    def inchi
+      unless self["inchi"]
+        result = `echo "#{self.smiles}" | babel -ismi - -oinchi`.chomp
+        update(:inchi => result.chomp) unless result.empty?
+      end
+      self["inchi"]
     end
 
     # Get InChIKey
-    # @return [String] InChI string
+    # @return [String] InChIKey string
     def inchikey
-      update(:inchikey => obconversion(inchi,"inchi","inchikey")) unless self["inchikey"]
+      update(:inchikey => obconversion(smiles,"smi","inchikey")) unless self["inchikey"]
       self["inchikey"]
     end
 
     # Get (canonical) smiles
     # @return [String] Smiles string
     def smiles
-      update(:smiles => obconversion(inchi,"inchi","smi")) unless self["smiles"] # should give canonical smiles, "can" seems to give incorrect results
+      update(:smiles => obconversion(self["smiles"],"smi","can")) #unless self["smiles"] # should give canonical smiles, "can" seems to give incorrect results
       self["smiles"]
     end
 
@@ -91,7 +105,7 @@ module OpenTox
     # @return [String] SDF string
     def sdf
       if self.sdf_id.nil? 
-        sdf = obconversion(inchi,"inchi","sdf")
+        sdf = obconversion(smiles,"smi","sdf")
         file = Mongo::Grid::File.new(sdf, :filename => "#{id}.sdf",:content_type => "chemical/x-mdl-sdfile")
         sdf_id = $gridfs.insert_one file
         update :sdf_id => sdf_id
@@ -99,17 +113,29 @@ module OpenTox
       $gridfs.find_one(_id: self.sdf_id).data
     end
 
+    # Get SVG image
+    # @return [image/svg] Image data
+    def svg
+      if self.svg_id.nil?
+       svg = obconversion(smiles,"smi","svg")
+       file = Mongo::Grid::File.new(svg, :filename => "#{id}.svg", :content_type => "image/svg")
+       update(:image_id => $gridfs.insert_one(file))
+      end
+      $gridfs.find_one(_id: self.svg_id).data
+
+    end
+
     # Get png image
     # @example
     #   image = compound.png
     # @return [image/png] Image data
     def png
-      if self.image_id.nil?
-       png = obconversion(inchi,"inchi","_png2")
+      if self.png_id.nil?
+       png = obconversion(smiles,"smi","_png2")
        file = Mongo::Grid::File.new(Base64.encode64(png), :filename => "#{id}.png", :content_type => "image/png")
-       update(:image_id => $gridfs.insert_one(file))
+       update(:png_id => $gridfs.insert_one(file))
       end
-      Base64.decode64($gridfs.find_one(_id: self.image_id).data)
+      Base64.decode64($gridfs.find_one(_id: self.png_id).data)
 
     end
 

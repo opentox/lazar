@@ -11,6 +11,12 @@ class Object
   end
 end
 
+class Numeric
+  def percent_of(n)
+    self.to_f / n.to_f * 100.0
+  end
+end
+
 module Enumerable
   # @return [Array] only the duplicates of an enumerable
   def duplicates

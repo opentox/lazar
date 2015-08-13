@@ -64,7 +64,7 @@ module OpenTox
         @count = count
         obconversion = OpenBabel::OBConversion.new
         obmol = OpenBabel::OBMol.new
-        obconversion.set_in_format('inchi')
+        obconversion.set_in_format('smi')
         smarts_pattern = OpenBabel::OBSmartsPattern.new
         smarts_features = [smarts_features] if smarts_features.is_a?(Feature)
         @smarts = smarts_features.collect{|f| f.smarts}
@@ -77,7 +77,7 @@ module OpenTox
           # which worked with opentox-client
           # (but no smarts_match)
           #p "'#{compound.inchi}'"
-          obconversion.read_string(obmol,compound.inchi)
+          obconversion.read_string(obmol,compound.smiles)
           @smarts.each_with_index do |smart,s|
             smarts_pattern.init(smart)
             if smarts_pattern.match(obmol)
@@ -123,10 +123,10 @@ module OpenTox
         obdescriptors = descriptors.collect{|d| OpenBabel::OBDescriptor.find_type d}
         obmol = OpenBabel::OBMol.new
         obconversion = OpenBabel::OBConversion.new
-        obconversion.set_in_format 'inchi'
+        obconversion.set_in_format 'smi'
         last_feature_idx = @physchem_descriptors.size
         @compounds.each_with_index do |compound,c|
-          obconversion.read_string obmol, compound.inchi
+          obconversion.read_string obmol, compound.smiles
           obdescriptors.each_with_index do |descriptor,d|
             @data_entries[c][d+last_feature_idx] = fix_value(descriptor.predict(obmol))
           end

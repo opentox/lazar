@@ -58,7 +58,7 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation"]# Algor
   "algorithm.rb",
   "descriptor.rb",
   "bbrc.rb",
-  "lazar.rb",
+  "lazar-model.rb",
   "similarity.rb",
   "neighbor.rb",
   "classification.rb",

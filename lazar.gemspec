@@ -2,7 +2,7 @@
 $:.push File.expand_path("../lib", __FILE__)
 
 Gem::Specification.new do |s|
-  s.name        = "opentox-client"
+  s.name        = "lazar"
   s.version     = File.read("./VERSION").strip
   s.authors     = ["Christoph Helma, Martin Guetlein, Andreas Maunz, Micha Rautenberg, David Vorgrimmler, Denis Gebele"]
   s.email       = ["helma@in-silico.ch"]

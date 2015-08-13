@@ -8,7 +8,7 @@ module OpenTox
 
       def self.fminer_similarity compound, params
         feature_dataset = Dataset.find params[:feature_dataset_id]
-        query_fingerprint = Algorithm::Descriptor.smarts_match(compound, feature_dataset.features.collect{|f| f.smarts} )
+        query_fingerprint = Algorithm::Descriptor.smarts_match(compound, feature_dataset.features)
         neighbors = []
 
         # find neighbors

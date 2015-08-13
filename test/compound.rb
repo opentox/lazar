@@ -4,20 +4,20 @@ class CompoundTest < MiniTest::Test
 
   def test_0_compound_from_smiles
     c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"
-    assert_equal "InChI=1S/BF4.Na/c2-1(3,4)5;/q-1;+1", c.inchi
-    assert_equal "[B-](F)(F)(F)F.[Na+]", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures using an outdated version of OpenBabel. Please install OpenBabel version 2.3.2 or higher." # seems to be fixed in 2.3.2
+    assert_equal "InChI=1S/BF4.Na/c2-1(3,4)5;/q-1;+1", c.inchi.chomp
+    assert_equal "F[B-](F)(F)F.[Na+]", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures using an outdated version of OpenBabel. Please install OpenBabel version 2.3.2 or higher." # seems to be fixed in 2.3.2
   end
 
   def test_1_compound_from_smiles
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     assert_equal "InChI=1S/C6H9NO/c1-5(4-7)3-6(2)8/h5H,3H2,1-2H3", c.inchi
-    assert_equal "CC(CC(=O)C)C#N", c.smiles
+    assert_equal "CC(C#N)CC(=O)C", c.smiles
   end
 
   def test_2_compound_from_smiles
     c = OpenTox::Compound.from_smiles "N#[N+]C1=CC=CC=C1.F[B-](F)(F)F"
     assert_equal "InChI=1S/C6H5N2.BF4/c7-8-6-4-2-1-3-5-6;2-1(3,4)5/h1-5H;/q+1;-1", c.inchi
-    assert_equal "c1ccc(cc1)[N+]#N.[B-](F)(F)(F)F", c.smiles
+    assert_equal "F[B-](F)(F)F.N#[N+]c1ccccc1", c.smiles
   end
 
   def test_compound_from_name
@@ -54,6 +54,7 @@ class CompoundTest < MiniTest::Test
   # OpenBabel segfaults randomly during inchikey calculation
   def test_inchikey
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
+    p c
     assert_equal "UHOVQNZJYSORNB-UHFFFAOYSA-N", c.inchikey
   end
 
@@ -87,7 +88,14 @@ class CompoundTest < MiniTest::Test
       refute_nil c.fp4
     end
     c = d.compounds[371]
-    assert_equal 19, c.neighbors.size
+    assert c.neighbors.size >= 19
   end
 
+  def test_openbabel_segfault
+    inchi = "InChI=1S/C19H27NO7/c1-11-9-19(12(2)27-19)17(23)26-14-6-8-20(4)7-5-13(15(14)21)10-25-16(22)18(11,3)24/h5,11-12,14,24H,6-10H2,1-4H3/b13-5-/t11-,12-,14-,18-,19?/m1/s1"
+
+    #r = `echo "#{inchi}" | babel -iinchi - -oinchi`
+    c = Compound.from_inchi(inchi)
+    assert_nil c
+  end
 end
