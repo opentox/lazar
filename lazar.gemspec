@@ -7,15 +7,15 @@ Gem::Specification.new do |s|
   s.authors     = ["Christoph Helma, Martin Guetlein, Andreas Maunz, Micha Rautenberg, David Vorgrimmler, Denis Gebele"]
   s.email       = ["helma@in-silico.ch"]
   s.homepage    = "http://github.com/opentox/lazar"
-  s.summary     = %q{Ruby wrapper for the OpenTox REST API}
-  s.description = %q{Ruby wrapper for the OpenTox REST API (http://www.opentox.org)}
+  s.summary     = %q{Lazar framework}
+  s.description = %q{Libraries for lazy structure-activity relationships and read-across.}
   s.license     = 'GPL-3'
 
   s.rubyforge_project = "lazar"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
+  s.extensions    = %w[ext/lazar/extconf.rb]
   s.require_paths = ["lib"]
 
   # specify any dependencies here; for example:

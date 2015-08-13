@@ -208,30 +208,29 @@ module OpenTox
       value_time = 0
 
       # compounds and values
-      @data_entries = Array.new(table.size){Array.new(table.first.size-1)}
+      @data_entries = [] #Array.new(table.size){Array.new(table.first.size-1)}
 
       table.each_with_index do |vals,i|
         ct = Time.now
         identifier = vals.shift
         warnings << "No feature values for compound at position #{i+2}." if vals.compact.empty?
         begin
-          # TODO parse inchi and catch openbabel errors (and segfaults) in compound.rb
           case compound_format
           when /SMILES/i
             compound = OpenTox::Compound.from_smiles(identifier)
-            if compound.inchi.empty?
-              warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
-              next
-            end
           when /InChI/i
             compound = OpenTox::Compound.from_inchi(identifier)
           end
-        rescue
+        rescue 
+          compound = nil
+        end
+        if compound.nil?
+          # compound parsers may return nil
           warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
+        # TODO insert empty compounds to keep positions?
         compound_time += Time.now-ct
-        compound_ids << compound.id
           
         r += 1
         unless vals.size == feature_ids.size # way cheaper than accessing features
@@ -239,15 +238,17 @@ module OpenTox
           next
         end
 
-        cid = compound.id.to_s
+        compound_ids << compound.id
+        @data_entries << Array.new(table.first.size-1)
+        
         vals.each_with_index do |v,j|
           if v.blank?
             warnings << "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
             next
           elsif numeric[j]
-            @data_entries[i][j] = v.to_f
+            @data_entries.last[j] = v.to_f
           else
-            @data_entries[i][j] = v.strip
+            @data_entries.last[j] = v.strip
           end
         end
       end

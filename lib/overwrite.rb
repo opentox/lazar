@@ -22,6 +22,14 @@ module Enumerable
   def duplicates
     inject({}) {|h,v| h[v]=h[v].to_i+1; h}.reject{|k,v| v==1}.keys
   end
+  # http://stackoverflow.com/questions/2562256/find-most-common-string-in-an-array
+  Enumerable.class_eval do
+    def mode
+      group_by do |e|
+        e
+      end.values.max_by(&:size).first
+    end
+  end
 end
 
 class String

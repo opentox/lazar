@@ -13,6 +13,7 @@ module OpenTox
     field :smiles, type: String
     field :inchikey, type: String
     field :names, type: Array
+    field :warning, type: String
     field :cid, type: String
     field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
@@ -46,7 +47,12 @@ module OpenTox
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
       # do not store smiles because it might be noncanonical
-      Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
+      smiles = obconversion(smiles,"smi","can")
+      if smiles.empty?
+        Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
+      else
+        Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
+      end
     end
 
     # Create a compound from inchi string
@@ -57,7 +63,11 @@ module OpenTox
       # http://sourceforge.net/p/openbabel/bugs/957/
       # bug has not been fixed in latest git/development version
       smiles = `echo "#{inchi}" | babel -iinchi - -ocan`.chomp.strip
-      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
+      if smiles.empty?
+        Compound.find_or_create_by(:warning => "InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries.")
+      else
+        Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
+      end
     end
 
     # Create a compound from sdf string

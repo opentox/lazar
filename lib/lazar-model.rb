@@ -9,7 +9,6 @@ module OpenTox
       store_in collection: "models"
 
       field :title, type: String
-      field :endpoint, type: String
       field :creator, type: String, default: __FILE__
       # datasets
       field :training_dataset_id, type: BSON::ObjectId
@@ -64,12 +63,18 @@ module OpenTox
 
         # make predictions
         predictions = []
+        neighbors = []
         compounds.each_with_index do |compound,c|
           t = Time.new
+          database_activities = training_dataset.values(compound,prediction_feature)
+          if database_activities and !database_activities.empty?
+            database_activities = database_activities.first if database_activities.size == 1
+            predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
+            next
+          end
           neighbors = Algorithm.run(neighbor_algorithm, compound, neighbor_algorithm_parameters)
           # add activities
           # TODO: improve efficiency, takes 3 times longer than previous version
-          # TODO database activity??
           neighbors.collect! do |n|
             rows = training_dataset.compound_ids.each_index.select{|i| training_dataset.compound_ids[i] == n.first}
             acts = rows.collect{|row| training_dataset.data_entries[row][0]}.compact
@@ -82,7 +87,9 @@ module OpenTox
         # serialize result
         case object.class.to_s
         when "OpenTox::Compound"
-          return predictions.first
+          prediction = predictions.first
+          prediction[:neighbors] = neighbors.sort{|a,b| b[1] <=> a[1]} # sort according to similarity
+          return prediction
         when "Array"
           return predictions
         when "OpenTox::Dataset"
@@ -98,7 +105,7 @@ module OpenTox
           warning_feature = OpenTox::NominalFeature.find_or_create_by("title" => "Warnings")
           prediction_dataset.features = [ prediction_feature, confidence_feature, warning_feature ]
           prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions
+          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence], p[:warning]]}
           prediction_dataset.save_all
           return prediction_dataset
         end
@@ -279,6 +286,12 @@ module OpenTox
         self.neighbor_algorithm_parameters = {:min_sim => 0.7}
       end
 
+    end
+
+    class PredictionModel < Lazar
+      field :category, type: String
+      field :endpoint, type: String
+      field :crossvalidation_id, type: BSON::ObjectId
     end
 
   end

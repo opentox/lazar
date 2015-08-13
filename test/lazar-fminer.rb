@@ -7,7 +7,7 @@ class LazarFminerTest < MiniTest::Test
     model = Model::LazarFminerClassification.create training_dataset#, feature_dataset
     feature_dataset = Dataset.find model.neighbor_algorithm_parameters[:feature_dataset_id]
     assert_equal training_dataset.compounds.size, feature_dataset.compounds.size
-    p feature_dataset.features.size
+    #TODO check fminer features, see fminer.rb
     #assert_equal 54, feature_dataset.features.size
     feature_dataset.data_entries.each do |e|
       assert_equal e.size, feature_dataset.features.size
@@ -32,8 +32,7 @@ class LazarFminerTest < MiniTest::Test
     }].each do |example|
       prediction = model.predict example[:compound]
 
-      p prediction
-      #assert_equal example[:prediction], prediction[:value]
+      assert_equal example[:prediction], prediction[:value]
       #assert_equal example[:confidence], prediction[:confidence]
       #assert_equal example[:nr_neighbors], prediction[:neighbors].size
     end
@@ -43,7 +42,7 @@ class LazarFminerTest < MiniTest::Test
     prediction = model.predict compound_dataset
     assert_equal compound_dataset.compounds, prediction.compounds
 
-    assert_match /No neighbors/, prediction.data_entries[7][2]
+    assert_equal "Cound not find similar compounds.", prediction.data_entries[7][2]
     assert_equal "measured", prediction.data_entries[14][1]
     # cleanup
     [training_dataset,model,feature_dataset,compound_dataset].each{|o| o.delete}

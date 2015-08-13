@@ -20,10 +20,11 @@ class DescriptorTest < MiniTest::Test
 
   def test_smarts
     c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
-    s = Smarts.find_or_create_by(:smarts => "FF")
+    File.open("tmp.png","w+"){|f| f.puts c.png}
+    s = Smarts.find_or_create_by(:smarts => "F=F")
     result = OpenTox::Algorithm::Descriptor.smarts_match c, s
     assert_equal [1], result
-    smarts = ["CC", "C", "C=C", "CO", "FF", "C1CCCC1", "NN"].collect{|s| Smarts.find_or_create_by(:smarts => s)}
+    smarts = ["CC", "C", "C=C", "CO", "F=F", "C1CCCC1", "NN"].collect{|s| Smarts.find_or_create_by(:smarts => s)}
     result = OpenTox::Algorithm::Descriptor.smarts_match c, smarts
     assert_equal [1, 1, 1, 0, 1, 1, 0], result
     smarts_count = [10, 6, 2, 0, 2, 10, 0]
@@ -34,7 +35,7 @@ class DescriptorTest < MiniTest::Test
   def test_compound_openbabel_single
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = OpenTox::Algorithm::Descriptor.physchem c, ["Openbabel.logP"]
-    assert_equal [1.12518], result
+    assert_equal 1.12518, result.first
   end
 
   def test_compound_cdk_single
@@ -65,10 +66,9 @@ class DescriptorTest < MiniTest::Test
 
   def test_compound_descriptor_parameters
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
-    result = OpenTox::Algorithm::Descriptor.physchem c, [ "Openbabel.logP", "Cdk.AtomCount", "Cdk.CarbonTypes", "Joelib.LogP" ], true
-    assert_equal 12, result.last.size
-    assert_equal ["Openbabel.logP", "Cdk.AtomCount.nAtom", "Cdk.CarbonTypes.C1SP1", "Cdk.CarbonTypes.C2SP1", "Cdk.CarbonTypes.C1SP2", "Cdk.CarbonTypes.C2SP2", "Cdk.CarbonTypes.C3SP2", "Cdk.CarbonTypes.C1SP3", "Cdk.CarbonTypes.C2SP3", "Cdk.CarbonTypes.C3SP3", "Cdk.CarbonTypes.C4SP3", "Joelib.LogP"], result.first
-    assert_equal [1.12518, 17, 1, 0, 0, 1, 0, 2, 1, 1, 0, 2.65908], result.last
+    result = OpenTox::Algorithm::Descriptor.physchem c, [ "Openbabel.logP", "Cdk.AtomCount", "Cdk.CarbonTypes", "Joelib.LogP" ]#, true
+    assert_equal 12, result.size
+    assert_equal [1.12518, 17.0, 1, 0, 0, 1, 0, 2, 1, 1, 0, 2.65908], result#.last
   end
 
   def test_dataset_descriptor_parameters

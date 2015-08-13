@@ -4,7 +4,7 @@ module OpenTox
     class Classification
 
       def self.weighted_majority_vote neighbors
-        return [nil,nil] if neighbors.empty?
+        return {:value => nil,:confidence => nil,:warning => "Cound not find similar compounds."} if neighbors.empty?
         weighted_sum = {}
         sim_sum = 0.0
         neighbors.each do |row|
@@ -16,13 +16,13 @@ module OpenTox
         end
         case weighted_sum.size
         when 1
-          return [weighted_sum.keys.first, 1.0]
+          return {:value => weighted_sum.keys.first, :confidence => weighted_sum.values.first/neighbors.size.abs}
         when 2
           sim_sum = weighted_sum[weighted_sum.keys[0]]
           sim_sum -= weighted_sum[weighted_sum.keys[1]]
           sim_sum > 0 ? prediction = weighted_sum.keys[0] : prediction = weighted_sum.keys[1] 
           confidence = (sim_sum/neighbors.size).abs 
-          return [prediction,confidence]
+          return {:value => prediction,:confidence => confidence}
         else
           bad_request_error "Cannot predict more than 2 classes, multinomial classifications is not yet implemented. Received classes were: '#{weighted.sum.keys}'"
         end
@@ -94,7 +94,7 @@ module OpenTox
           #$logger.debug "Prediction: '" + prediction.to_s + "' ('#{prediction.class}')."
           confidence = get_confidence({:sims => params[:sims][1], :activities => params[:activities]})
         end
-        {:prediction => prediction, :confidence => confidence}
+        {:value => prediction, :confidence => confidence}
 
       end
 

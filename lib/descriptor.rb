@@ -71,12 +71,6 @@ module OpenTox
         @physchem_descriptors = nil
         @data_entries = Array.new(@compounds.size){Array.new(@smarts.size,false)}
         @compounds.each_with_index do |compound,c|
-          # TODO OpenBabel may segfault here
-          # catch inchi errors in compound.rb
-          # eg. at line 249 of rat_feature_dataset
-          # which worked with opentox-client
-          # (but no smarts_match)
-          #p "'#{compound.inchi}'"
           obconversion.read_string(obmol,compound.smiles)
           @smarts.each_with_index do |smart,s|
             smarts_pattern.init(smart)
@@ -214,6 +208,7 @@ module OpenTox
       end
 
       def self.serialize
+        @data_entries.collect!{|de| de.collect{|v| v.round(5) unless v.nil?}}
         case @input_class
         when "OpenTox::Compound"
           @data_entries.first

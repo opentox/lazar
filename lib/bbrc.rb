@@ -26,6 +26,7 @@ module OpenTox
           minfreq = params[:min_frequency]
         else
           per_mil = 5 # value from latest version
+          per_mil = 8 # as suggested below
           i = training_dataset.feature_ids.index prediction_feature.id
           nr_labeled_cmpds = training_dataset.data_entries.select{|de| !de[i].nil?}.size
           minfreq = per_mil * nr_labeled_cmpds.to_f / 1000.0 # AM sugg. 8-10 per mil for BBRC, 50 per mil for LAST
@@ -65,9 +66,11 @@ module OpenTox
 
         # add data 
         training_dataset.compounds.each_with_index do |compound,i|
-          @bbrc.AddCompound(compound.smiles,i+1)
           act = value2act[training_dataset.data_entries[i].first]
-          @bbrc.AddActivity(act,i+1)
+          if act # TODO check if this works
+            @bbrc.AddCompound(compound.smiles,i+1)
+            @bbrc.AddActivity(act,i+1)
+          end
         end
         #g_median=@fminer.all_activities.values.to_scale.median
 
@@ -94,6 +97,9 @@ module OpenTox
             end
             p_value = f.shift
             f.flatten!
+            compound_idxs = f.collect{|e| e.first.first-1}
+            # majority class
+            effect = compound_idxs.collect{|i| training_dataset.data_entries[i].first}.mode
   
 =begin
             if (!@bbrc.GetRegression)
@@ -122,7 +128,7 @@ module OpenTox
             feature = OpenTox::FminerSmarts.find_or_create_by({
               "smarts" => smarts,
               "p_value" => p_value.to_f.abs.round(5),
-              #"effect" => effect,
+              "effect" => effect,
               "dataset_id" => feature_dataset.id
             })
             feature_dataset.feature_ids << feature.id

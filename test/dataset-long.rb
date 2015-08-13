@@ -77,13 +77,11 @@ class DatasetLongTest < MiniTest::Test
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     assert_equal csv.size-1, d.data_entries.size
-    # TODO: check if warning is correct:
-    # Duplicate compound InChI=1S/C5H4N4S/c10-5-3-4(7-1-6-3)8-2-9-5/h1-2H,(H2,6,7,8,9,10) at rows 1357, 2235
-    #assert_empty d.warnings
+    assert_empty d.warnings
     #  493 COC1=C(C=C(C(=C1)Cl)OC)Cl,1
     c = d.compounds[491]
-    assert_equal c.smiles, "COc1cc(c(cc1Cl)OC)Cl"
-    assert_equal d[c.id,d.features.first.id], 1
+    assert_equal c.smiles, "COc1cc(Cl)c(cc1Cl)OC"
+    assert_equal d.data_entries[491][0], "1"
     d.delete
   end
 
@@ -98,8 +96,11 @@ class DatasetLongTest < MiniTest::Test
     t = Time.now
     assert_equal d.features.size, d2.features.size
     csv = CSV.read f
+    csv.delete_at(248) # remove entry with InChi segfault
     csv.shift # remove header
-    assert_equal csv.size, d2.compounds.size
+    refute_empty d2.warnings
+    assert_match /249/, d2.warnings.join
+    assert_equal csv.size, d2.compounds.size 
     assert_equal csv.first.size-1, d2.features.size
     d2.compounds.each_with_index do |compound,i|
       row = csv[i]

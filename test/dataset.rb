@@ -112,7 +112,7 @@ class DatasetTest < MiniTest::Test
     assert_equal 7, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.inchi}.uniq.size
     assert_equal [["1", "1", "true", "true", "test", 1.1], ["1", "2", "false", "7.5", "test", 0.24], ["1", "3", "true", "5", "test", 3578.239], ["0", "4", "false", "false", "test", -2.35], ["1", "2", "true", "4", "test_2", 1], ["1", "2", "false", "false", "test", -1.5], ["1", nil, "false", nil, nil, 1.0]], d.data_entries
-    assert_equal "c1cc[nH]c1,1,,false,,,1.0", d.to_csv.split("\n")[7]
+    assert_equal "c1ccc[nH]1,1,,false,,,1.0", d.to_csv.split("\n")[7]
     csv = CSV.parse(d.to_csv)
     original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
     csv.shift

@@ -31,7 +31,7 @@ module OpenTox
         end
         confidence = sim_sum/neighbors.size.to_f
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
-        [prediction,confidence]
+        {:value => prediction,:confidence => confidence}
       end
 
       # Local support vector regression from neighbors 
