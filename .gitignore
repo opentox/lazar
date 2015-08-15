@@ -1,3 +1,6 @@
+last-utils
+libfminer
+test/fminer_debug.txt
 Gemfile.lock
 *.gem
 .bundle
