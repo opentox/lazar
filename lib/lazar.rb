@@ -14,7 +14,7 @@ require "base64"
 # TODO retrieve correct environment from Rack/Sinatra
 ENV["MONGOID_ENV"] ||= "development"
 # TODO remove config files, change default via ENV or directly in Mongoid class
-Mongoid.load!("#{ENV['HOME']}/.opentox/config/mongoid.yml")
+Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
 # TODO get Mongo::Client from Mongoid
 $mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
 # TODO same for GridFS
@@ -31,10 +31,13 @@ Mongo::Logger.level = Logger::WARN
 #Mongoid.logger = $logger
 
 # Require sub-Repositories
+# TODO: set 
+ENV["LD_LIBRARY_PATH"] = "#{File.join File.dirname(__FILE__),'..','openbabel','lib'}"
+p ENV["LD_LIBRARY_PATH"] 
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
 require_relative '../libfminer/liblast/last' # 
 require_relative '../last-utils/lu.rb'
-require 'openbabel'
+require_relative '../openbabel/lib/openbabel'
 
 # Fminer environment variables
 ENV['FMINER_SMARTS'] = 'true'

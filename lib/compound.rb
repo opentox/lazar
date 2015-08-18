@@ -62,7 +62,7 @@ module OpenTox
       # Temporary workaround for OpenBabels Inchi bug
       # http://sourceforge.net/p/openbabel/bugs/957/
       # bug has not been fixed in latest git/development version
-      smiles = `echo "#{inchi}" | babel -iinchi - -ocan`.chomp.strip
+      smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       if smiles.empty?
         Compound.find_or_create_by(:warning => "InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries.")
       else
@@ -91,7 +91,8 @@ module OpenTox
     # @return [String] InChI string
     def inchi
       unless self["inchi"]
-        result = `echo "#{self.smiles}" | babel -ismi - -oinchi`.chomp
+
+        result = `echo "#{self.smiles}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -ismi - -oinchi`.chomp
         update(:inchi => result.chomp) unless result.empty?
       end
       self["inchi"]
@@ -182,21 +183,23 @@ module OpenTox
       #reqbits = [count['_id'] for count in db.mfp_counts.find({'_id': {'$in': qfp}}).sort('count', 1).limit(qn - qmin + 1)]
       aggregate = [
         #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
-        {'$match':  {'_id': {'$ne': self.id}}}, # remove self
-        {'$project': {
-          'tanimoto': {'$let': {
-            'vars': {'common': {'$size': {'$setIntersection': ['$fp4', fp4]}}},
-            'in': {'$divide': ['$$common', {'$subtract': [{'$add': [qn, '$fp4_size']}, '$$common']}]}
+        {'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
+        {'$project' => {
+          'tanimoto' => {'$let' => {
+            'vars' => {'common' => {'$size' => {'$setIntersection' => ['$fp4', fp4]}}},
+            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [qn, '$fp4_size']}, '$$common']}]}
           }},
-          '_id': 1
+          '_id' => 1
         }},
-        {'$match':  {'tanimoto': {'$gte': threshold}}},
-        {'$sort': {'tanimoto': -1}}
+        {'$match' =>  {'tanimoto' => {'$gte' => threshold}}},
+        {'$sort' => {'tanimoto' => -1}}
       ]
       
       $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
+=begin
+=end
 
     private
 
@@ -210,11 +213,12 @@ module OpenTox
       when /smi|can|inchi/
         obconversion.write_string(obmol).gsub(/\s/,'').chomp
       when /sdf/
-        OpenBabel::OBOp.find_type("Gen3D").do(obmol) 
+# TODO set 3D
+        #OpenBabel::OBOp.find_type("Gen3D").do(obmol) 
         sdf = obconversion.write_string(obmol)
         if sdf.match(/.nan/)
           $logger.warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
-          OpenBabel::OBOp.find_type("Gen2D").do(obmol) 
+          #OpenBabel::OBOp.find_type("Gen2D").do(obmol) 
           sdf = obconversion.write_string(obmol)
           if sdf.match(/.nan/)
             $logger.warn "2D generation failed for compound #{identifier}"

@@ -83,7 +83,7 @@ class CompoundTest < MiniTest::Test
   end
 
   def test_neighbors
-    d = Dataset.from_csv_file "data/EPAFHM.csv"
+    d = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
     d.compounds.each do |c|
       refute_nil c.fp4
     end

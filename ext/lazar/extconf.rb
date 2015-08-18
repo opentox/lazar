@@ -28,11 +28,12 @@ Dir.chdir main_dir do
   puts "Downloading OpenBabel sources"
   system "git clone https://github.com/openbabel/openbabel.git"
 end
+
 FileUtils.mkdir_p build_dir
 FileUtils.mkdir_p install_dir
 Dir.chdir build_dir do
   puts "Configuring OpenBabel"
-  cmake = "cmake #{src_dir} -DCMAKE_INSTALL_PREFIX=#{install_dir} -DBUILD_GUI=OFF -DENABLE_TESTS=OFF -DRUBY_BINDINGS=ON"
+  cmake = "cmake #{src_dir} -DCMAKE_INSTALL_PREFIX=#{install_dir} -DBUILD_GUI=OFF -DENABLE_TESTS=OFF -DRUN_SWIG=ON -DRUBY_BINDINGS=ON"
   # set rpath for local installations
   # http://www.cmake.org/Wiki/CMake_RPATH_handling
   # http://vtk.1045678.n5.nabble.com/How-to-force-cmake-not-to-remove-install-rpath-td5721193.html
@@ -55,18 +56,11 @@ ob_lib= File.expand_path "../../openbabel/lib"
 # compile ruby bindings
 puts "Compiling and installing OpenBabel Ruby bindings."
 Dir.chdir ruby_src_dir do
-  #p `pwd`
   # fix rpath
   system "sed -i 's|with_ldflags.*$|with_ldflags(\"#\$LDFLAGS -dynamic -Wl,-rpath,#{install_lib_dir}\") do|' #{File.join(ruby_src_dir,'extconf.rb')}"
   system "#{RbConfig.ruby} extconf.rb --with-openbabel-include=#{ob_include} --with-openbabel-lib=#{ob_lib}"
   system "make -j#{nr_processors}"
 end
-
-#p(ruby_src_dir+"/openbabel.#{RbConfig::CONFIG["DLEXT"]}", "./")
-#FileUtils.cp(ruby_src_dir+"/openbabel.#{RbConfig::CONFIG["DLEXT"]}", "./")
-FileUtils.mkdir_p lib_dir
-FileUtils.mv "openbabel.#{RbConfig::CONFIG["DLEXT"]}", lib_dir
-#FileUtils.remove_entry_secure src_dir, build_dir
 
 # install fminer
 fminer_dir = File.join main_dir, "libfminer"
@@ -86,5 +80,7 @@ end
 # install last-utils
 FileUtils.cd main_dir
 system "git clone git://github.com/amaunz/last-utils.git"
+FileUtils.cd File.join(main_dir,"last-utils")
+`sed -i '8s/"openbabel", //' lu.rb`
 
 # install R packagemain_dir

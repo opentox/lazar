@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "bundler"
   s.add_runtime_dependency "rest-client"
   s.add_runtime_dependency 'nokogiri'
-  s.add_runtime_dependency "openbabel"
+  #s.add_runtime_dependency "openbabel"
   s.add_runtime_dependency 'rserve-client'
   s.add_runtime_dependency "mongoid", '~> 5.0beta'  
 
