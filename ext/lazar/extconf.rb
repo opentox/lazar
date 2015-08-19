@@ -50,10 +50,11 @@ Dir.chdir build_dir do
 end
 
 # get include and lib from pkg-config
-ob_include= File.expand_path "../../openbabel/include/openbabel-2.0"
-ob_lib= File.expand_path "../../openbabel/lib"
+ob_include= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/include/openbabel-2.0")
+ob_lib= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/lib")
 
 # compile ruby bindings
+=begin
 puts "Compiling and installing OpenBabel Ruby bindings."
 Dir.chdir ruby_src_dir do
   # fix rpath
@@ -61,6 +62,7 @@ Dir.chdir ruby_src_dir do
   system "#{RbConfig.ruby} extconf.rb --with-openbabel-include=#{ob_include} --with-openbabel-lib=#{ob_lib}"
   system "make -j#{nr_processors}"
 end
+=end
 
 # install fminer
 fminer_dir = File.join main_dir, "libfminer"
