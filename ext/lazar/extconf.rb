@@ -49,7 +49,6 @@ Dir.chdir build_dir do
   ENV["PKG_CONFIG_PATH"] = File.dirname(File.expand_path(Dir["#{install_dir}/**/openbabel*pc"].first))
 end
 
-# get include and lib from pkg-config
 ob_include= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/include/openbabel-2.0")
 ob_lib= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/lib")
 

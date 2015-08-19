@@ -12,33 +12,28 @@ Dependencies
   
   You will also need at least mongodb version 3.0, but Debian "Wheezy" provides version 2.4. Please follow the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian/:
 
-```
-   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
-   echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
-   sudo apt-get update
-   sudo apt-get install -y mongodb-org
-```
+  ```
+  sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+  echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+  sudo apt-get update
+  sudo apt-get install -y mongodb-org
+  ```
 
 Installation
 ------------
 
   `gem install lazar`
 
-  Please be patient, the compilation of OpenBabel and Fminer libraries can be very time consuming. If installation fails you can try a
+  Please be patient, the compilation of OpenBabel and Fminer libraries can be very time consuming. If installation fails you can try to install manually:
 
-  Manual installation
-  ...................
-
-```
+  ```
   git clone https://github.com/opentox/lazar.git
   cd lazar
   ruby ext/lazar/extconf.rb
   bundle install
-```
+  ```
 
-  This should give you more verbose information that can help in debugging (e.g. to identify missing libraries).
-
-  This should
+  The output should give you more verbose information that can help in debugging (e.g. to identify missing libraries).
 
 Documentation
 -------------

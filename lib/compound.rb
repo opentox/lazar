@@ -46,7 +46,6 @@ module OpenTox
     # @param [String] smiles Smiles string
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
-      # do not store smiles because it might be noncanonical
       smiles = obconversion(smiles,"smi","can")
       if smiles.empty?
         Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
@@ -62,7 +61,8 @@ module OpenTox
       # Temporary workaround for OpenBabels Inchi bug
       # http://sourceforge.net/p/openbabel/bugs/957/
       # bug has not been fixed in latest git/development version
-      smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
+      #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
+      smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?
         Compound.find_or_create_by(:warning => "InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries.")
       else
@@ -92,7 +92,8 @@ module OpenTox
     def inchi
       unless self["inchi"]
 
-        result = `echo "#{self.smiles}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -ismi - -oinchi`.chomp
+        result = obconversion(smiles,"smi","inchi")
+        #result = `echo "#{self.smiles}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -ismi - -oinchi`.chomp
         update(:inchi => result.chomp) unless result.empty?
       end
       self["inchi"]
@@ -108,7 +109,7 @@ module OpenTox
     # Get (canonical) smiles
     # @return [String] Smiles string
     def smiles
-      update(:smiles => obconversion(self["smiles"],"smi","can")) #unless self["smiles"] # should give canonical smiles, "can" seems to give incorrect results
+      update(:smiles => obconversion(self["smiles"],"smi","can")) unless self["smiles"] 
       self["smiles"]
     end
 
@@ -219,8 +220,12 @@ p "SDF conversion"
         # segfaults with openbabel git master 
         #OpenBabel::OBOp.find_type("Gen3D").do(obmol) 
 
+        # TODO: find disconnected structures
+        # strip_salts
+        # separate
+        obmol.add_hydrogens
         builder = OpenBabel::OBBuilder.new
-        builder.build(obmol);
+        builder.build(obmol)
 
         sdf = obconversion.write_string(obmol)
 print sdf
