@@ -31,9 +31,6 @@ Mongo::Logger.level = Logger::WARN
 #Mongoid.logger = $logger
 
 # Require sub-Repositories
-# TODO: set 
-ENV["LD_LIBRARY_PATH"] = "#{File.join File.dirname(__FILE__),'..','openbabel','lib'}"
-p ENV["LD_LIBRARY_PATH"] 
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
 require_relative '../libfminer/liblast/last' # 
 require_relative '../last-utils/lu.rb'

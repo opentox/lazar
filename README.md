@@ -1,38 +1,33 @@
-opentox-client
-====================
+lazar
+=====
 
-Thin Ruby wrapper for the [OpenTox](http://www.opentox.org) REST API 
-
-Libraries:
-
-* {OpenTox::Algorithm} Wrapper for OpenTox Algorithms
-* {OpenTox::Authorization}  Authorization and Authentication
-* {OpenTox::Compound} Compound Library
-* {OpenTox::Dataset} Dataset Library
-* {OpenTox::Error} extends Exception class according the OpenTox API
-* {OpenTox::Model} Model Library
-* {OpenTox} OpenTox Library - general definition of OpenTox objects
-* {OTLogger} OpenTox Logger Extensions
-* {OpenTox::Policies} parse and serialize XML for the openSSO A&A server  
-* {OpenTox::RestClientWrapper} wrapper for the RestClient gem
-* {OpenTox::Task} Task Library
-
+Ruby libraries for the lazar framework
 
 Dependencies
 ------------
 
-  libraptor1-dev
+  lazar depends on a couple of external programs and libraries. On Debian 7 "Wheezy" systems you can install them with
+
+   `sudo apt-get install build-essential ruby ruby-dev git cmake swig r-base r-base-dev r-cran-rserve openjdk-7-jre libgsl0-dev libxml2-dev zlib1g-dev libcairo2-dev`
+  
+  You will also need at least mongodb version 3.0, but Debian "Wheezy" provides version 2.4. Please follow the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian/:
+
+   ```
+   sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7F0CEB10
+   echo "deb http://repo.mongodb.org/apt/debian wheezy/mongodb-org/3.0 main" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.0.list
+   sudo apt-get update
+   sudo apt-get install -y mongodb-org
+   ```
 
 Installation
 ------------
 
-  gem install opentox-client
+  gem install lazar
 
 Documentation
 -------------
-* [API documentation](http://rdoc.info/gems/opentox-client)
-* [RubyDoc.info Code documentation](http://rubydoc.info/github/opentox/opentox-client/development/frames)
+* [API documentation](http://rdoc.info/gems/lazar)
 
 Copyright
 ---------
-Copyright (c) 2009-2014 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.
+Copyright (c) 2009-2015 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.

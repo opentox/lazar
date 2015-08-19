@@ -73,7 +73,7 @@ system "git clone git://github.com/amaunz/fminer2.git #{fminer_dir}"
   system "sed -i 's,^INCLUDE_RB.*,INCLUDE_RB\ =\ #{RbConfig::CONFIG['rubyhdrdir']},g' Makefile" 
   # TODO fix in fminer Makefile
   system "sed -i 's,-g, -g -I #{RbConfig::CONFIG['rubyhdrdir']} -I #{RbConfig::CONFIG['rubyarchhdrdir']} -I,' Makefile" # fix include path (CH)
-  system "sed -i '74s/$(CC)/$(CC) -L/' Makefile" # fix library path (CH)
+  system "sed -i '74s/$(CC)/$(CC) -Wl,-rpath,#{ob_lib.gsub('/','\/')} -L/' Makefile" # fix library path (CH)
   system "make ruby"
 end
 

@@ -213,11 +213,22 @@ module OpenTox
       when /smi|can|inchi/
         obconversion.write_string(obmol).gsub(/\s/,'').chomp
       when /sdf/
-# TODO set 3D
+p "SDF conversion"
+        # has no effect
+	#obconversion.add_option("gen3D", OpenBabel::OBConversion::GENOPTIONS)
+        # segfaults with openbabel git master 
         #OpenBabel::OBOp.find_type("Gen3D").do(obmol) 
+
+        builder = OpenBabel::OBBuilder.new
+        builder.build(obmol);
+
         sdf = obconversion.write_string(obmol)
+print sdf
         if sdf.match(/.nan/)
+          
+# TODO: fix or eliminate 2d generation
           $logger.warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
+          obconversion.set_options("gen2D", OpenBabel::OBConversion::GENOPTIONS)
           #OpenBabel::OBOp.find_type("Gen2D").do(obmol) 
           sdf = obconversion.write_string(obmol)
           if sdf.match(/.nan/)
