@@ -13,8 +13,8 @@ Gem::Specification.new do |s|
 
   s.rubyforge_project = "lazar"
 
-  s.files         = `git ls-files`.split("\n")
-  s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
+  s.files         = Dir["lib/*rb"]
+  s.test_files    = Dir["test/*rb"]
   s.extensions    = %w[ext/lazar/extconf.rb]
   s.require_paths = ["lib"]
 
@@ -22,7 +22,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "bundler"
   s.add_runtime_dependency "rest-client"
   s.add_runtime_dependency 'nokogiri'
-  #s.add_runtime_dependency "openbabel"
   s.add_runtime_dependency 'rserve-client'
   s.add_runtime_dependency "mongoid", '~> 5.0beta'  
 
