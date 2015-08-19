@@ -75,7 +75,7 @@ module OpenTox
     # @return [OpenTox::Compound] Compound
     def self.from_sdf sdf
       # do not store sdf because it might be 2D
-      Compound.find_or_create_by :smiles => obconversion(sdf,"sdf","can")
+      Compound.from_smiles obconversion(sdf,"sdf","can")
     end
 
     # Create a compound from name. Relies on an external service for name lookups.
@@ -84,7 +84,7 @@ module OpenTox
     # @param name [String] can be also an InChI/InChiKey, CAS number, etc
     # @return [OpenTox::Compound] Compound
     def self.from_name name
-      Compound.find_or_create_by :smiles => RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"smiles"))
+      Compound.from_smiles RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"smiles"))
     end
 
     # Get InChI
