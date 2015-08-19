@@ -1,5 +1,5 @@
 all:
-    true
+	true
 
 install:
-    true
+	true
