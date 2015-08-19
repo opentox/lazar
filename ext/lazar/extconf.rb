@@ -85,3 +85,4 @@ FileUtils.cd File.join(main_dir,"last-utils")
 `sed -i '8s/"openbabel", //' lu.rb`
 
 # install R packagemain_dir
+$makefile_created = true
