@@ -34,6 +34,30 @@ module OpenTox
         {:value => prediction,:confidence => confidence}
       end
 
+      def self.weighted_average_with_relevant_fingerprints neighbors
+        weighted_sum = 0.0
+        sim_sum = 0.0
+        fingerprint_features = []
+        neighbors.each do |row|
+          n,sim,acts = row
+          neighbor = Compound.find n
+          fingerprint_features += neighbor.fp4
+        end
+        fingerprint_features.uniq!
+        p fingerprint_features
+=begin
+          p n
+          acts.each do |act|
+            weighted_sum += sim*Math.log10(act)
+            sim_sum += sim
+          end
+        end
+=end
+        confidence = sim_sum/neighbors.size.to_f
+        sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
+        {:value => prediction,:confidence => confidence}
+      end
+
       # Local support vector regression from neighbors 
       # @param [Hash] params Keys `:props, :activities, :sims, :min_train_performance` are required
       # @return [Numeric] A prediction value.

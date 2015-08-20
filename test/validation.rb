@@ -4,10 +4,11 @@ class ValidationTest < MiniTest::Test
 
   def test_fminer_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarFminerClassification.create dataset#, features
+    model = Model::LazarFminerClassification.create dataset
     cv = ClassificationCrossValidation.create model
     p cv.accuracy
     p cv.weighted_accuracy
+    refute_empty cv.validation_ids
     assert cv.accuracy > 0.8
     assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) larger than unweighted accuracy(#{cv.accuracy}) "
   end
@@ -31,7 +32,7 @@ class ValidationTest < MiniTest::Test
     p cv.weighted_rmse
     p cv.mae
     p cv.weighted_mae
-    `inkview #{cv.plot}`
+    #`inkview #{cv.plot}`
     assert cv.rmse < 30, "RMSE > 30"
     assert cv.weighted_rmse < cv.rmse, "Weighted RMSE (#{cv.weighted_rmse}) larger than unweighted RMSE(#{cv.rmse}) "
     assert cv.mae < 12

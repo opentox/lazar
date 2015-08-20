@@ -2,11 +2,16 @@ module OpenTox
 
   class CrossValidation
     field :validation_ids, type: Array, default: []
+    field :model_id, type: BSON::ObjectId
     field :folds, type: Integer
     field :nr_instances, type: Integer
     field :nr_unpredicted, type: Integer
     field :predictions, type: Array
     field :finished_at, type: Time 
+
+    def time
+      finished_at - created_at
+    end
   end
 
   class ClassificationCrossValidation < CrossValidation
@@ -22,6 +27,7 @@ module OpenTox
 
     def self.create model, n=10
       cv = self.new
+      cv.save # set created_at
       validation_ids = []
       nr_instances = 0
       nr_unpredicted = 0
@@ -64,6 +70,10 @@ module OpenTox
         end
       end
       cv.update_attributes(
+        name: model.name,
+        model_id: model.id,
+        folds: n,
+        validation_ids: validation_ids,
         nr_instances: nr_instances,
         nr_unpredicted: nr_unpredicted,
         accept_values: accept_values,
@@ -85,10 +95,8 @@ module OpenTox
     #F measure carcinogen: 0.769, noncarcinogen: 0.348
   end
 
-  class RegressionCrossValidation < Validation
+  class RegressionCrossValidation < CrossValidation
 
-    field :validation_ids, type: Array, default: []
-    field :folds, type: Integer
     field :rmse, type: Float
     field :mae, type: Float
     field :weighted_rmse, type: Float
@@ -96,6 +104,7 @@ module OpenTox
 
     def self.create model, n=10
       cv = self.new
+      cv.save # set created_at
       validation_ids = []
       nr_instances = 0
       nr_unpredicted = 0
@@ -145,6 +154,8 @@ module OpenTox
       rmse = Math.sqrt(rmse/n)
       weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
       cv.update_attributes(
+        name: model.name,
+        model_id: model.id,
         folds: n,
         validation_ids: validation_ids,
         nr_instances: nr_instances,

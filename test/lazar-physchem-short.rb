@@ -2,6 +2,7 @@ require_relative "setup.rb"
 
 class LazarPhyschemDescriptorTest < MiniTest::Test
   def test_epafhm
+    skip "Physchem Regression not yet implemented."
     # check available descriptors
     @descriptors = OpenTox::Algorithm::Descriptor::DESCRIPTORS.keys
     assert_equal 111,@descriptors.size,"wrong number of physchem descriptors"

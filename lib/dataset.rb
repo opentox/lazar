@@ -49,7 +49,7 @@ module OpenTox
           @data_entries = Marshal.load(data_entry_file.data)
           bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
-          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries..first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
+          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
           $logger.debug "Retrieving data: #{Time.now-t}"
         end
       end

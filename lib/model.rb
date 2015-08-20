@@ -8,7 +8,7 @@ module OpenTox
       include Mongoid::Timestamps
       store_in collection: "models"
 
-      field :title, type: String
+      field :title, as: :name, type: String
       field :creator, type: String, default: __FILE__
       # datasets
       field :training_dataset_id, type: BSON::ObjectId
@@ -156,9 +156,16 @@ module OpenTox
 
     end
 
-    class PredictionModel < Lazar
-      field :category, type: String
+    class PredictionModel
+      include OpenTox
+      include Mongoid::Document
+      include Mongoid::Timestamps
+      store_in collection: "models"
+
+      # TODO field Validations
       field :endpoint, type: String
+      field :species, type: String
+      field :source, type: String
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
       field :crossvalidation_id, type: BSON::ObjectId
