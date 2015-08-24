@@ -22,6 +22,8 @@ module OpenTox
     field :fp4, type: Array
     field :fp4_size, type: Integer
 
+    index({smiles: 1}, {unique: true})
+
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
       compound = self.find_or_initialize_by params

@@ -19,6 +19,8 @@ module OpenTox
       # prediction feature
       field :prediction_feature_id, type: BSON::ObjectId
 
+      #belongs_to :prediction
+
       attr_accessor :prediction_dataset
       attr_accessor :training_dataset
 
@@ -156,11 +158,10 @@ module OpenTox
 
     end
 
-    class PredictionModel
+    class Prediction
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
-      store_in collection: "models"
 
       # TODO field Validations
       field :endpoint, type: String
@@ -169,6 +170,14 @@ module OpenTox
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
       field :crossvalidation_id, type: BSON::ObjectId
+
+      def predict object
+        Model::Lazar.find(model_id).predict object
+      end
+
+      def crossvalidation
+        CrossValidation.find crossvalidation_id
+      end
     end
 
   end

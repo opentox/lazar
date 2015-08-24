@@ -15,20 +15,19 @@ require "base64"
 ENV["MONGOID_ENV"] ||= "development"
 # TODO remove config files, change default via ENV or directly in Mongoid class
 Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
-# TODO get Mongo::Client from Mongoid
-$mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
-# TODO same for GridFS
+$mongo = Mongoid.default_client
+#$mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
 $gridfs = $mongo.database.fs
 
 # R setup
 R = Rserve::Connection.new
 
 # Logger setup
+STDOUT.sync = true # for redirection, etc see http://stackoverflow.com/questions/8549443/why-doesnt-logger-output-to-stdout-get-redirected-to-files
 $logger = Logger.new STDOUT # STDERR did not work on my development machine (CH)
 $logger.level = Logger::DEBUG
 Mongo::Logger.logger = $logger
 Mongo::Logger.level = Logger::WARN 
-#Mongoid.logger = $logger
 
 # Require sub-Repositories
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel

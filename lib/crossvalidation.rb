@@ -8,6 +8,7 @@ module OpenTox
     field :nr_unpredicted, type: Integer
     field :predictions, type: Array
     field :finished_at, type: Time 
+    #belongs_to :prediction
 
     def time
       finished_at - created_at

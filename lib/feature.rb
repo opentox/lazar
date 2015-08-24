@@ -29,6 +29,7 @@ module OpenTox
   # Feature for SMARTS fragments
   class Smarts < NominalFeature
     field :smarts, type: String 
+    index "smarts" => 1
     def self.from_smarts smarts
       self.find_or_create_by :smarts => smarts
     end

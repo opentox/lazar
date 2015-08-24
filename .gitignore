@@ -1,5 +1,6 @@
 last-utils
 libfminer
+openbabel
 test/fminer_debug.txt
 Gemfile.lock
 *.gem

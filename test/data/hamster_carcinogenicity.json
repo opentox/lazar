@@ -1,0 +1,3 @@
+{ "species": "Hamster",
+"endpoint": "Carcinogenicity",
+"source": "http://www.epa.gov/ncct/dsstox/sdf_cpdbas.html" }

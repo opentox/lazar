@@ -54,7 +54,6 @@ print c.sdf
 
   def test_inchikey
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
-    p c
     assert_equal "UHOVQNZJYSORNB-UHFFFAOYSA-N", c.inchikey
   end
 
@@ -88,7 +87,8 @@ print c.sdf
       refute_nil c.fp4
     end
     c = d.compounds[371]
-    assert c.neighbors.size >= 19
+    n = c.neighbors
+    assert n.size >= 18, "Neighbors size (#{n.size}) should be larger than 17"
   end
 
   def test_openbabel_segfault
