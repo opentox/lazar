@@ -78,7 +78,7 @@ class DatasetTest < MiniTest::Test
     new_dataset = Dataset.find d.id
     # get metadata
     assert_match "multicolumn.csv",  new_dataset.source
-    assert_equal "multicolumn.csv",  new_dataset.title
+    assert_equal "multicolumn.csv",  new_dataset.name
     # get features
     assert_equal 6, new_dataset.features.size
     assert_equal 7, new_dataset.compounds.size

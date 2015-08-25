@@ -2,7 +2,7 @@ module OpenTox
 
   # Basic feature class
   class Feature
-    field :name, as: :title, type: String
+    field :name, type: String
     field :nominal, type: Boolean
     field :numeric, type: Boolean
     field :measured, type: Boolean

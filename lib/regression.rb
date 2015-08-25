@@ -19,7 +19,7 @@ module OpenTox
     
     class Regression
 
-      def self.weighted_average neighbors
+      def self.weighted_average compound, neighbors
         weighted_sum = 0.0
         sim_sum = 0.0
         neighbors.each do |row|
@@ -32,6 +32,33 @@ module OpenTox
         confidence = sim_sum/neighbors.size.to_f
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
         {:value => prediction,:confidence => confidence}
+      end
+
+      def self.local_linear_regression  compound, neighbors
+        p neighbors.size
+        return nil unless neighbors.size > 0
+        features = neighbors.collect{|n| Compound.find(n.first).fp4}.flatten.uniq
+        p features
+        training_data = Array.new(neighbors.size){Array.new(features.size,0)}
+        neighbors.each_with_index do |n,i|
+          #p n.first
+          neighbor = Compound.find n.first
+          features.each_with_index do |f,j|
+            training_data[i][j] = 1 if neighbor.fp4.include? f
+          end
+        end
+        p training_data
+
+        R.assign "activities", neighbors.collect{|n| n[2].median}
+        R.assign "features", training_data
+        R.eval "model <- lm(activities ~ features)"
+        R.eval "summary <- summary(model)"
+        p R.summary
+        compound_features = features.collect{|f| compound.fp4.include? f ? 1 : 0}
+        R.assign "compound_features", compound_features
+        R.eval "prediction <- predict(model,compound_features)"
+        p R.prediction
+      
       end
 
       def self.weighted_average_with_relevant_fingerprints neighbors

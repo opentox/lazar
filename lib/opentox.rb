@@ -12,7 +12,7 @@ module OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
       store_in collection: klass.downcase.pluralize
-      field :title, as: :name,  type: String
+      field :name,  type: String
 
     end
     OpenTox.const_set klass,c

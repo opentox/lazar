@@ -12,11 +12,12 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal 1, prediction[:neighbors].size
   end
 
-  def test_weighted_average_with_relevant_fingerprints
+  def test_local_linear_regression
+    skip
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
     model = Model::LazarRegression.create training_dataset
-    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.weighted_average_with_relevant_fingerprints")
-    compound = Compound.from_smiles "CC(C)(C)CN"
+    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_linear_regression")
+    compound = Compound.from_smiles "NC(=O)OCCC"
     prediction = model.predict compound
     p prediction
     #assert_equal 13.6, prediction[:value].round(1)

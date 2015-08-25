@@ -2,24 +2,27 @@ module OpenTox
 
   module Model
 
-    class Lazar 
+    class Model
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
       store_in collection: "models"
 
-      field :title, as: :name, type: String
+      field :name, type: String
       field :creator, type: String, default: __FILE__
       # datasets
       field :training_dataset_id, type: BSON::ObjectId
       # algorithms
       field :prediction_algorithm, type: String
-      field :neighbor_algorithm, type: String
-      field :neighbor_algorithm_parameters, type: Hash
       # prediction feature
       field :prediction_feature_id, type: BSON::ObjectId
+    end
 
-      #belongs_to :prediction
+    class Lazar < Model
+
+      # algorithms
+      field :neighbor_algorithm, type: String
+      field :neighbor_algorithm_parameters, type: Hash
 
       attr_accessor :prediction_dataset
       attr_accessor :training_dataset
@@ -36,7 +39,7 @@ module OpenTox
         prediction_feature.nominal ?  lazar = OpenTox::Model::LazarClassification.new : lazar = OpenTox::Model::LazarRegression.new
         lazar.training_dataset_id = training_dataset.id
         lazar.prediction_feature_id = prediction_feature.id
-        lazar.title = prediction_feature.title 
+        lazar.name = "#{training_dataset.name} #{prediction_feature.name}" 
 
         lazar.save
         lazar
@@ -83,7 +86,7 @@ module OpenTox
             acts.empty? ? nil : n << acts
           end
           neighbors.compact! # remove neighbors without training activities
-          predictions << Algorithm.run(prediction_algorithm, neighbors)
+          predictions << Algorithm.run(prediction_algorithm, compound, neighbors)
         end 
 
         # serialize result
@@ -97,19 +100,23 @@ module OpenTox
         when "OpenTox::Dataset"
           # prepare prediction dataset
           prediction_dataset = LazarPrediction.new(
-            :title => "Lazar prediction for #{prediction_feature.title}",
+            :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
             :prediction_feature_id => prediction_feature.id
 
           )
-          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "title" => "Prediction confidence" )
+          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Prediction confidence" )
           # TODO move into warnings field
-          warning_feature = OpenTox::NominalFeature.find_or_create_by("title" => "Warnings")
+          warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
           prediction_dataset.features = [ prediction_feature, confidence_feature, warning_feature ]
           prediction_dataset.compounds = compounds
           prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence], p[:warning]]}
           prediction_dataset.save_all
           return prediction_dataset
+        end
+
+        def training_dataset
+          return Dataset.find(training_dataset_id)
         end
 
       end

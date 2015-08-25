@@ -3,7 +3,7 @@ module OpenTox
     
     class Classification
 
-      def self.weighted_majority_vote neighbors
+      def self.weighted_majority_vote compound, neighbors
         return {:value => nil,:confidence => nil,:warning => "Cound not find similar compounds."} if neighbors.empty?
         weighted_sum = {}
         sim_sum = 0.0

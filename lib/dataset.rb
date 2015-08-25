@@ -10,7 +10,7 @@ module OpenTox
     # associations like has_many, belongs_to deteriorate performance
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
-    field :data_entries_id, type: BSON::ObjectId, default: []
+    field :data_entries_id, type: BSON::ObjectId#, default: []
     field :source, type: String
     field :warnings, type: Array, default: []
 
@@ -19,9 +19,9 @@ module OpenTox
     def save_all
       dump = Marshal.dump(@data_entries)
       file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
-      data_entries_id = $gridfs.insert_one(file)
-      update(:data_entries_id => data_entries_id)
-      save
+      entries_id = $gridfs.insert_one(file)
+      update(:data_entries_id => entries_id)
+      #save
     end
 
     # Readers
@@ -125,11 +125,11 @@ module OpenTox
 
     # Serialisation
     
-    # converts dataset to csv format including compound smiles as first column, other column headers are feature titles
+    # converts dataset to csv format including compound smiles as first column, other column headers are feature names
     # @return [String]
     def to_csv(inchi=false)
       CSV.generate() do |csv| #{:force_quotes=>true}
-        csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.title}
+        csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
         compounds.each_with_index do |c,i|
           csv << [inchi ? c.inchi : c.smiles] + data_entries[i]
         end
@@ -149,9 +149,10 @@ module OpenTox
     # Create a dataset from CSV file
     # TODO: document structure
     def self.from_csv_file file, source=nil, bioassay=true
+      $logger.debug "Parsing #{file}."
       source ||= file
       table = CSV.read file, :skip_blanks => true
-      dataset = self.new(:source => source, :name => File.basename(file))
+      dataset = self.new(:source => source, :name => File.basename(file,".*"))
       dataset.parse_table table, bioassay
       dataset
     end

@@ -178,6 +178,7 @@ module OpenTox
     end
 
     def neighbors threshold=0.7
+      # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
       qn = fp4.size
       #qmin = qn * threshold

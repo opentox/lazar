@@ -24,8 +24,8 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_regression_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    #dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.csv"
+    #dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.csv"
     model = Model::LazarRegression.create dataset
     cv = RegressionCrossValidation.create model
     p cv.rmse 
@@ -33,6 +33,9 @@ class ValidationTest < MiniTest::Test
     p cv.mae
     p cv.weighted_mae
     #`inkview #{cv.plot}`
+    #puts JSON.pretty_generate(cv.misclassifications)#.collect{|l| l.join ", "}.join "\n"
+    p cv.misclassifications.collect{|l| l[:neighbors].size}
+    `inkview #{cv.plot}`
     assert cv.rmse < 30, "RMSE > 30"
     assert cv.weighted_rmse < cv.rmse, "Weighted RMSE (#{cv.weighted_rmse}) larger than unweighted RMSE(#{cv.rmse}) "
     assert cv.mae < 12

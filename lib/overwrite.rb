@@ -81,6 +81,12 @@ class Array
     return self.uniq.size == 1
   end
 
+  def median
+    sorted = self.sort
+    len = sorted.length
+    (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
+  end
+
 end
 
 module URI

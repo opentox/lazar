@@ -16,7 +16,6 @@ ENV["MONGOID_ENV"] ||= "development"
 # TODO remove config files, change default via ENV or directly in Mongoid class
 Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
 $mongo = Mongoid.default_client
-#$mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
 $gridfs = $mongo.database.fs
 
 # R setup
@@ -26,8 +25,8 @@ R = Rserve::Connection.new
 STDOUT.sync = true # for redirection, etc see http://stackoverflow.com/questions/8549443/why-doesnt-logger-output-to-stdout-get-redirected-to-files
 $logger = Logger.new STDOUT # STDERR did not work on my development machine (CH)
 $logger.level = Logger::DEBUG
-Mongo::Logger.logger = $logger
 Mongo::Logger.level = Logger::WARN 
+#Mongo::Logger.logger = $logger
 
 # Require sub-Repositories
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
@@ -43,7 +42,7 @@ ENV['FMINER_SILENT'] = 'true'
 ENV['FMINER_NR_HITS'] = 'true'
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation"]# Algorithm and Models are modules
+CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -64,5 +63,6 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation"]# Algor
   "regression.rb",
   "validation.rb",
   "crossvalidation.rb",
+  "experiment.rb",
 ].each{ |f| require_relative f }
 
