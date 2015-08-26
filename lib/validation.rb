@@ -1,8 +1,10 @@
 module OpenTox
 
   class Validation
+    #include Celluloid
 
     field :prediction_dataset_id, type: BSON::ObjectId
+    field :crossvalidation_id, type: BSON::ObjectId
     field :test_dataset_id, type: BSON::ObjectId
     field :nr_instances, type: Integer
     field :nr_unpredicted, type: Integer
@@ -81,7 +83,7 @@ module OpenTox
   end
 
   class RegressionValidation < Validation
-    def self.create model, training_set, test_set
+    def self.create model, training_set, test_set, crossvalidation=nil
       
       validation_model = Model::LazarRegression.create training_set
       test_set_without_activities = Dataset.new(:compound_ids => test_set.compound_ids) # just to be sure that activities cannot be used
@@ -106,6 +108,7 @@ module OpenTox
         :nr_unpredicted => nr_unpredicted,
         :predictions => predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
+      validation.crossvalidation_id = crossvalidation.id if crossvalidation
       validation.save
       validation
     end

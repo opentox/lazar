@@ -12,7 +12,6 @@ module OpenTox
     field :compound_ids, type: Array, default: []
     field :data_entries_id, type: BSON::ObjectId#, default: []
     field :source, type: String
-    field :warnings, type: Array, default: []
 
     # Save all data including data_entries
     # Should be used instead of save
@@ -21,7 +20,6 @@ module OpenTox
       file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
       entries_id = $gridfs.insert_one(file)
       update(:data_entries_id => entries_id)
-      #save
     end
 
     # Readers
@@ -50,7 +48,7 @@ module OpenTox
           bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
-          $logger.debug "Retrieving data: #{Time.now-t}"
+          #$logger.debug "Retrieving data: #{Time.now-t}"
         end
       end
       @data_entries
@@ -149,11 +147,17 @@ module OpenTox
     # Create a dataset from CSV file
     # TODO: document structure
     def self.from_csv_file file, source=nil, bioassay=true
-      $logger.debug "Parsing #{file}."
       source ||= file
-      table = CSV.read file, :skip_blanks => true
-      dataset = self.new(:source => source, :name => File.basename(file,".*"))
-      dataset.parse_table table, bioassay
+      name = File.basename(file,".*")
+      dataset = self.find_by(:source => source, :name => name)
+      if dataset
+        $logger.debug "#{file} already in database."
+      else
+        $logger.debug "Parsing #{file}."
+        table = CSV.read file, :skip_blanks => true
+        dataset = self.new(:source => source, :name => name)
+        dataset.parse_table table, bioassay
+      end
       dataset
     end
 

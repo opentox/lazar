@@ -54,12 +54,12 @@ module OpenTox
   end
 
   def report
+    # TODO create ggplot2 report
     crossvalidation_ids.each do |id|
       cv = CrossValidation.find(id)
-      file = "/tmp/#{cv.name}.svg"
+      file = "/tmp/#{id}.svg"
       File.open(file,"w+"){|f| f.puts cv.correlation_plot}
       `inkview '#{file}'`
-      #p Crossvalidation.find(id).correlation_plot
     end
   end
 

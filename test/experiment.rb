@@ -6,7 +6,7 @@ class ExperimentTest < MiniTest::Test
     datasets = [
       "EPAFHM.csv",
       "FDA_v3b_Maximum_Recommended_Daily_Dose_mmol.csv",
-      "LOAEL_log_mmol_corrected_smiles.csv"
+      "LOAEL_mmol_corrected_smiles.csv"
       ]
     model_algorithms = ["OpenTox::Model::LazarRegression"]
     neighbor_algorithms = ["OpenTox::Algorithm::Neighbor.fingerprint_similarity"]
@@ -21,10 +21,10 @@ class ExperimentTest < MiniTest::Test
       :prediction_algorithms => prediction_algorithms,
     )
     experiment.run
+    experiment = Experiment.find "55dda70d2b72ed6ea9000188"
 =begin
-    experiment = Experiment.find "55dc58b32b72ed14a8000008"
-=end
     p experiment.id
+=end
     experiment.report
     refute_empty experiment.crossvalidation_ids
   end

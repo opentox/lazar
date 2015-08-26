@@ -9,12 +9,12 @@ require 'rserve'
 require "nokogiri"
 require "base64"
 
-
 # Mongo setup
 # TODO retrieve correct environment from Rack/Sinatra
 ENV["MONGOID_ENV"] ||= "development"
 # TODO remove config files, change default via ENV or directly in Mongoid class
 Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
+Mongoid.raise_not_found_error = false # return nil if no document is found
 $mongo = Mongoid.default_client
 $gridfs = $mongo.database.fs
 

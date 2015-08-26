@@ -23,6 +23,9 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "rest-client"
   s.add_runtime_dependency 'nokogiri'
   s.add_runtime_dependency 'rserve-client'
+  #s.add_runtime_dependency 'celluloid'
+  s.add_runtime_dependency 'forkoff'
+  #s.add_runtime_dependency 'parallel'
   s.add_runtime_dependency "mongoid", '~> 5.0beta'  
 
 end
