@@ -118,7 +118,7 @@ module OpenTox
     def density_plot
       # TODO: create/store svg
       R.assign "acts", data_entries.collect{|r| r.first }#.compact
-      R.eval "plot(density(log(acts),na.rm= TRUE), main='log(#{features.first.name})')"
+      R.eval "plot(density(-log(acts),na.rm= TRUE), main='-log(#{features.first.name})')"
     end
 
     # Serialisation

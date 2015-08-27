@@ -105,9 +105,9 @@ module OpenTox
     field :mae, type: Float
     field :weighted_rmse, type: Float
     field :weighted_mae, type: Float
-    field :weighted_mae, type: Float
     field :r_squared, type: Float
     field :correlation_plot_id, type: BSON::ObjectId
+    field :confidence_plot_id, type: BSON::ObjectId
 
     def self.create model, n=10
       cv = self.new
@@ -147,7 +147,7 @@ module OpenTox
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
-          error = Math.log(prediction)-Math.log(activity)
+          error = Math.log10(prediction)-Math.log10(activity)
           rmse += error**2
           weighted_rmse += confidence*error**2
           mae += error.abs
@@ -224,9 +224,27 @@ module OpenTox
       end
     end
 
+    def confidence_plot
+      tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+      sorted_predictions = predictions.sort{|a,b| b[3]<=>a[3]}.collect{|p| [(Math.log10(p[1])-Math.log10(p[2]))**2,p[3]]}
+      R.assign "error", sorted_predictions.collect{|p| p[0]}
+      #R.assign "p", predictions.collect{|p| p[2]}
+      R.assign "confidence", predictions.collect{|p| p[2]}
+      #R.eval "diff = log(m)-log(p)"
+      R.eval "library(ggplot2)"
+      R.eval "svg(filename='#{tmpfile}')"
+      R.eval "image = qplot(confidence,error)"#,main='#{self.name}',asp=1,xlim=range, ylim=range)"
+      R.eval "ggsave(file='#{tmpfile}', plot=image)"
+        R.eval "dev.off()"
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+        plot_id = $gridfs.insert_one(file)
+        update(:confidence_plot_id => plot_id)
+      $gridfs.find_one(_id: confidence_plot_id).data
+    end
+
     def correlation_plot
       unless correlation_plot_id
-        tmpfile = "/tmp/#{id.to_s}.svg"
+        tmpfile = "/tmp/#{id.to_s}_correlation.svg"
         x = predictions.collect{|p| p[1]}
         y = predictions.collect{|p| p[2]}
         attributes = Model::Lazar.find(self.model_id).attributes

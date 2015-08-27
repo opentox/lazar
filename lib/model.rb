@@ -86,7 +86,7 @@ module OpenTox
             acts.empty? ? nil : n << acts
           end
           neighbors.compact! # remove neighbors without training activities
-          predictions << Algorithm.run(prediction_algorithm, compound, neighbors)
+          predictions << Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_size => training_dataset.data_entries.size})
         end 
 
         # serialize result
@@ -138,7 +138,6 @@ module OpenTox
     end
 
     class LazarFminerClassification < LazarClassification
-
       def self.create training_dataset
         model = super(training_dataset)
         model.update "_type" => self.to_s # adjust class
@@ -155,14 +154,12 @@ module OpenTox
     end
 
     class LazarRegression < Lazar
-
       def initialize
         super
         self.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fingerprint_similarity"
         self.prediction_algorithm = "OpenTox::Algorithm::Regression.weighted_average" 
         self.neighbor_algorithm_parameters = {:min_sim => 0.7}
       end
-
     end
 
     class Prediction
@@ -179,15 +176,38 @@ module OpenTox
       field :crossvalidation_id, type: BSON::ObjectId
 
       def predict object
-        Model::Lazar.find(model_id).predict object
+        Lazar.find(model_id).predict object
+      end
+
+      def training_dataset
+        model.training_dataset
+      end
+
+      def model
+        Lazar.find model_id
       end
 
       def crossvalidation
         CrossValidation.find crossvalidation_id
+      end
+
+      def self.from_csv_file file
+        p file
+        metadata_file = file.sub(/csv$/,"json")
+        p metadata_file 
+        bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
+        prediction_model = self.new JSON.parse(File.read(metadata_file))
+        training_dataset = Dataset.from_csv_file file
+        # TODO classification
+        model = LazarRegression.create training_dataset
+        cv = RegressionCrossValidation.create model
+        prediction_model[:model_id] = model.id
+        prediction_model[:crossvalidation_id] = cv.id
+        prediction_model.save
+        prediction_model
       end
     end
 
   end
 
 end
-

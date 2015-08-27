@@ -2,7 +2,6 @@ module OpenTox
 
   # Basic feature class
   class Feature
-    field :name, type: String
     field :nominal, type: Boolean
     field :numeric, type: Boolean
     field :measured, type: Boolean
@@ -85,14 +84,10 @@ module OpenTox
 
   # Feature for categorical bioassay results
   class NominalBioAssay < NominalFeature
-    # TODO: needed? move to dataset?
-    field :description, type: String
   end
 
   # Feature for quantitative bioassay results
   class NumericBioAssay < NumericFeature
-    # TODO: needed? move to dataset?
-    field :description, type: String
   end
 
 end

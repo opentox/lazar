@@ -133,7 +133,7 @@ module OpenTox
       if self.svg_id.nil?
        svg = obconversion(smiles,"smi","svg")
        file = Mongo::Grid::File.new(svg, :filename => "#{id}.svg", :content_type => "image/svg")
-       update(:image_id => $gridfs.insert_one(file))
+       update(:svg_id => $gridfs.insert_one(file))
       end
       $gridfs.find_one(_id: self.svg_id).data
 

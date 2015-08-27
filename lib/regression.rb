@@ -19,9 +19,10 @@ module OpenTox
     
     class Regression
 
-      def self.weighted_average compound, neighbors
+      def self.weighted_average compound, params
         weighted_sum = 0.0
         sim_sum = 0.0
+        neighbors = params[:neighbors]
         neighbors.each do |row|
           n,sim,acts = row
           acts.each do |act|
@@ -29,7 +30,7 @@ module OpenTox
             sim_sum += sim
           end
         end
-        confidence = sim_sum/neighbors.size.to_f
+        confidence = sim_sum*neighbors.size.to_f/params[:training_dataset_size]
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
         {:value => prediction,:confidence => confidence}
       end
