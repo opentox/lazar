@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.license     = 'GPL-3'
 
   s.rubyforge_project = "lazar"
-
+  s.required_ruby_version = '>= 2.2.0'
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.extensions    = %w[ext/lazar/extconf.rb]
