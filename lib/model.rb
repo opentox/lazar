@@ -192,15 +192,19 @@ module OpenTox
       end
 
       def self.from_csv_file file
-        p file
         metadata_file = file.sub(/csv$/,"json")
-        p metadata_file 
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
         prediction_model = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
-        # TODO classification
-        model = LazarRegression.create training_dataset
-        cv = RegressionCrossValidation.create model
+        model = nil
+        cv = nil
+        if training_dataset.features.first.nominal?
+          model = LazarFminerClassification.create training_dataset
+          cv = ClassificationCrossValidation.create model
+        elsif training_dataset.features.first.numeric?
+          model = LazarRegression.create training_dataset
+          cv = RegressionCrossValidation.create model
+        end
         prediction_model[:model_id] = model.id
         prediction_model[:crossvalidation_id] = cv.id
         prediction_model.save

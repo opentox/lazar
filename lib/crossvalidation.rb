@@ -16,6 +16,47 @@ module OpenTox
     def validations
       validation_ids.collect{|vid| Validation.find vid}
     end
+
+    def model
+      Model::Lazar.find model_id
+    end
+
+    def self.create model, n=10
+      cv = self.new(
+        name: model.name,
+        model_id: model.id,
+        folds: n
+      )
+      cv.save # set created_at
+      nr_instances = 0
+      nr_unpredicted = 0
+      predictions = []
+      validation_class = Object.const_get(self.to_s.sub(/Cross/,''))
+      training_dataset = Dataset.find model.training_dataset_id
+      training_dataset.folds(n).each_with_index do |fold,fold_nr|
+        fork do # parallel execution of validations
+          $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
+          t = Time.now
+          #p validation_class#.create(model, fold[0], fold[1],cv)
+          validation = validation_class.create(model, fold[0], fold[1],cv)
+          #p validation
+          $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
+        end
+      end
+      Process.waitall
+      cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
+      cv.validations.each do |validation|
+        nr_instances += validation.nr_instances
+        nr_unpredicted += validation.nr_unpredicted
+        predictions += validation.predictions
+      end
+      cv.update_attributes(
+        nr_instances: nr_instances,
+        nr_unpredicted: nr_unpredicted,
+        predictions: predictions
+      )
+      cv
+    end
   end
 
   class ClassificationCrossValidation < CrossValidation
@@ -30,36 +71,35 @@ module OpenTox
     # TODO auc, f-measure (usability??)
 
     def self.create model, n=10
-      cv = self.new
-      cv.save # set created_at
-      validation_ids = []
-      nr_instances = 0
-      nr_unpredicted = 0
-      predictions = []
-      validation_class = Object.const_get(self.to_s.sub(/Cross/,''))
+      cv = super model, n
       accept_values = Feature.find(model.prediction_feature_id).accept_values
       confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
       weighted_confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
       true_rate = {}
       predictivity = {}
-      fold_nr = 1
-      training_dataset = Dataset.find model.training_dataset_id
-      training_dataset.folds(n).each do |fold|
-        t = Time.now
-        $logger.debug "Fold #{fold_nr}"
-        validation = validation_class.create(model, fold[0], fold[1])
-        #validation_ids << validation.id
-        nr_instances += validation.nr_instances
-        nr_unpredicted += validation.nr_unpredicted
-        predictions += validation.predictions
-        validation.confusion_matrix.each_with_index do |r,i|
-          r.each_with_index do |c,j|
-            confusion_matrix[i][j] += c
-            weighted_confusion_matrix[i][j] += validation.weighted_confusion_matrix[i][j]
+      cv.predictions.each do |pred|
+        compound_id,activity,prediction,confidence = pred
+        if activity and prediction and confidence.numeric? 
+          if prediction == activity
+            if prediction == accept_values[0]
+              confusion_matrix[0][0] += 1
+              weighted_confusion_matrix[0][0] += confidence
+            elsif prediction == accept_values[1]
+              confusion_matrix[1][1] += 1
+              weighted_confusion_matrix[1][1] += confidence
+            end
+          elsif prediction != activity
+            if prediction == accept_values[0]
+              confusion_matrix[0][1] += 1
+              weighted_confusion_matrix[0][1] += confidence
+            elsif prediction == accept_values[1]
+              confusion_matrix[1][0] += 1
+              weighted_confusion_matrix[1][0] += confidence
+            end
           end
+        else
+          nr_unpredicted += 1 if prediction.nil?
         end
-        $logger.debug "Fold #{fold_nr}:  #{Time.now-t} seconds"
-        fold_nr +=1
       end
       true_rate = {}
       predictivity = {}
@@ -74,20 +114,13 @@ module OpenTox
         end
       end
       cv.update_attributes(
-        name: model.name,
-        model_id: model.id,
-        folds: n,
-        #validation_ids: validation_ids,
-        nr_instances: nr_instances,
-        nr_unpredicted: nr_unpredicted,
         accept_values: accept_values,
         confusion_matrix: confusion_matrix,
         weighted_confusion_matrix: weighted_confusion_matrix,
-        accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
+        accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(cv.nr_instances-cv.nr_unpredicted).to_f,
         weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
         true_rate: true_rate,
         predictivity: predictivity,
-        predictions: predictions.sort{|a,b| b[3] <=> a[3]}, # sort according to confidence
         finished_at: Time.now
       )
       cv.save
@@ -110,30 +143,7 @@ module OpenTox
     field :confidence_plot_id, type: BSON::ObjectId
 
     def self.create model, n=10
-      cv = self.new
-      cv.save # set created_at
-      #validation_ids = []
-      nr_instances = 0
-      nr_unpredicted = 0
-      predictions = []
-      validation_class = Object.const_get(self.to_s.sub(/Cross/,''))
-      fold_nr = 1
-      training_dataset = Dataset.find model.training_dataset_id
-      training_dataset.folds(n).each_with_index do |fold,fold_nr|
-        fork do # parallel execution of validations
-          $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
-          t = Time.now
-          validation = validation_class.create(model, fold[0], fold[1],cv)
-          $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
-        end
-      end
-      Process.waitall
-      cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
-      cv.validations.each do |validation|
-        nr_instances += validation.nr_instances
-        nr_unpredicted += validation.nr_unpredicted
-        predictions += validation.predictions
-      end
+      cv = super model, n
       rmse = 0
       weighted_rmse = 0
       rse = 0
@@ -143,8 +153,7 @@ module OpenTox
       rae = 0
       weighted_rae = 0
       confidence_sum = 0
-      #nil_activities = []
-      predictions.each do |pred|
+      cv.predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
           error = Math.log10(prediction)-Math.log10(activity)
@@ -153,15 +162,11 @@ module OpenTox
           mae += error.abs
           weighted_mae += confidence*error.abs
           confidence_sum += confidence
-          cv.predictions << pred
         else
-          # TODO: create warnings
-          cv.warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{training_dataset.id}."
-          $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{training_dataset.id}."
-          #nil_activities << pred
+          cv.warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{cv.model.training_dataset_id}."
+          $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{cv.model.training_dataset_id}."
         end
       end
-      #predictions -= nil_activities
       x = cv.predictions.collect{|p| p[1]}
       y = cv.predictions.collect{|p| p[2]}
       R.assign "measurement", x
@@ -174,6 +179,7 @@ module OpenTox
       rmse = Math.sqrt(rmse/cv.predictions.size)
       weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
       # TODO check!!
+=begin
       cv.predictions.sort! do |a,b|
         relative_error_a = (a[1]-a[2]).abs/a[1].to_f
         relative_error_a = 1/relative_error_a if relative_error_a < 1
@@ -181,14 +187,8 @@ module OpenTox
         relative_error_b = 1/relative_error_b if relative_error_b < 1
         [relative_error_b,b[3]] <=> [relative_error_a,a[3]]
       end
+=end
       cv.update_attributes(
-        name: model.name,
-        model_id: model.id,
-        folds: n,
-        #validation_ids: validation_ids,
-        nr_instances: nr_instances,
-        nr_unpredicted: nr_unpredicted,
-        #predictions: predictions,#.sort{|a,b| [(b[1]-b[2]).abs/b[1].to_f,b[3]] <=> [(a[1]-a[2]).abs/a[1].to_f,a[3]]},
         mae: mae,
         rmse: rmse,
         weighted_mae: weighted_mae,
