@@ -34,7 +34,7 @@ module OpenTox
               if cv
                 $logger.debug "Creating #{cv} for #{model_algorithm}, dataset #{dataset.name}, with prediction_algorithm #{prediction_algorithm}, neighbor_algorithm #{neighbor_algorithm}, neighbor_algorithm_parameters #{neighbor_algorithm_parameter}."
                 crossvalidation = cv.create model
-                crossvalidation_ids << crossvalidation.id
+                self.crossvalidation_ids << crossvalidation.id
               else
                 $logger.warn "#{dataset.features.first} is neither nominal nor numeric."
               end
@@ -55,7 +55,7 @@ module OpenTox
 
   def report
     # TODO create ggplot2 report
-    crossvalidation_ids.each do |id|
+    self.crossvalidation_ids.each do |id|
       cv = CrossValidation.find(id)
       file = "/tmp/#{id}.svg"
       File.open(file,"w+"){|f| f.puts cv.correlation_plot}

@@ -122,4 +122,8 @@ module URI
     false
   end
 
+  def self.task? uri
+    uri =~ /task/ and URI.valid? uri
+  end
+
 end

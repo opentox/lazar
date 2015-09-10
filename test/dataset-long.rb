@@ -91,15 +91,13 @@ class DatasetLongTest < MiniTest::Test
     d = Dataset.from_csv_file f
     assert_equal 458, d.features.size
     d.save
-    p "Upload: #{Time.now-t}"
+    #p "Upload: #{Time.now-t}"
     d2 = Dataset.find d.id
     t = Time.now
     assert_equal d.features.size, d2.features.size
     csv = CSV.read f
-    csv.delete_at(248) # remove entry with InChi segfault
     csv.shift # remove header
-    refute_empty d2.warnings
-    assert_match /249/, d2.warnings.join
+    assert_empty d2.warnings
     assert_equal csv.size, d2.compounds.size 
     assert_equal csv.first.size-1, d2.features.size
     d2.compounds.each_with_index do |compound,i|
@@ -107,11 +105,9 @@ class DatasetLongTest < MiniTest::Test
       row.shift # remove compound
       assert_equal row, d2.data_entries[i]
     end
-    p "Dowload: #{Time.now-t}"
+    #p "Dowload: #{Time.now-t}"
     d2.delete
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      Dataset.find d.id
-    end
+    assert_nil Dataset.find d.id
   end
 
 end

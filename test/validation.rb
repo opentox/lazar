@@ -7,7 +7,7 @@ class ValidationTest < MiniTest::Test
     model = Model::LazarFminerClassification.create dataset
     cv = ClassificationCrossValidation.create model
     refute_empty cv.validation_ids
-    assert cv.accuracy > 0.8
+    assert cv.accuracy > 0.8, "Crossvalidation accuracy lower than 0.8"
     assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) larger than unweighted accuracy(#{cv.accuracy}) "
   end
 

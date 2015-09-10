@@ -151,7 +151,7 @@ module OpenTox
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
       if dataset
-        $logger.debug "#{file} already in database."
+        $logger.debug "Skipping #{file}, it is already in the database (id: #{dataset.id})."
       else
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true
@@ -269,36 +269,6 @@ module OpenTox
       $logger.debug "Saving: #{Time.now-time}"
 
     end
-
-=begin
-    # TODO remove
-
-    # Create a dataset with compounds and features
-    def self.create compounds, features, warnings=[], source=nil
-      dataset = Dataset.new(:warnings => warnings)
-      dataset.compounds = compounds
-      dataset.features = features
-      dataset
-    end
-    # merge dataset (i.e. append features)
-    def +(dataset)
-      bad_request_error "Dataset merge failed because the argument is not a OpenTox::Dataset but a #{dataset.class}" unless dataset.is_a? Dataset
-      bad_request_error "Dataset merge failed because compounds are unequal in datasets #{self.id} and #{dataset.id}" unless compound_ids == dataset.compound_ids
-      self.feature_ids ||= []
-      self.feature_ids = self.feature_ids + dataset.feature_ids
-      @data_entries ||= Array.new(compound_ids.size){[]}
-      @data_entries.each_with_index do |row,i|
-        @data_entries[i] = row + dataset.fingerprint(compounds[i])
-      end
-      self
-
-    end
-
-    def fingerprint(compound)
-      i = compound_ids.index(compound.id)
-      i.nil? ? nil : data_entries[i] 
-    end
-=end
 
     # Fill unset data entries 
     # @param any value

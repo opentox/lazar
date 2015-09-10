@@ -26,16 +26,13 @@ class FeatureTest < MiniTest::Test
 
     id = @feature2.id
     @feature2.delete
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      OpenTox::Feature.find(id)
-    end
+    assert_nil OpenTox::Feature.find(id)
   end
 
   def test_duplicated_features
     metadata = {
       :name => "feature duplication test",
       :nominal => true,
-      :description => "feature duplication test"
     }
     feature = NumericBioAssay.find_or_create_by metadata
     dup_feature = NumericBioAssay.find_or_create_by metadata
@@ -44,12 +41,8 @@ class FeatureTest < MiniTest::Test
     assert !feature.id.nil?, "No Feature ID in #{dup_feature.inspect}"
     assert_equal feature.id, dup_feature.id
     feature.delete
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      OpenTox::Feature.find(feature.id)
-    end
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      OpenTox::Feature.find(dup_feature.id)
-    end
+    assert_nil OpenTox::Feature.find(feature.id)
+    assert_nil OpenTox::Feature.find(dup_feature.id)
   end
 
   def test_smarts_feature

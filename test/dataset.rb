@@ -64,12 +64,8 @@ class DatasetTest < MiniTest::Test
     assert_equal 2, new_dataset.features.size
     assert_equal [[1,2],[4,5],[6,7]], new_dataset.data_entries
     d.delete
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      Dataset.find d.id
-    end
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      Dataset.find new_dataset.id
-    end
+    assert_nil Dataset.find d.id
+    assert_nil Dataset.find new_dataset.id
   end
 
   def test_dataset_accessors
@@ -78,7 +74,7 @@ class DatasetTest < MiniTest::Test
     new_dataset = Dataset.find d.id
     # get metadata
     assert_match "multicolumn.csv",  new_dataset.source
-    assert_equal "multicolumn.csv",  new_dataset.name
+    assert_equal "multicolumn",  new_dataset.name
     # get features
     assert_equal 6, new_dataset.features.size
     assert_equal 7, new_dataset.compounds.size

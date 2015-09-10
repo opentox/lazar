@@ -4,9 +4,7 @@ class ErrorTest < MiniTest::Test
 
   def test_bad_request
     object = OpenTox::Feature.new 
-    assert_raises Mongoid::Errors::DocumentNotFound do
-      response = OpenTox::Feature.find(object.id)
-    end
+    assert_nil OpenTox::Feature.find(object.id)
   end
 
   def test_error_methods

@@ -138,16 +138,19 @@ module OpenTox
     end
 
     class LazarFminerClassification < LazarClassification
-      def self.create training_dataset
+      field :feature_calculation_parameters, type: Hash
+
+      def self.create training_dataset, fminer_params={}
         model = super(training_dataset)
         model.update "_type" => self.to_s # adjust class
         model = self.find model.id # adjust class
         model.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fminer_similarity"
         model.neighbor_algorithm_parameters = {
           :feature_calculation_algorithm => "OpenTox::Algorithm::Descriptor.smarts_match",
-          :feature_dataset_id => Algorithm::Fminer.bbrc(training_dataset).id,
+          :feature_dataset_id => Algorithm::Fminer.bbrc(training_dataset,fminer_params).id,
           :min_sim => 0.3
         }
+        model.feature_calculation_parameters = fminer_params
         model.save
         model
       end

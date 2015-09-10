@@ -21,11 +21,10 @@ class ExperimentTest < MiniTest::Test
       :prediction_algorithms => prediction_algorithms,
     )
     experiment.run
-    experiment = Experiment.find "55dda70d2b72ed6ea9000188"
 =begin
-    p experiment.id
-=end
+    p experiment
     experiment.report
+=end
     refute_empty experiment.crossvalidation_ids
   end
 end

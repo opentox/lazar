@@ -218,11 +218,6 @@ module OpenTox
         obconversion.write_string(obmol).gsub(/\s/,'').chomp
       when /sdf/
 p "SDF conversion"
-        # has no effect
-	#obconversion.add_option("gen3D", OpenBabel::OBConversion::GENOPTIONS)
-        # segfaults with openbabel git master 
-        #OpenBabel::OBOp.find_type("Gen3D").do(obmol) 
-
         # TODO: find disconnected structures
         # strip_salts
         # separate
@@ -234,14 +229,13 @@ p "SDF conversion"
 print sdf
         if sdf.match(/.nan/)
           
-# TODO: fix or eliminate 2d generation
           $logger.warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
           obconversion.set_options("gen2D", OpenBabel::OBConversion::GENOPTIONS)
-          #OpenBabel::OBOp.find_type("Gen2D").do(obmol) 
           sdf = obconversion.write_string(obmol)
           if sdf.match(/.nan/)
-            $logger.warn "2D generation failed for compound #{identifier}"
-            sdf = nil
+            $logger.warn "2D generation failed for compound #{identifier}, rendering without coordinates."
+            obconversion.remove_option("gen2D", OpenBabel::OBConversion::GENOPTIONS)
+            sdf = obconversion.write_string(obmol)
           end
         end
         sdf
