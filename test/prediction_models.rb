@@ -15,6 +15,8 @@ class PredictionModelTest < MiniTest::Test
     [:endpoint,:species,:source].each do |p|
       refute_empty pm[p]
     end
+    assert pm.classification?
+    refute pm.regression?
     assert pm.crossvalidation.accuracy > 0.8
     prediction = pm.predict Compound.from_smiles("CCCC(NN)C")
     assert_equal "true", prediction[:value]
