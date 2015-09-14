@@ -194,6 +194,14 @@ module OpenTox
         CrossValidation.find crossvalidation_id
       end
 
+      def regression?
+        training_dataset.features.first.numeric?
+      end
+
+      def classification?
+        training_dataset.features.first.nominal?
+      end
+
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
