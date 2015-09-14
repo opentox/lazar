@@ -16,6 +16,10 @@ module OpenTox
       field :prediction_algorithm, type: String
       # prediction feature
       field :prediction_feature_id, type: BSON::ObjectId
+
+      def training_dataset
+        Dataset.find(training_dataset_id)
+      end
     end
 
     class Lazar < Model
@@ -24,7 +28,7 @@ module OpenTox
       field :neighbor_algorithm, type: String
       field :neighbor_algorithm_parameters, type: Hash
 
-      attr_accessor :prediction_dataset
+      #attr_accessor :prediction_dataset
       #attr_accessor :training_dataset
 
       # Create a lazar model from a training_dataset and a feature_dataset
@@ -113,10 +117,6 @@ module OpenTox
           prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence], p[:warning]]}
           prediction_dataset.save_all
           return prediction_dataset
-        end
-
-        def training_dataset
-          Dataset.find(training_dataset_id)
         end
 
       end
