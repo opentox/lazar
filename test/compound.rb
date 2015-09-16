@@ -97,4 +97,15 @@ print c.sdf
     c = Compound.from_inchi(inchi)
     assert_equal inchi, c.inchi
   end
+
+  def test_openbabel_fingerprint
+    [
+      "CC(=O)CC(C)C#N",
+      "CC(=O)CC(C)C",
+      "C(=O)CC(C)C#N",
+    ].each do |smi|
+      c = OpenTox::Compound.from_smiles smi
+      assert_equal c.openbabel_fingerprint("FP4").size, c.fp4.size
+    end
+  end
 end

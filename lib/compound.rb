@@ -42,6 +42,35 @@ module OpenTox
       compound
     end
 
+    def openbabel_fingerprint type="FP2"
+      fp = OpenBabel::OBFingerprint.find_fingerprint(type)
+      obmol = OpenBabel::OBMol.new
+      obconversion = OpenBabel::OBConversion.new
+      obconversion.set_in_format "smi"
+      obconversion.read_string obmol, smiles
+      result = OpenBabel::VectorUnsignedInt.new
+      fp.get_fingerprint(obmol,result)
+      # TODO: %ignore *::DescribeBits @ line 163 openbabel/scripts/openbabel-ruby.i
+      #p OpenBabel::OBFingerprint.describe_bits(result)
+      result = result.to_a
+      # convert result to a list of the bits that are set
+      # from openbabel/scripts/python/pybel.py line 830
+      # see also http://openbabel.org/docs/dev/UseTheLibrary/Python_Pybel.html#fingerprints
+      bitsperint = OpenBabel::OBFingerprint.getbitsperint()
+      bits_set = []
+      start = 1
+      result.each do |x|
+        i = start
+        while x > 0 do
+          bits_set << i if (x % 2) == 1
+          x >>= 1
+          i += 1
+        end
+        start += bitsperint
+      end
+      bits_set
+    end
+
     # Create a compound from smiles string
     # @example
     #   compound = OpenTox::Compound.from_smiles("c1ccccc1")
@@ -202,8 +231,6 @@ module OpenTox
       $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
-=begin
-=end
 
     private
 
