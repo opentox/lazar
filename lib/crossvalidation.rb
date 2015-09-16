@@ -22,7 +22,9 @@ module OpenTox
     end
 
     def self.create model, n=10
-      cv = self.new(
+      model.training_dataset.features.first.nominal? ? klass = ClassificationCrossValidation : klass = RegressionCrossValidation
+      bad_request_error "#{dataset.features.first} is neither nominal nor numeric." unless klass
+      cv = klass.new(
         name: model.name,
         model_id: model.id,
         folds: n
@@ -55,6 +57,7 @@ module OpenTox
         nr_unpredicted: nr_unpredicted,
         predictions: predictions
       )
+      cv.statistics
       cv
     end
   end
@@ -70,14 +73,13 @@ module OpenTox
     field :predictivity, type: Hash
     # TODO auc, f-measure (usability??)
 
-    def self.create model, n=10
-      cv = super model, n
+    def statistics
       accept_values = Feature.find(model.prediction_feature_id).accept_values
       confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
       weighted_confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
       true_rate = {}
       predictivity = {}
-      cv.predictions.each do |pred|
+      predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction and confidence.numeric? 
           if prediction == activity
@@ -113,18 +115,16 @@ module OpenTox
           confidence_sum += c
         end
       end
-      cv.update_attributes(
+      update_attributes(
         accept_values: accept_values,
         confusion_matrix: confusion_matrix,
         weighted_confusion_matrix: weighted_confusion_matrix,
-        accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(cv.nr_instances-cv.nr_unpredicted).to_f,
+        accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
         weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
         true_rate: true_rate,
         predictivity: predictivity,
         finished_at: Time.now
       )
-      cv.save
-      cv
     end
 
     #Average area under roc  0.646
@@ -142,8 +142,7 @@ module OpenTox
     field :correlation_plot_id, type: BSON::ObjectId
     field :confidence_plot_id, type: BSON::ObjectId
 
-    def self.create model, n=10
-      cv = super model, n
+    def statistics
       rmse = 0
       weighted_rmse = 0
       rse = 0
@@ -153,7 +152,7 @@ module OpenTox
       rae = 0
       weighted_rae = 0
       confidence_sum = 0
-      cv.predictions.each do |pred|
+      predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
           error = Math.log10(prediction)-Math.log10(activity)
@@ -163,24 +162,24 @@ module OpenTox
           weighted_mae += confidence*error.abs
           confidence_sum += confidence
         else
-          cv.warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{cv.model.training_dataset_id}."
-          $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{cv.model.training_dataset_id}."
+          warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
+          $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
         end
       end
-      x = cv.predictions.collect{|p| p[1]}
-      y = cv.predictions.collect{|p| p[2]}
+      x = predictions.collect{|p| p[1]}
+      y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
       R.eval "r <- cor(-log(measurement),-log(prediction))"
       r = R.eval("r").to_ruby
 
-      mae = mae/cv.predictions.size
+      mae = mae/predictions.size
       weighted_mae = weighted_mae/confidence_sum
-      rmse = Math.sqrt(rmse/cv.predictions.size)
+      rmse = Math.sqrt(rmse/predictions.size)
       weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
       # TODO check!!
 =begin
-      cv.predictions.sort! do |a,b|
+      predictions.sort! do |a,b|
         relative_error_a = (a[1]-a[2]).abs/a[1].to_f
         relative_error_a = 1/relative_error_a if relative_error_a < 1
         relative_error_b = (b[1]-b[2]).abs/b[1].to_f
@@ -188,15 +187,14 @@ module OpenTox
         [relative_error_b,b[3]] <=> [relative_error_a,a[3]]
       end
 =end
-      cv.update_attributes(
+      update_attributes(
         mae: mae,
         rmse: rmse,
         weighted_mae: weighted_mae,
         weighted_rmse: weighted_rmse,
-        r_squared: r**2
+        r_squared: r**2,
+        finished_at: Time.now
       )
-      cv.save
-      cv
     end
 
     def misclassifications n=nil
@@ -274,6 +272,21 @@ module OpenTox
       end
       p correlation_plot_id
       $gridfs.find_one(_id: correlation_plot_id).data
+    end
+  end
+
+  class RepeatedCrossValidation
+    field :crossvalidation_ids, type: Array, default: []
+    def self.create model, folds=10, repeats=3
+      repeated_cross_validation = self.new
+      repeats.times do
+        repeated_cross_validation.crossvalidation_ids << CrossValidation.create(model, folds).id
+      end
+      repeated_cross_validation.save
+      repeated_cross_validation
+    end
+    def crossvalidations
+      crossvalidation_ids.collect{|id| CrossValidation.find(id)}
     end
   end
 

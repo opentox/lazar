@@ -28,9 +28,6 @@ module OpenTox
       field :neighbor_algorithm, type: String
       field :neighbor_algorithm_parameters, type: Hash
 
-      #attr_accessor :prediction_dataset
-      #attr_accessor :training_dataset
-
       # Create a lazar model from a training_dataset and a feature_dataset
       # @param [OpenTox::Dataset] training_dataset
       # @return [OpenTox::Model::Lazar] Regression or classification model

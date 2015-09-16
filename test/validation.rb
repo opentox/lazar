@@ -33,4 +33,16 @@ class ValidationTest < MiniTest::Test
     #assert cv.weighted_mae < cv.mae
   end
 
+  def test_repeated_crossvalidation
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    model = Model::LazarClassification.create dataset
+    repeated_cv = RepeatedCrossValidation.create model
+    p repeated_cv
+    repeated_cv.crossvalidations.each do |cv|
+      p cv
+      p cv.accuracy
+      assert cv.accuracy > 0.7
+    end
+  end
+
 end

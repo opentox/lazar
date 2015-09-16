@@ -4,27 +4,61 @@ class ExperimentTest < MiniTest::Test
 
   def test_regression_experiment
     datasets = [
-      "EPAFHM.csv",
-      "FDA_v3b_Maximum_Recommended_Daily_Dose_mmol.csv",
+      "EPAFHM.medi.csv",
+      #"EPAFHM.csv",
+      #"FDA_v3b_Maximum_Recommended_Daily_Dose_mmol.csv",
       "LOAEL_mmol_corrected_smiles.csv"
-      ]
-    model_algorithms = ["OpenTox::Model::LazarRegression"]
-    neighbor_algorithms = ["OpenTox::Algorithm::Neighbor.fingerprint_similarity"]
-    prediction_algorithms = ["OpenTox::Algorithm::Regression.weighted_average"]
-    neighbor_algorithm_parameters = [{:min_sim => 0.7}]
+    ]
     experiment = Experiment.create(
-      :name => "Regression for datasets #{datasets}.",
+      :name => "Default regression for datasets #{datasets}.",
       :dataset_ids => datasets.collect{|d| Dataset.from_csv_file(File.join(DATA_DIR, d)).id},
-      :model_algorithms => model_algorithms,
-      :neighbor_algorithms => neighbor_algorithms,
-      :neighbor_algorithm_parameters => neighbor_algorithm_parameters,
-      :prediction_algorithms => prediction_algorithms,
+      :model_settings => [
+        {
+          :algorithm => "OpenTox::Model::LazarRegression",
+        }
+      ]
+    )
+    experiment.run
+    puts experiment.report.to_yaml
+    assert_equal datasets.size, experiment.results.size
+    experiment.results.each do |dataset_id, result|
+      assert_equal 1, result.size
+      result.each do |r|
+        assert_kind_of BSON::ObjectId, r[:model_id]
+        assert_kind_of BSON::ObjectId, r[:repeated_crossvalidation_id]
+      end
+    end
+  end
+
+  def test_classification_experiment
+
+    datasets = [ "hamster_carcinogenicity.csv" ]
+    experiment = Experiment.create(
+      :name => "Fminer vs fingerprint classification for datasets #{datasets}.",
+      :dataset_ids => datasets.collect{|d| Dataset.from_csv_file(File.join(DATA_DIR, d)).id},
+      :model_settings => [
+        {
+          :algorithm => "OpenTox::Model::LazarClassification",
+        },{
+          :algorithm => "OpenTox::Model::LazarClassification",
+          :neighbor_algorithm_parameter => {:min_sim => 0.3}
+        },
+        #{
+          #:algorithm => "OpenTox::Model::LazarFminerClassification",
+        #}
+      ]
     )
     experiment.run
 =begin
-    p experiment
-    experiment.report
+    experiment = Experiment.find "55f944a22b72ed7de2000000"
 =end
-    refute_empty experiment.crossvalidation_ids
+    puts experiment.report.to_yaml
+    experiment.results.each do |dataset_id, result|
+      assert_equal 2, result.size
+      result.each do |r|
+        assert_kind_of BSON::ObjectId, r[:model_id]
+        assert_kind_of BSON::ObjectId, r[:repeated_crossvalidation_id]
+      end
+    end
   end
 end

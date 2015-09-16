@@ -58,7 +58,7 @@ module OpenTox
     OpenTox.const_set error[:class],c
     
     # define global methods for raising errors, eg. bad_request_error
-    Object.send(:define_method, error[:method]) do |message,uri=nil,cause=nil|
+    Object.send(:define_method, error[:method]) do |message|
       raise c.new(message)
     end
   end
