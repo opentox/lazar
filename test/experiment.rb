@@ -18,7 +18,7 @@ class ExperimentTest < MiniTest::Test
         }
       ]
     )
-    experiment.run
+    #experiment.run
     puts experiment.report.to_yaml
     assert_equal datasets.size, experiment.results.size
     experiment.results.each do |dataset_id, result|
@@ -48,7 +48,7 @@ class ExperimentTest < MiniTest::Test
         #}
       ]
     )
-    experiment.run
+    #experiment.run
 =begin
     experiment = Experiment.find "55f944a22b72ed7de2000000"
 =end
@@ -60,5 +60,32 @@ class ExperimentTest < MiniTest::Test
         assert_kind_of BSON::ObjectId, r[:repeated_crossvalidation_id]
       end
     end
+  end
+
+  def test_regression_fingerprints
+    datasets = [
+      "LOAEL_mmol_corrected_smiles.csv"
+    ]
+    min_sims = [0.3,0.7]
+    types = ["FP2","FP3","FP4","MACCS"]
+    experiment = Experiment.create(
+      :name => "Fminer vs fingerprint classification for datasets #{datasets}.",
+      :dataset_ids => datasets.collect{|d| Dataset.from_csv_file(File.join(DATA_DIR, d)).id},
+    )
+    types.each do |type|
+      min_sims.each do |min_sim|
+        experiment.model_settings << {
+          :algorithm => "OpenTox::Model::LazarRegression",
+          :neighbor_algorithm => "fingerprint_neighbors",
+          :neighbor_algorithm_parameter => {
+            :type => type,
+            :min_sim => min_sim,
+          }
+        }
+      end
+    end
+    experiment.run
+    p experiment.report
+
   end
 end

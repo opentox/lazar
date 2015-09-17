@@ -59,7 +59,7 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Repeat
   "bbrc.rb",
   "model.rb",
   "similarity.rb",
-  "neighbor.rb",
+  #"neighbor.rb",
   "classification.rb",
   "regression.rb",
   "validation.rb",

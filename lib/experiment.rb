@@ -2,7 +2,7 @@ module OpenTox
 
   class Experiment
     field :dataset_ids, type: Array
-    field :model_settings, type: Array
+    field :model_settings, type: Array, default: []
     field :results, type: Hash, default: {}
   end
 
@@ -26,7 +26,7 @@ module OpenTox
   def self.create params
     experiment = self.new
     $logge.debug "Experiment started ..."
-    experiment.run params
+    #experiment.run params
     experiment
   end
 

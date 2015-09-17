@@ -108,4 +108,30 @@ print c.sdf
       assert_equal c.openbabel_fingerprint("FP4").size, c.fp4.size
     end
   end
+
+  def test_fingerprint_neighbors
+    types = ["FP2", "FP3", "FP4", "MACCS"]
+    min_sim = 0.7
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    [
+      "CC(=O)CC(C)C#N",
+      "CC(=O)CC(C)C",
+      "C(=O)CC(C)C#N",
+    ].each do |smi|
+      c = OpenTox::Compound.from_smiles smi
+      p c.smiles
+      types.each do |type|
+        p type
+        neighbors = c.fingerprint_neighbors({:type => type, :training_dataset_id => training_dataset.id, :min_sim => min_sim})
+        p neighbors.collect{|n| [Compound.find(n.first).smiles,n.last]}
+        if type == "FP4"
+          fp4_neighbors = c.neighbors
+          neighbors.each do |n|
+            p [Compound.find(n.first).smiles,n.last] unless fp4_neighbors.include?(n)
+            assert_includes fp4_neighbors, n
+          end
+        end
+      end
+    end
+  end
 end

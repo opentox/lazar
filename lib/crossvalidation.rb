@@ -279,7 +279,8 @@ module OpenTox
     field :crossvalidation_ids, type: Array, default: []
     def self.create model, folds=10, repeats=3
       repeated_cross_validation = self.new
-      repeats.times do
+      repeats.times do |n|
+        $logger.debug "Crossvalidation #{n+1} for #{model.name}"
         repeated_cross_validation.crossvalidation_ids << CrossValidation.create(model, folds).id
       end
       repeated_cross_validation.save
