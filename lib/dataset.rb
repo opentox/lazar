@@ -203,7 +203,7 @@ module OpenTox
             feature = NominalFeature.find_or_create_by(metadata)
           end
         end
-        feature_ids << feature.id
+        feature_ids << feature.id if feature
       end
       
       $logger.debug "Feature values: #{Time.now-time}"
@@ -245,7 +245,7 @@ module OpenTox
         end
 
         compound_ids << compound.id
-        @data_entries << Array.new(table.first.size-1)
+        @data_entries << Array.new(table.first.size-1) if (table.first.size-1) > 0
         
         vals.each_with_index do |v,j|
           if v.blank?
