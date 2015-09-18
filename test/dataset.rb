@@ -11,7 +11,7 @@ class DatasetTest < MiniTest::Test
     assert_equal Dataset, datasets.first.class
     d1.delete
   end
-=begin
+
   #TODO
   def test_create_without_features_csv
     d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction.csv")
@@ -22,7 +22,7 @@ class DatasetTest < MiniTest::Test
     assert_equal 24, d.compounds.size.to_i
     d.delete
   end
-=end
+
   def test_create_empty
     d = Dataset.new
     assert_equal Dataset, d.class

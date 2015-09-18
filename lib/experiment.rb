@@ -32,16 +32,26 @@ module OpenTox
 
   def report
     # TODO significances
+    # statistical significances http://www.r-bloggers.com/anova-and-tukeys-test-on-r/
     report = {}
     report[:name] = name
     report[:experiment_id] = self.id.to_s
+    report[:results] = {}
+    parameters = []
     dataset_ids.each do |dataset_id|
       dataset_name = Dataset.find(dataset_id).name
-      report[dataset_name] = []
+      report[:results][dataset_name] = {}
+      report[:results][dataset_name][:anova] = {}
+      report[:results][dataset_name][:data] = []
       results[dataset_id.to_s].each do |result|
         model = Model::Lazar.find(result[:model_id])
         repeated_cv = RepeatedCrossValidation.find(result[:repeated_crossvalidation_id])
         crossvalidations = repeated_cv.crossvalidations
+        if crossvalidations.first.is_a? ClassificationCrossValidation
+          parameters = [:accuracy,:true_rate,:predictivity]
+        elsif crossvalidations.first.is_a? RegressionCrossValidation
+          parameters = [:rmse,:mae,:r_squared]
+        end
         summary = {}
         [:neighbor_algorithm, :neighbor_algorithm_parameters, :prediction_algorithm].each do |key|
           summary[key] = model[key]
@@ -49,19 +59,50 @@ module OpenTox
         summary[:nr_instances] = crossvalidations.first.nr_instances
         summary[:nr_unpredicted] = crossvalidations.collect{|cv| cv.nr_unpredicted}
         summary[:time] = crossvalidations.collect{|cv| cv.time}
-        if crossvalidations.first.is_a? ClassificationCrossValidation
-          summary[:accuracies] = crossvalidations.collect{|cv| cv.accuracy}
-        elsif crossvalidations.first.is_a? RegressionCrossValidation
-          summary[:r_squared] = crossvalidations.collect{|cv| cv.r_squared}
+        parameters.each do |param|
+          summary[param] = crossvalidations.collect{|cv| cv.send(param)}
         end
-        report[dataset_name] << summary
-        #p repeated_cv.crossvalidations.collect{|cv| cv.accuracy}
-        #file = "/tmp/#{id}.svg"
-        #File.open(file,"w+"){|f| f.puts cv.correlation_plot}
-        #`inkview '#{file}'`
+        report[:results][dataset_name][:data] << summary
+      end
+    end
+    report[:results].each do |dataset,results|
+      ([:time,:nr_unpredicted]+parameters).each do |param|
+        experiments = []
+        outcome = []
+        results[:data].each_with_index do |result,i|
+          result[param].each do |p|
+            experiments << i
+            outcome << p
+          end
+        end
+        R.assign "experiment_nr",experiments.collect{|i| "Experiment #{i}"}
+        R.eval "experiment_nr = factor(experiment_nr)"
+        R.assign "outcome",outcome
+        R.eval "data = data.frame(experiment_nr,outcome)"
+        # one-way ANOVA
+        R.eval "fit = aov(outcome ~ experiment_nr, data=data)"
+        # http://stackoverflow.com/questions/3366506/extract-p-value-from-aov
+        p_value = R.eval("summary(fit)[[1]][['Pr(>F)']][[1]]").to_ruby
+        # aequivalent
+        # sum = R.eval("summary(fit)")
+        #p_value = sum.to_ruby.first.last.first
+=begin
+        if p_value < 0.01
+          p_value = "#{p_value} ***"
+        elsif p_value < 0.05
+          p_value = "#{p_value} **"
+        elsif p_value < 0.1
+          p_value = "#{p_value} *"
+        end
+=end
+        report[:results][dataset][:anova][param] = p_value
       end
     end
     report
+  end
+
+  def summary
+    report[:results].collect{|dataset,data| {dataset => data[:anova].select{|param,p_val| p_val < 0.1}}}
   end
 
 end

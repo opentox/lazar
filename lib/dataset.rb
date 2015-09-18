@@ -245,7 +245,7 @@ module OpenTox
         end
 
         compound_ids << compound.id
-        @data_entries << Array.new(table.first.size-1) if (table.first.size-1) > 0
+        table.first.size == 0 ?  @data_entries << Array.new(0) : @data_entries << Array.new(table.first.size-1) 
         
         vals.each_with_index do |v,j|
           if v.blank?
