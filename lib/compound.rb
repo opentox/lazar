@@ -19,8 +19,11 @@ module OpenTox
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
+    field :fp2, type: Array
+    field :fp3, type: Array
     field :fp4, type: Array
     field :fp4_size, type: Integer
+    field :maccs, type: Array
 
     index({smiles: 1}, {unique: true})
 
@@ -40,6 +43,38 @@ module OpenTox
       end
       compound.save
       compound
+    end
+
+    def openbabel_fingerprint type="FP2"
+      unless self.send(type.downcase.to_sym) # stored fingerprint
+        fp = OpenBabel::OBFingerprint.find_fingerprint(type)
+        obmol = OpenBabel::OBMol.new
+        obconversion = OpenBabel::OBConversion.new
+        obconversion.set_in_format "smi"
+        obconversion.read_string obmol, smiles
+        result = OpenBabel::VectorUnsignedInt.new
+        fp.get_fingerprint(obmol,result)
+        # TODO: %ignore *::DescribeBits @ line 163 openbabel/scripts/openbabel-ruby.i
+        #p OpenBabel::OBFingerprint.describe_bits(result)
+        # convert result to a list of the bits that are set
+        # from openbabel/scripts/python/pybel.py line 830
+        # see also http://openbabel.org/docs/dev/UseTheLibrary/Python_Pybel.html#fingerprints
+        result = result.to_a
+        bitsperint = OpenBabel::OBFingerprint.getbitsperint()
+        bits_set = []
+        start = 1
+        result.each do |x|
+          i = start
+          while x > 0 do
+            bits_set << i if (x % 2) == 1
+            x >>= 1
+            i += 1
+          end
+          start += bitsperint
+        end
+        update type.downcase.to_sym, bits_set
+      end
+      self.send(type.downcase.to_sym) 
     end
 
     # Create a compound from smiles string
@@ -177,6 +212,36 @@ module OpenTox
       self["chemblid"]
     end
 
+    def fingerprint_neighbors params
+      bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
+      neighbors = []
+      query_fingerprint = self.openbabel_fingerprint params[:type]
+      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
+        unless self == compound
+          fingerprint = compound.openbabel_fingerprint params[:type]
+          sim = (query_fingerprint & fingerprint).size/(query_fingerprint | fingerprint).size.to_f
+          neighbors << [compound.id, sim] if sim >= params[:min_sim]
+        end
+      end
+      neighbors.sort{|a,b| b.last <=> a.last}
+    end
+
+    def fminer_neighbors params
+      bad_request_error "Incorrect parameters for Compound#fminer_neighbors. Please provide :feature_dataset_id, :min_sim." unless params[:feature_dataset_id] and params[:min_sim]
+      feature_dataset = Dataset.find params[:feature_dataset_id]
+      query_fingerprint = Algorithm::Descriptor.smarts_match(self, feature_dataset.features)
+      neighbors = []
+
+      # find neighbors
+      feature_dataset.data_entries.each_with_index do |fingerprint, i|
+        sim = Algorithm::Similarity.tanimoto fingerprint, query_fingerprint
+        if sim >= params[:min_sim]
+          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
+        end
+      end
+      neighbors
+    end
+
     def neighbors threshold=0.7
       # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
@@ -202,8 +267,6 @@ module OpenTox
       $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
-=begin
-=end
 
     private
 

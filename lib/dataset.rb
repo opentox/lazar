@@ -47,6 +47,7 @@ module OpenTox
           @data_entries = Marshal.load(data_entry_file.data)
           bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
+          # TODO: data_entries can be empty, poorly reproducible, mongo problem?
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
           #$logger.debug "Retrieving data: #{Time.now-t}"
         end
@@ -151,7 +152,7 @@ module OpenTox
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
       if dataset
-        $logger.debug "Skipping #{file}, it is already in the database (id: #{dataset.id})."
+        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
       else
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true
@@ -202,7 +203,7 @@ module OpenTox
             feature = NominalFeature.find_or_create_by(metadata)
           end
         end
-        feature_ids << feature.id
+        feature_ids << feature.id if feature
       end
       
       $logger.debug "Feature values: #{Time.now-time}"
@@ -244,7 +245,7 @@ module OpenTox
         end
 
         compound_ids << compound.id
-        @data_entries << Array.new(table.first.size-1)
+        @data_entries << Array.new(table.first.size-1) if (table.first.size-1) > 0
         
         vals.each_with_index do |v,j|
           if v.blank?

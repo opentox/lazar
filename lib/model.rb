@@ -28,9 +28,6 @@ module OpenTox
       field :neighbor_algorithm, type: String
       field :neighbor_algorithm_parameters, type: Hash
 
-      #attr_accessor :prediction_dataset
-      #attr_accessor :training_dataset
-
       # Create a lazar model from a training_dataset and a feature_dataset
       # @param [OpenTox::Dataset] training_dataset
       # @return [OpenTox::Model::Lazar] Regression or classification model
@@ -42,6 +39,7 @@ module OpenTox
         prediction_feature = training_dataset.features.first
         prediction_feature.nominal ?  lazar = OpenTox::Model::LazarClassification.new : lazar = OpenTox::Model::LazarRegression.new
         lazar.training_dataset_id = training_dataset.id
+        lazar.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
         lazar.prediction_feature_id = prediction_feature.id
         lazar.name = "#{training_dataset.name} #{prediction_feature.name}" 
 
@@ -81,7 +79,8 @@ module OpenTox
             predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
             next
           end
-          neighbors = Algorithm.run(neighbor_algorithm, compound, neighbor_algorithm_parameters)
+          neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
+          #neighbors = Algorithm.run(neighbor_algorithm, compound, neighbor_algorithm_parameters)
           # add activities
           # TODO: improve efficiency, takes 3 times longer than previous version
           neighbors.collect! do |n|
@@ -132,8 +131,12 @@ module OpenTox
       def initialize
         super
         self.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote"
-        self.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fingerprint_similarity"
-        self.neighbor_algorithm_parameters = {:min_sim => 0.7}
+        self.neighbor_algorithm = "fingerprint_neighbors"
+        self.neighbor_algorithm_parameters = {
+          :type => "FP4",
+          :training_dataset_id => training_dataset_id,
+          :min_sim => 0.7
+        }
       end
     end
 
@@ -144,7 +147,7 @@ module OpenTox
         model = super(training_dataset)
         model.update "_type" => self.to_s # adjust class
         model = self.find model.id # adjust class
-        model.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fminer_similarity"
+        model.neighbor_algorithm = "fminer_neighbors"
         model.neighbor_algorithm_parameters = {
           :feature_calculation_algorithm => "OpenTox::Algorithm::Descriptor.smarts_match",
           :feature_dataset_id => Algorithm::Fminer.bbrc(training_dataset,fminer_params).id,
@@ -157,11 +160,17 @@ module OpenTox
     end
 
     class LazarRegression < Lazar
+
       def initialize
         super
-        self.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fingerprint_similarity"
+        #self.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fingerprint_similarity"
+        self.neighbor_algorithm = "fingerprint_neighbors"
         self.prediction_algorithm = "OpenTox::Algorithm::Regression.weighted_average" 
-        self.neighbor_algorithm_parameters = {:min_sim => 0.7}
+        self.neighbor_algorithm_parameters = {
+          :type => "FP4",
+          :training_dataset_id => self.training_dataset_id,
+          :min_sim => 0.7
+        }
       end
     end
 

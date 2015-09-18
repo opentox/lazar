@@ -14,7 +14,6 @@ module OpenTox
       store_in collection: klass.downcase.pluralize
       field :name,  type: String
       field :warnings, type: Array, default: []
-
     end
     OpenTox.const_set klass,c
   end

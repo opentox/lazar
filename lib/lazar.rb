@@ -15,7 +15,8 @@ ENV["MONGOID_ENV"] ||= "development"
 # TODO remove config files, change default via ENV or directly in Mongoid class
 Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
 Mongoid.raise_not_found_error = false # return nil if no document is found
-$mongo = Mongoid.default_client
+$mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
+#$mongo = Mongoid.default_client
 $gridfs = $mongo.database.fs
 
 # R setup
@@ -42,7 +43,7 @@ ENV['FMINER_SILENT'] = 'true'
 ENV['FMINER_NR_HITS'] = 'true'
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -58,7 +59,7 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Experi
   "bbrc.rb",
   "model.rb",
   "similarity.rb",
-  "neighbor.rb",
+  #"neighbor.rb",
   "classification.rb",
   "regression.rb",
   "validation.rb",
