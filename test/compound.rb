@@ -134,4 +134,16 @@ print c.sdf
       end
     end
   end
+
+  def test_mna
+    c = OpenTox::Compound.from_smiles "N#[N+]C1=CC=CC=C1.F[B-](F)(F)F"
+    p c.mna 4
+  end
+
+  def test_mpd
+    c = OpenTox::Compound.from_smiles "N#[N+]C1=CC=CC=C1.F[B-](F)(F)F"
+    assert 13, c.mpd.size
+    assert 7, c.mpd.uniq.size
+    assert_equal c.mpd, c.openbabel_fingerprint("mpd")
+  end
 end

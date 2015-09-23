@@ -26,25 +26,26 @@ module OpenTox
 
       # algorithms
       field :neighbor_algorithm, type: String
-      field :neighbor_algorithm_parameters, type: Hash
+      field :neighbor_algorithm_parameters, type: Hash, default: {}
 
       # Create a lazar model from a training_dataset and a feature_dataset
       # @param [OpenTox::Dataset] training_dataset
       # @return [OpenTox::Model::Lazar] Regression or classification model
-      def self.create training_dataset
+      def initialize training_dataset, params={}
 
+        super params
         bad_request_error "More than one prediction feature found in training_dataset #{training_dataset.id}" unless training_dataset.features.size == 1
 
         # TODO document convention
         prediction_feature = training_dataset.features.first
-        prediction_feature.nominal ?  lazar = OpenTox::Model::LazarClassification.new : lazar = OpenTox::Model::LazarRegression.new
-        lazar.training_dataset_id = training_dataset.id
-        lazar.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
-        lazar.prediction_feature_id = prediction_feature.id
-        lazar.name = "#{training_dataset.name} #{prediction_feature.name}" 
-
-        lazar.save
-        lazar
+        # set defaults for empty parameters
+        self.prediction_feature_id ||= prediction_feature.id
+        self.training_dataset_id ||= training_dataset.id
+        self.name ||= "#{training_dataset.name} #{prediction_feature.name}" 
+        self.neighbor_algorithm_parameters ||= {}
+        self.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
+        save
+        self
       end
 
       def predict object
@@ -80,6 +81,7 @@ module OpenTox
             next
           end
           neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
+
           #neighbors = Algorithm.run(neighbor_algorithm, compound, neighbor_algorithm_parameters)
           # add activities
           # TODO: improve efficiency, takes 3 times longer than previous version
@@ -90,6 +92,17 @@ module OpenTox
           end
           neighbors.compact! # remove neighbors without training activities
           predictions << Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_size => training_dataset.data_entries.size})
+=begin
+# TODO scaled dataset for physchem
+          p neighbor_algorithm_parameters
+          p (neighbor_algorithm_parameters["feature_dataset_id"])
+          d = Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"])
+          p d
+          p d.class
+          if neighbor_algorithm_parameters["feature_dataset_id"] and Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"]).kind_of? ScaledDataset
+            p "SCALED"
+          end
+=end
         end 
 
         # serialize result
@@ -128,15 +141,40 @@ module OpenTox
     end
 
     class LazarClassification < Lazar
-      def initialize
-        super
-        self.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote"
-        self.neighbor_algorithm = "fingerprint_neighbors"
-        self.neighbor_algorithm_parameters = {
+      
+      def self.create training_dataset, params={}
+        model = self.new training_dataset, params
+        model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
+        model.neighbor_algorithm |= "fingerprint_neighbors"
+        model.neighbor_algorithm_parameters ||= {}
+        {
           :type => "FP4",
-          :training_dataset_id => training_dataset_id,
+          :training_dataset_id => training_dataset.id,
           :min_sim => 0.7
-        }
+        }.each do |key,value|
+          model.neighbor_algorithm_parameters[key] ||= value
+        end
+        model.save
+        model
+      end
+    end
+
+    class LazarRegression < Lazar
+
+      def self.create training_dataset, params={}
+        model = self.new training_dataset, params
+        #model.neighbor_algorithm ||= "fingerprint_neighbors"
+        #model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.weighted_average" 
+        #model.neighbor_algorithm_parameters ||= {}
+        #{
+          #:type => "FP4",
+          #:training_dataset_id => training_dataset.id,
+          #:min_sim => 0.7
+        #}.each do |key,value|
+          #model.neighbor_algorithm_parameters[key] ||= value
+        #end
+        model.save
+        model
       end
     end
 
@@ -159,26 +197,12 @@ module OpenTox
       end
     end
 
-    class LazarRegression < Lazar
-
-      def initialize
-        super
-        #self.neighbor_algorithm = "OpenTox::Algorithm::Neighbor.fingerprint_similarity"
-        self.neighbor_algorithm = "fingerprint_neighbors"
-        self.prediction_algorithm = "OpenTox::Algorithm::Regression.weighted_average" 
-        self.neighbor_algorithm_parameters = {
-          :type => "FP4",
-          :training_dataset_id => self.training_dataset_id,
-          :min_sim => 0.7
-        }
-      end
-    end
-
     class Prediction
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
 
+      # TODO cv -> repeated cv
       # TODO field Validations
       field :endpoint, type: String
       field :species, type: String

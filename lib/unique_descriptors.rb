@@ -12,7 +12,7 @@ UNIQUEDESCRIPTORS = [
   "Openbabel.HBA1", #Number of Hydrogen Bond Acceptors 1 (JoelLib)
   "Openbabel.HBA2", #Number of Hydrogen Bond Acceptors 2 (JoelLib)
   "Openbabel.HBD", #Number of Hydrogen Bond Donors (JoelLib)
-  "Openbabel.L5", #Lipinski Rule of Five
+  #"Openbabel.L5", #Lipinski Rule of Five# TODO Openbabel.L5 returns nil, investigate!!!
   "Openbabel.logP", #octanol/water partition coefficient
   "Openbabel.MP", #Melting point
   "Openbabel.MR", #molar refractivity
@@ -56,7 +56,7 @@ UNIQUEDESCRIPTORS = [
   "Cdk.LengthOverBreadth", #Calculates the ratio of length to breadth.
   "Cdk.LongestAliphaticChain", #Returns the number of atoms in the longest aliphatic chain
   "Cdk.MDE", #Evaluate molecular distance edge descriptors for C, N and O
-  "Cdk.MannholdLogP", #Descriptor that calculates the LogP based on a simple equation using the number of carbons and hetero atoms .
+  #"Cdk.MannholdLogP", #Descriptor that calculates the LogP based on a simple equation using the number of carbons and hetero atoms .
   "Cdk.MomentOfInertia", #Descriptor that calculates the principal moments of inertia and ratios of the principal moments. Als calculates the radius of gyration.
   "Cdk.PetitjeanNumber", #Descriptor that calculates the Petitjean Number of a molecule.
   "Cdk.PetitjeanShapeIndex", #The topological and geometric shape indices described Petitjean and Bath et al. respectively. Both measure the anisotropy in a molecule.

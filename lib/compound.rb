@@ -44,6 +44,21 @@ module OpenTox
       compound.save
       compound
     end
+    
+    #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
+    def mpd 
+      smarts = obconversion(smiles,"smi","mpd").strip.split("\t")
+      smarts.shift # remove Title
+      smarts
+
+    end
+
+    #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
+    def mna level=2
+      smarts = obconversion(smiles,"smi","mna","xL\"#{level}\"").split("\n")
+      smarts.shift # remove Title
+      smarts
+    end
 
     def openbabel_fingerprint type="FP2"
       unless self.send(type.downcase.to_sym) # stored fingerprint
@@ -72,7 +87,7 @@ module OpenTox
           end
           start += bitsperint
         end
-        update type.downcase.to_sym, bits_set
+        update_attribute type.downcase.to_sym, bits_set
       end
       self.send(type.downcase.to_sym) 
     end
@@ -242,6 +257,28 @@ module OpenTox
       neighbors
     end
 
+    def physchem_neighbors params
+      feature_dataset = Dataset.find params[:feature_dataset_id]
+      query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
+      neighbors = []
+      feature_dataset.data_entries.each_with_index do |fingerprint, i|
+        # TODO implement pearson and cosine similarity separatly
+        R.assign "x", query_fingerprint
+        R.assign "y", fingerprint
+        # pearson r
+        #sim = R.eval("cor(x,y,use='complete.obs',method='pearson')").to_ruby
+        #p "pearson"
+        #p sim
+        #p "cosine"
+        sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
+        #p sim
+        if sim >= params[:min_sim]
+          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
+        end
+      end
+      neighbors
+    end
+
     def neighbors threshold=0.7
       # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
@@ -308,7 +345,7 @@ print sdf
     end
 
     def obconversion(identifier,input_format,output_format,option=nil)
-      self.class.obconversion(identifier,input_format,output_format,option=nil)
+      self.class.obconversion(identifier,input_format,output_format,option)
     end
   end
 end

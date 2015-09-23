@@ -16,7 +16,7 @@ module OpenTox
       LOG4J_JAR = File.join(JAVA_DIR,"log4j.jar")
       JMOL_JAR = File.join(JAVA_DIR,"Jmol.jar")
 
-      obexclude = ["cansmi","cansmiNS","formula","InChI","InChIKey","s","smarts","title"]
+      obexclude = ["cansmi","cansmiNS","formula","InChI","InChIKey","s","smarts","title","L5"]
       OBDESCRIPTORS = Hash[OpenBabel::OBDescriptor.list_as_string("descriptors").split("\n").collect do |d|
         name,description = d.split(/\s+/,2)
         ["Openbabel."+name,description] unless obexclude.include? name
@@ -107,6 +107,7 @@ module OpenTox
           des[lib] << descriptor
         end
         des.each do |lib,descriptors|
+          p lib, descriptors
           send(lib, descriptors)
         end
         serialize

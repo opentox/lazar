@@ -46,6 +46,12 @@ module OpenTox
         else
           @data_entries = Marshal.load(data_entry_file.data)
           bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
+          unless @data_entries.first.size == feature_ids.size
+            # TODO: fix (unknown) source of empty data_entries
+            sleep 1
+            data_entry_file = $gridfs.find_one(_id: data_entries_id)
+            @data_entries = Marshal.load(data_entry_file.data)
+          end
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
           # TODO: data_entries can be empty, poorly reproducible, mongo problem?
           bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
@@ -281,6 +287,29 @@ module OpenTox
         end
       end
     end
+
+    def scale
+      scaled_data_entries = Array.new(data_entries.size){Array.new(data_entries.first.size)}
+      centers = []
+      scales = []
+      feature_ids.each_with_index do |feature_id,col| 
+        R.assign "x", data_entries.collect{|de| de[col]}
+        R.eval "scaled = scale(x,center=T,scale=T)"
+        centers[col] = R.eval("attr(scaled, 'scaled:center')").to_ruby
+        scales[col] = R.eval("attr(scaled, 'scaled:scale')").to_ruby
+        R.eval("scaled").to_ruby.each_with_index do |value,row|
+          scaled_data_entries[row][col] = value
+        end
+      end
+      scaled_dataset = ScaledDataset.new(attributes)
+      scaled_dataset["_id"] = BSON::ObjectId.new
+      scaled_dataset["_type"] = "OpenTox::ScaledDataset"
+      scaled_dataset.centers = centers
+      scaled_dataset.scales = scales
+      scaled_dataset.data_entries = scaled_data_entries
+      scaled_dataset.save_all
+      scaled_dataset
+    end
   end
 
   # Dataset for lazar predictions
@@ -297,6 +326,17 @@ module OpenTox
   # Dataset for descriptors (physchem)
   class DescriptorDataset < Dataset
     field :feature_calculation_algorithm, type: String
+
+  end
+
+  class ScaledDataset < DescriptorDataset
+
+    field :centers, type: Array, default: []
+    field :scales, type: Array, default: []
+
+    def original_value value, i
+      value * scales[i] + centers[i]
+    end
   end
 
   # Dataset for fminer descriptors

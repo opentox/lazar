@@ -33,15 +33,12 @@ module OpenTox
       nr_instances = 0
       nr_unpredicted = 0
       predictions = []
-      validation_class = Object.const_get(self.to_s.sub(/Cross/,''))
       training_dataset = Dataset.find model.training_dataset_id
       training_dataset.folds(n).each_with_index do |fold,fold_nr|
         fork do # parallel execution of validations
           $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
           t = Time.now
-          #p validation_class#.create(model, fold[0], fold[1],cv)
-          validation = validation_class.create(model, fold[0], fold[1],cv)
-          #p validation
+          validation = Validation.create(model, fold[0], fold[1],cv)
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
         end
       end
@@ -170,7 +167,7 @@ module OpenTox
       y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
-      R.eval "r <- cor(-log(measurement),-log(prediction))"
+      R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
       r = R.eval("r").to_ruby
 
       mae = mae/predictions.size

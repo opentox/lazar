@@ -13,6 +13,16 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal 1, prediction[:neighbors].size
   end
 
+  def test_mpd_fingerprints
+    training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
+    model = Model::LazarRegression.create training_dataset
+    model.neighbor_algorithm_parameters[:type] = "mpd"
+    compound = Compound.from_smiles "CCCSCCSCC"
+    prediction = model.predict compound
+    assert_equal 0.04, prediction[:value].round(2)
+    assert_equal 1, prediction[:neighbors].size
+  end
+
   def test_local_linear_regression
     skip
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"

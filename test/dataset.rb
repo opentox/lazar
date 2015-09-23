@@ -202,5 +202,15 @@ class DatasetTest < MiniTest::Test
     assert_equal 0.00323, d2.data_entries[5][0]
   end
 
+  def test_scaled_dataset
+    original_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini.csv")
+    scaled_dataset = original_dataset.scale
+    scaled_dataset.data_entries.each_with_index do |row,i|
+      row.each_with_index do |value,j|
+        assert_equal original_dataset.data_entries[i][j].round(4), scaled_dataset.original_value(value,j).round(4) if value # ignore nils
+      end
+    end
+  end
+
 end
 

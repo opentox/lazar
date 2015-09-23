@@ -2,6 +2,7 @@ module OpenTox
 
   class Validation
 
+    field :model_id, type: BSON::ObjectId
     field :prediction_dataset_id, type: BSON::ObjectId
     field :crossvalidation_id, type: BSON::ObjectId
     field :test_dataset_id, type: BSON::ObjectId
@@ -17,9 +18,17 @@ module OpenTox
       Dataset.find test_dataset_id
     end
 
+    def model
+      Model::Lazar.find model_id
+    end
+
     def self.create model, training_set, test_set, crossvalidation=nil
       
-      validation_model = model.class.create training_set#, features
+      atts = model.attributes.dup # do not modify attributes from original model
+      atts["_id"] = BSON::ObjectId.new
+      atts[:training_dataset_id] = training_set.id
+      validation_model = model.class.create training_set, atts
+      validation_model.save
       test_set_without_activities = Dataset.new(:compound_ids => test_set.compound_ids) # just to be sure that activities cannot be used
       prediction_dataset = validation_model.predict test_set_without_activities
       predictions = []
@@ -36,6 +45,7 @@ module OpenTox
         end
       end
       validation = self.new(
+        :model_id => validation_model.id,
         :prediction_dataset_id => prediction_dataset.id,
         :test_dataset_id => test_set.id,
         :nr_instances => test_set.compound_ids.size,
