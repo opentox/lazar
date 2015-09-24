@@ -87,6 +87,10 @@ class Array
     (sorted[(len - 1) / 2] + sorted[len / 2]) / 2.0
   end
 
+  def mean
+    self.inject{ |sum, el| sum + el }.to_f / self.size
+  end
+
 end
 
 module URI
