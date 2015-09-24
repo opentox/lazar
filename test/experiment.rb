@@ -63,7 +63,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_regression_fingerprints
-=begin
+#=begin
     datasets = [
       "EPAFHM.medi.csv",
       #"LOAEL_mmol_corrected_smiles.csv"
@@ -90,10 +90,10 @@ class ExperimentTest < MiniTest::Test
       end
     end
     experiment.run
-=end
-#=begin
-    experiment = Experiment.find '56029cb92b72ed673d000000'
 #=end
+=begin
+    experiment = Experiment.find '56029cb92b72ed673d000000'
+=end
     p experiment.id
     experiment.results.each do |dataset,result|
       result.each do |r|
@@ -138,5 +138,48 @@ class ExperimentTest < MiniTest::Test
     experiment = Experiment.find '55ffd0c02b72ed123c000000'
     p experiment
     puts experiment.report.to_yaml
+  end
+
+  def test_multiple_datasets
+    datasets = [
+      "EPAFHM.medi.csv",
+      "LOAEL_mmol_corrected_smiles.csv"
+    ]
+    min_sims = [0.3]
+    types = ["FP2"]
+    experiment = Experiment.create(
+      :name => "Fingerprint regression with mutiple datasets #{datasets}.",
+      :dataset_ids => datasets.collect{|d| Dataset.from_csv_file(File.join(DATA_DIR, d)).id},
+    )
+    types.each do |type|
+      min_sims.each do |min_sim|
+        experiment.model_settings << {
+          :model_algorithm => "OpenTox::Model::LazarRegression",
+          :prediction_algorithm => "OpenTox::Algorithm::Regression.weighted_average",
+          :neighbor_algorithm => "fingerprint_neighbors",
+          :neighbor_algorithm_parameters => {
+            :type => type,
+            :min_sim => min_sim,
+          }
+        }
+      end
+    end
+    experiment.run
+    p experiment.id
+    experiment.results.each do |dataset,result|
+      result.each do |r|
+        params = Model::Lazar.find(r["model_id"])[:neighbor_algorithm_parameters]
+        RepeatedCrossValidation.find(r["repeated_crossvalidation_id"]).crossvalidations.each do |cv|
+          cv.validation_ids.each do |vid|
+            model_params = Model::Lazar.find(Validation.find(vid).model_id)[:neighbor_algorithm_parameters]
+            assert_equal params[:type], model_params[:type]
+            assert_equal params[:min_sim], model_params[:min_sim]
+            refute_equal params[:training_dataset_id], model_params[:training_dataset_id]
+          end
+        end
+      end
+    end
+    puts experiment.report.to_yaml
+    p experiment.summary
   end
 end

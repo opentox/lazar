@@ -10,12 +10,10 @@ module OpenTox
         dataset = Dataset.find(dataset_id)
         results[dataset_id.to_s] = []
         model_settings.each do |setting|
-          model_algorithm = setting.delete :model_algorithm
+          setting = setting.dup
+          model_algorithm = setting.delete :model_algorithm #if setting[:model_algorithm]
           model = Object.const_get(model_algorithm).create dataset, setting
-          #model.prediction_algorithm = setting[:prediction_algorithm] if setting[:prediction_algorithm]
-          #model.neighbor_algorithm = setting[:neighbor_algorithm] if setting[:neighbor_algorithm]
-          #model.neighbor_algorithm_parameters = setting[:neighbor_algorithm_parameter] if setting[:neighbor_algorithm_parameter]
-          p model
+          $logger.debug model
           model.save
           repeated_crossvalidation = RepeatedCrossValidation.create model
           results[dataset_id.to_s] << {:model_id => model.id, :repeated_crossvalidation_id => repeated_crossvalidation.id}
