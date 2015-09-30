@@ -145,7 +145,7 @@ module OpenTox
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
         model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
-        model.neighbor_algorithm |= "fingerprint_neighbors"
+        model.neighbor_algorithm ||= "fingerprint_neighbors"
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "FP4",
