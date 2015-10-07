@@ -9,6 +9,11 @@ class Object
   def numeric?
     true if Float(self) rescue false
   end
+
+  # Returns dimension of nested arrays
+  def dimension
+    self.class == Array ? 1 + self[0].dimension : 0
+  end
 end
 
 class Numeric
