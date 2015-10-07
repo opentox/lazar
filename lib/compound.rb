@@ -9,6 +9,8 @@ module OpenTox
   class Compound
     include OpenTox
 
+    DEFAULT_FINGERPRINT = "MP2D"
+
     field :inchi, type: String
     field :smiles, type: String
     field :inchikey, type: String
@@ -19,77 +21,64 @@ module OpenTox
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
-    field :fp2, type: Array
-    field :fp3, type: Array
-    field :fp4, type: Array
-    field :fp4_size, type: Integer
-    field :maccs, type: Array
+    field :fingerprints, type: Hash, default: {}
+    field :default_fingerprint_size, type: Integer
 
     index({smiles: 1}, {unique: true})
 
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
       compound = self.find_or_initialize_by params
-      unless compound.fp4 and !compound.fp4.empty?
-        compound.fp4_size = 0
-        compound.fp4 = []
-        fingerprint = FingerprintSmarts.fingerprint
-        Algorithm::Descriptor.smarts_match(compound, fingerprint).each_with_index do |m,i|
-          if m > 0
-            compound.fp4 << fingerprint[i].id
-            compound.fp4_size += 1
-          end
-        end
-      end
+      compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT)
       compound.save
       compound
     end
-    
-    #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
-    def mpd 
-      smarts = obconversion(smiles,"smi","mpd").strip.split("\t")
-      smarts.shift # remove Title
-      smarts
 
-    end
-
-    #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
-    def mna level=2
-      smarts = obconversion(smiles,"smi","mna","xL\"#{level}\"").split("\n")
-      smarts.shift # remove Title
-      smarts
-    end
-
-    def openbabel_fingerprint type="FP2"
-      unless self.send(type.downcase.to_sym) # stored fingerprint
-        fp = OpenBabel::OBFingerprint.find_fingerprint(type)
-        obmol = OpenBabel::OBMol.new
-        obconversion = OpenBabel::OBConversion.new
-        obconversion.set_in_format "smi"
-        obconversion.read_string obmol, smiles
-        result = OpenBabel::VectorUnsignedInt.new
-        fp.get_fingerprint(obmol,result)
-        # TODO: %ignore *::DescribeBits @ line 163 openbabel/scripts/openbabel-ruby.i
-        #p OpenBabel::OBFingerprint.describe_bits(result)
-        # convert result to a list of the bits that are set
-        # from openbabel/scripts/python/pybel.py line 830
-        # see also http://openbabel.org/docs/dev/UseTheLibrary/Python_Pybel.html#fingerprints
-        result = result.to_a
-        bitsperint = OpenBabel::OBFingerprint.getbitsperint()
-        bits_set = []
-        start = 1
-        result.each do |x|
-          i = start
-          while x > 0 do
-            bits_set << i if (x % 2) == 1
-            x >>= 1
-            i += 1
+    def fingerprint type="MP2D"
+      unless fingerprints[type]
+        return [] unless self.smiles
+        #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
+        if type == "MP2D"
+          fp = obconversion(smiles,"smi","mpd").strip.split("\t")
+          name = fp.shift # remove Title
+          fingerprints[type] = fp
+        #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
+        elsif type== "MNA"
+          level = 2 # TODO: level as parameter, evaluate level 1, see paper
+          fp = obconversion(smiles,"smi","mna","xL\"#{level}\"").split("\n")
+          fp.shift # remove Title
+          fingerprints[type] = fp
+        else # standard fingerprints
+          fp = OpenBabel::OBFingerprint.find_fingerprint(type)
+          obmol = OpenBabel::OBMol.new
+          obconversion = OpenBabel::OBConversion.new
+          obconversion.set_in_format "smi"
+          obconversion.read_string obmol, self.smiles
+          result = OpenBabel::VectorUnsignedInt.new
+          fp.get_fingerprint(obmol,result)
+          # TODO: %ignore *::DescribeBits @ line 163 openbabel/scripts/openbabel-ruby.i
+          #p OpenBabel::OBFingerprint.describe_bits(result)
+          # convert result to a list of the bits that are set
+          # from openbabel/scripts/python/pybel.py line 830
+          # see also http://openbabel.org/docs/dev/UseTheLibrary/Python_Pybel.html#fingerprints
+          result = result.to_a
+          bitsperint = OpenBabel::OBFingerprint.getbitsperint()
+          bits_set = []
+          start = 1
+          result.each do |x|
+            i = start
+            while x > 0 do
+              bits_set << i if (x % 2) == 1
+              x >>= 1
+              i += 1
+            end
+            start += bitsperint
           end
-          start += bitsperint
+          fingerprints[type] = bits_set
         end
-        update_attribute type.downcase.to_sym, bits_set
+        save
       end
-      self.send(type.downcase.to_sym) 
+      fingerprints[type]
     end
 
     # Create a compound from smiles string
@@ -100,7 +89,8 @@ module OpenTox
     def self.from_smiles smiles
       smiles = obconversion(smiles,"smi","can")
       if smiles.empty?
-        Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
+        return nil
+        #Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
       else
         Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
       end
@@ -146,7 +136,7 @@ module OpenTox
 
         result = obconversion(smiles,"smi","inchi")
         #result = `echo "#{self.smiles}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -ismi - -oinchi`.chomp
-        update(:inchi => result.chomp) unless result.empty?
+        update(:inchi => result.chomp) if result and !result.empty?
       end
       self["inchi"]
     end
@@ -227,17 +217,44 @@ module OpenTox
       self["chemblid"]
     end
 
+    def fingerprint_count_neighbors params
+      # TODO fix
+      neighbors = []
+      query_fingerprint = self.fingerprint params[:type]
+      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
+        unless self == compound
+          candidate_fingerprint = compound.fingerprint params[:type]
+          features = (query_fingerprint + candidate_fingerprint).uniq
+          min_sum = 0
+          max_sum = 0
+          features.each do |f|
+            min,max = [query_fingerprint.count(f),candidate_fingerprint.count(f)].minmax
+            min_sum += min
+            max_sum += max
+          end
+          max_sum == 0 ? sim = 0 : sim = min_sum/max_sum.to_f
+          neighbors << [compound.id, sim] if sim and sim >= params[:min_sim]
+        end
+      end
+      neighbors.sort{|a,b| b.last <=> a.last}
+    end
+
     def fingerprint_neighbors params
       bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
       neighbors = []
-      query_fingerprint = self.openbabel_fingerprint params[:type]
-      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
-        unless self == compound
-          fingerprint = compound.openbabel_fingerprint params[:type]
-          sim = (query_fingerprint & fingerprint).size/(query_fingerprint | fingerprint).size.to_f
-          neighbors << [compound.id, sim] if sim >= params[:min_sim]
+      #if params[:type] == DEFAULT_FINGERPRINT
+        #neighbors = db_neighbors params
+        #p neighbors
+      #else
+        query_fingerprint = self.fingerprint params[:type]
+        training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
+          unless self == compound
+            candidate_fingerprint = compound.fingerprint params[:type]
+            sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
+            neighbors << [compound.id, sim] if sim >= params[:min_sim]
+          end
         end
-      end
+      #end
       neighbors.sort{|a,b| b.last <=> a.last}
     end
 
@@ -248,8 +265,8 @@ module OpenTox
       neighbors = []
 
       # find neighbors
-      feature_dataset.data_entries.each_with_index do |fingerprint, i|
-        sim = Algorithm::Similarity.tanimoto fingerprint, query_fingerprint
+      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
+        sim = Algorithm::Similarity.tanimoto candidate_fingerprint, query_fingerprint
         if sim >= params[:min_sim]
           neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
         end
@@ -261,10 +278,10 @@ module OpenTox
       feature_dataset = Dataset.find params[:feature_dataset_id]
       query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
       neighbors = []
-      feature_dataset.data_entries.each_with_index do |fingerprint, i|
+      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
         # TODO implement pearson and cosine similarity separatly
         R.assign "x", query_fingerprint
-        R.assign "y", fingerprint
+        R.assign "y", candidate_fingerprint
         # pearson r
         #sim = R.eval("cor(x,y,use='complete.obs',method='pearson')").to_ruby
         #p "pearson"
@@ -279,10 +296,12 @@ module OpenTox
       neighbors
     end
 
-    def neighbors threshold=0.7
+    def db_neighbors params
+      p "DB NEIGHBORS"
+      p params
       # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
-      qn = fp4.size
+      qn = fingerprint(params[:type]).size
       #qmin = qn * threshold
       #qmax = qn / threshold
       #not sure if it is worth the effort of keeping feature counts up to date (compound deletions, additions, ...)
@@ -292,12 +311,12 @@ module OpenTox
         {'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
         {'$project' => {
           'tanimoto' => {'$let' => {
-            'vars' => {'common' => {'$size' => {'$setIntersection' => ['$fp4', fp4]}}},
-            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [qn, '$fp4_size']}, '$$common']}]}
+            'vars' => {'common' => {'$size' => {'$setIntersection' => ["'$#{DEFAULT_FINGERPRINT}'", DEFAULT_FINGERPRINT]}}},
+            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [qn, '$default_fingerprint_size']}, '$$common']}]}
           }},
           '_id' => 1
         }},
-        {'$match' =>  {'tanimoto' => {'$gte' => threshold}}},
+        {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
         {'$sort' => {'tanimoto' => -1}}
       ]
       
@@ -312,12 +331,12 @@ module OpenTox
       obconversion.set_options(option, OpenBabel::OBConversion::OUTOPTIONS) if option
       obmol = OpenBabel::OBMol.new
       obconversion.set_in_and_out_formats input_format, output_format
+      return nil if identifier.nil?
       obconversion.read_string obmol, identifier
       case output_format
       when /smi|can|inchi/
         obconversion.write_string(obmol).gsub(/\s/,'').chomp
       when /sdf/
-p "SDF conversion"
         # TODO: find disconnected structures
         # strip_salts
         # separate

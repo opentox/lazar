@@ -5,17 +5,17 @@ class DescriptorTest < MiniTest::Test
   def test_list
     # check available descriptors
     @descriptors = OpenTox::Algorithm::Descriptor::DESCRIPTORS.keys
-    assert_equal 111,@descriptors.size,"wrong num physchem descriptors"
+    assert_equal 110,@descriptors.size,"wrong num physchem descriptors"
     @descriptor_values = OpenTox::Algorithm::Descriptor::DESCRIPTOR_VALUES
-    assert_equal 356,@descriptor_values.size,"wrong num physchem descriptors"
+    assert_equal 355,@descriptor_values.size,"wrong num physchem descriptors"
     sum = 0
     [ @descriptors, @descriptor_values ].each do |desc|
-      {"Openbabel"=>16,"Cdk"=>(desc==@descriptors ? 50 : 295),"Joelib"=>45}.each do |k,v|
+      {"Openbabel"=>15,"Cdk"=>(desc==@descriptors ? 50 : 295),"Joelib"=>45}.each do |k,v|
         assert_equal v,desc.select{|x| x=~/^#{k}\./}.size,"wrong num #{k} descriptors"
         sum += v
       end
     end
-    assert_equal (111+356),sum
+    assert_equal (465),sum
   end
 
   def test_smarts
@@ -59,9 +59,9 @@ class DescriptorTest < MiniTest::Test
   def test_compound_all
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = OpenTox::Algorithm::Descriptor.physchem c
-    assert_equal 332, result.size
+    assert_equal 330, result.size
     assert_equal 30.8723, result[2]
-    assert_equal 1.12518, result[328]
+    assert_equal 5, result[328]
   end
 
   def test_compound_descriptor_parameters

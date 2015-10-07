@@ -54,6 +54,7 @@ module OpenTox
         nr_unpredicted: nr_unpredicted,
         predictions: predictions
       )
+      $logger.debug "Nr unpredicted: #{nr_unpredicted}"
       cv.statistics
       cv
     end
@@ -122,6 +123,7 @@ module OpenTox
         predictivity: predictivity,
         finished_at: Time.now
       )
+      $logger.debug "Accuracy #{accuracy}"
     end
 
     #Average area under roc  0.646
@@ -192,6 +194,9 @@ module OpenTox
         r_squared: r**2,
         finished_at: Time.now
       )
+      $logger.debug "R^2 #{r**2}"
+      $logger.debug "RMSE #{rmse}"
+      $logger.debug "MAE #{mae}"
     end
 
     def misclassifications n=nil

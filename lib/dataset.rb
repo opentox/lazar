@@ -266,8 +266,8 @@ module OpenTox
       end
       compounds.duplicates.each do |compound|
         positions = []
-        compounds.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi == compound.inchi}
-        warnings << "Duplicate compound #{compound.inchi} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
+        compounds.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == compound.inchi}
+        warnings << "Duplicate compound #{compound.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
       end
       
       $logger.debug "Value parsing: #{Time.now-time} (Compound creation: #{compound_time})"

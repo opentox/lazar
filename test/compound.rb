@@ -77,17 +77,16 @@ print c.sdf
   def test_fingerprint
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
 
-    assert c.fp4.collect{|fid| Feature.find(fid).name}.include? ("1,3-Tautomerizable")
-    assert_equal c.fp4.size, c.fp4_size
+    assert_equal 9, c.fingerprint("FP4").size
   end
 
   def test_neighbors
     d = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
     d.compounds.each do |c|
-      refute_nil c.fp4
+      refute_nil c.fingerprint("MP2D")
     end
     c = d.compounds[371]
-    n = c.neighbors
+    n = c.fingerprint_neighbors({:type => "FP4", :min_sim => 0.7, :training_dataset_id => d.id })
     assert n.size >= 18, "Neighbors size (#{n.size}) should be larger than 17"
   end
 
@@ -105,7 +104,7 @@ print c.sdf
       "C(=O)CC(C)C#N",
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
-      assert_equal c.openbabel_fingerprint("FP4").size, c.fp4.size
+      refute_nil c.fingerprint("FP4")
     end
   end
 
@@ -119,17 +118,10 @@ print c.sdf
       "C(=O)CC(C)C#N",
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
-      p c.smiles
       types.each do |type|
-        p type
         neighbors = c.fingerprint_neighbors({:type => type, :training_dataset_id => training_dataset.id, :min_sim => min_sim})
-        p neighbors.collect{|n| [Compound.find(n.first).smiles,n.last]}
-        if type == "FP4"
-          fp4_neighbors = c.neighbors
-          neighbors.each do |n|
-            p [Compound.find(n.first).smiles,n.last] unless fp4_neighbors.include?(n)
-            assert_includes fp4_neighbors, n
-          end
+        unless type == "FP2" and smi == "CC(=O)CC(C)C#N" or smi == "C(=O)CC(C)C#N" and (type == "FP2" or type == "MACCS")
+          refute_empty neighbors
         end
       end
     end
@@ -137,13 +129,35 @@ print c.sdf
 
   def test_mna
     c = OpenTox::Compound.from_smiles "N#[N+]C1=CC=CC=C1.F[B-](F)(F)F"
-    p c.mna 4
+    assert_equal 18, c.fingerprint("MNA").size
+    assert_equal 9, c.fingerprint("MNA").uniq.size
   end
 
   def test_mpd
     c = OpenTox::Compound.from_smiles "N#[N+]C1=CC=CC=C1.F[B-](F)(F)F"
-    assert 13, c.mpd.size
-    assert 7, c.mpd.uniq.size
-    assert_equal c.mpd, c.openbabel_fingerprint("mpd")
+    assert 13, c.fingerprint("MP2D").size
+    assert 7, c.fingerprint("MP2D").uniq.size
+  end
+
+  def test_fingerprint_count_neighbors
+    types = ["MP2D", "MNA"]
+    min_sim = 0.0
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    [
+      "CC(=O)CC(C)C#N",
+      "CC(=O)CC(C)C",
+      "C(=O)CC(C)C#N",
+    ].each do |smi|
+      c = OpenTox::Compound.from_smiles smi
+      types.each do |type|
+        neighbors = c.fingerprint_count_neighbors({:type => type, :training_dataset_id => training_dataset.id, :min_sim => min_sim})
+        if type == "FP4"
+          fp4_neighbors = c.neighbors
+          neighbors.each do |n|
+            assert_includes fp4_neighbors, n
+          end
+        end
+      end
+    end
   end
 end

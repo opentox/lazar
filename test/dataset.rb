@@ -168,6 +168,7 @@ class DatasetTest < MiniTest::Test
   def test_from_csv2
     File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
     dataset = Dataset.from_csv_file "#{DATA_DIR}/temp_test.csv"
+    p dataset.warnings
     assert_equal "Cannot parse SMILES compound ' ' at position 3, all entries are ignored.",  dataset.warnings.join
     File.delete "#{DATA_DIR}/temp_test.csv"
     dataset.features.each{|f| feature = Feature.find f.id; feature.delete}

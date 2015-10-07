@@ -34,6 +34,7 @@ module OpenTox
         report[:results][dataset_name] = {}
         report[:results][dataset_name][:anova] = {}
         report[:results][dataset_name][:data] = []
+        # TODO results[dataset_id.to_s] does not exist
         results[dataset_id.to_s].each do |result|
           model = Model::Lazar.find(result[:model_id])
           repeated_cv = RepeatedCrossValidation.find(result[:repeated_crossvalidation_id])
@@ -67,6 +68,7 @@ module OpenTox
               outcome << p
             end
           end
+          begin
           R.assign "experiment_nr",experiments.collect{|i| "Experiment #{i}"}
           R.eval "experiment_nr = factor(experiment_nr)"
           R.assign "outcome", outcome
@@ -78,6 +80,9 @@ module OpenTox
           # aequivalent
           # sum = R.eval("summary(fit)")
           #p_value = sum.to_ruby.first.last.first
+          rescue 
+            p_value = nil
+          end
           report[:results][dataset][:anova][param] = p_value
 =begin
 =end

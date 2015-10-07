@@ -82,7 +82,6 @@ module OpenTox
           end
           neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
 
-          #neighbors = Algorithm.run(neighbor_algorithm, compound, neighbor_algorithm_parameters)
           # add activities
           # TODO: improve efficiency, takes 3 times longer than previous version
           neighbors.collect! do |n|
@@ -145,12 +144,12 @@ module OpenTox
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
         model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
-        model.neighbor_algorithm |= "fingerprint_neighbors"
+        model.neighbor_algorithm ||= "fingerprint_neighbors"
         model.neighbor_algorithm_parameters ||= {}
         {
-          :type => "FP4",
+          :type => "MP2D",
           :training_dataset_id => training_dataset.id,
-          :min_sim => 0.7
+          :min_sim => 0.1
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end
@@ -163,16 +162,19 @@ module OpenTox
 
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
-        #model.neighbor_algorithm ||= "fingerprint_neighbors"
-        #model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.weighted_average" 
-        #model.neighbor_algorithm_parameters ||= {}
-        #{
+        model.neighbor_algorithm ||= "fingerprint_neighbors"
+        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.weighted_average" 
+        model.neighbor_algorithm_parameters ||= {}
+        {
+          :type => "MP2D",
+          :training_dataset_id => training_dataset.id,
+          :min_sim => 0.1
           #:type => "FP4",
           #:training_dataset_id => training_dataset.id,
           #:min_sim => 0.7
-        #}.each do |key,value|
-          #model.neighbor_algorithm_parameters[key] ||= value
-        #end
+        }.each do |key,value|
+          model.neighbor_algorithm_parameters[key] ||= value
+        end
         model.save
         model
       end
@@ -209,7 +211,7 @@ module OpenTox
       field :source, type: String
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
-      field :crossvalidation_id, type: BSON::ObjectId
+      field :repeated_crossvalidation_id, type: BSON::ObjectId
 
       def predict object
         Lazar.find(model_id).predict object
@@ -223,8 +225,12 @@ module OpenTox
         Lazar.find model_id
       end
 
-      def crossvalidation
-        CrossValidation.find crossvalidation_id
+      def repeated_crossvalidation
+        RepeatedCrossValidation.find repeated_crossvalidation_id
+      end
+
+      def crossvalidations
+        repeated_crossvalidation.crossvalidations
       end
 
       def regression?
@@ -241,16 +247,14 @@ module OpenTox
         prediction_model = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
         model = nil
-        cv = nil
         if training_dataset.features.first.nominal?
-          model = LazarFminerClassification.create training_dataset
-          cv = ClassificationCrossValidation.create model
+          #model = LazarFminerClassification.create training_dataset
+          model = LazarClassification.create training_dataset
         elsif training_dataset.features.first.numeric?
           model = LazarRegression.create training_dataset
-          cv = RegressionCrossValidation.create model
         end
         prediction_model[:model_id] = model.id
-        prediction_model[:crossvalidation_id] = cv.id
+        prediction_model[:repeated_crossvalidation_id] = RepeatedCrossValidation.create(model).id
         prediction_model.save
         prediction_model
       end

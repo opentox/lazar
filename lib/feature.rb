@@ -47,6 +47,7 @@ module OpenTox
   class FingerprintSmarts < Smarts
     field :count, type: Integer
     def self.fingerprint
+=begin
       @@fp4 ||= OpenTox::FingerprintSmarts.all
       unless @@fp4.size == 306
         @@fp4 = []
@@ -72,6 +73,7 @@ module OpenTox
         end
       end
       @@fp4
+=end
     end
   end
 
