@@ -48,7 +48,7 @@ module OpenTox
         self
       end
 
-      def predict object
+      def predict object, use_database_values=true
 
         t = Time.now
         at = Time.now
@@ -75,7 +75,7 @@ module OpenTox
         compounds.each_with_index do |compound,c|
           t = Time.new
           database_activities = training_dataset.values(compound,prediction_feature)
-          if database_activities and !database_activities.empty?
+          if use_database_values and database_activities and !database_activities.empty?
             database_activities = database_activities.first if database_activities.size == 1
             predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
             next

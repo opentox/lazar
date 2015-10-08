@@ -21,6 +21,9 @@ $gridfs = $mongo.database.fs
 
 # R setup
 R = Rserve::Connection.new
+R.eval "library(ggplot2)"
+R.eval "library(grid)"
+R.eval "library(gridExtra)"
 
 # Logger setup
 STDOUT.sync = true # for redirection, etc see http://stackoverflow.com/questions/8549443/why-doesnt-logger-output-to-stdout-get-redirected-to-files

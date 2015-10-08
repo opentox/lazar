@@ -24,16 +24,24 @@ module OpenTox
         sim_sum = 0.0
         confidence = 0.0
         neighbors = params[:neighbors]
+        activities = []
         neighbors.each do |row|
           n,sim,acts = row
           confidence = sim if sim > confidence # distance to nearest neighbor
           # TODO add LOO errors
           acts.each do |act|
             weighted_sum += sim*Math.log10(act)
+            activities << act
             sim_sum += sim
           end
         end
+        #R.assign "activities", activities
+        #R.eval "cv = cv(activities)"
+        #confidence /= activities.standard_deviation#/activities.mean
         #confidence = sim_sum*neighbors.size.to_f/params[:training_dataset_size]
+        #confidence = sim_sum/neighbors.size.to_f
+        #confidence = neighbors.size.to_f
+        confidence = 0 if confidence.nan?
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
         {:value => prediction,:confidence => confidence}
       end

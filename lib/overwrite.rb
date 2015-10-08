@@ -96,6 +96,16 @@ class Array
     self.inject{ |sum, el| sum + el }.to_f / self.size
   end
 
+  def sample_variance
+    m = self.mean
+    sum = self.inject(0){|accum, i| accum +(i-m)**2 }
+    sum/(self.length - 1).to_f
+  end
+
+  def standard_deviation
+    Math.sqrt(self.sample_variance)
+  end
+
 end
 
 module URI

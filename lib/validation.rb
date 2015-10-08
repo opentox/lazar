@@ -39,7 +39,7 @@ module OpenTox
           activity = activities[i]
           prediction = de.first
           confidence = de[1]
-          predictions << [prediction_dataset.compound_ids[i], activity, prediction,confidence]
+          predictions << [prediction_dataset.compound_ids[i], activity, prediction, de[1]]
         else
           nr_unpredicted += 1
         end
@@ -50,7 +50,7 @@ module OpenTox
         :test_dataset_id => test_set.id,
         :nr_instances => test_set.compound_ids.size,
         :nr_unpredicted => nr_unpredicted,
-        :predictions => predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
+        :predictions => predictions#.sort{|a,b| p a; b[3] <=> a[3]} # sort according to confidence
       )
       validation.crossvalidation_id = crossvalidation.id if crossvalidation
       validation.save

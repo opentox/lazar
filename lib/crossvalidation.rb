@@ -52,7 +52,7 @@ module OpenTox
       cv.update_attributes(
         nr_instances: nr_instances,
         nr_unpredicted: nr_unpredicted,
-        predictions: predictions
+        predictions: predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
       cv.statistics
@@ -69,6 +69,7 @@ module OpenTox
     field :weighted_accuracy, type: Float
     field :true_rate, type: Hash
     field :predictivity, type: Hash
+    field :confidence_plot_id, type: BSON::ObjectId
     # TODO auc, f-measure (usability??)
 
     def statistics
@@ -126,6 +127,30 @@ module OpenTox
       $logger.debug "Accuracy #{accuracy}"
     end
 
+    def confidence_plot
+      tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+      accuracies = []
+      confidences = []
+      correct_predictions = 0
+      incorrect_predictions = 0
+      predictions.each do |p|
+        if p[1] and p[2]
+          p[1] == p [2] ? correct_predictions += 1 : incorrect_predictions += 1
+          accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
+          confidences << p[3]
+
+        end
+      end
+      R.assign "accuracy", accuracies
+      R.assign "confidence", confidences
+      R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
+      R.eval "ggsave(file='#{tmpfile}', plot=image)"
+      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+      plot_id = $gridfs.insert_one(file)
+      update(:confidence_plot_id => plot_id)
+      $gridfs.find_one(_id: confidence_plot_id).data
+    end
+
     #Average area under roc  0.646
     #Area under roc  0.646
     #F measure carcinogen: 0.769, noncarcinogen: 0.348
@@ -176,16 +201,6 @@ module OpenTox
       weighted_mae = weighted_mae/confidence_sum
       rmse = Math.sqrt(rmse/predictions.size)
       weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
-      # TODO check!!
-=begin
-      predictions.sort! do |a,b|
-        relative_error_a = (a[1]-a[2]).abs/a[1].to_f
-        relative_error_a = 1/relative_error_a if relative_error_a < 1
-        relative_error_b = (b[1]-b[2]).abs/b[1].to_f
-        relative_error_b = 1/relative_error_b if relative_error_b < 1
-        [relative_error_b,b[3]] <=> [relative_error_a,a[3]]
-      end
-=end
       update_attributes(
         mae: mae,
         rmse: rmse,
@@ -201,44 +216,46 @@ module OpenTox
 
     def misclassifications n=nil
       #n = predictions.size unless n
-      n = 20 unless n
+      n ||= 10 
       model = Model::Lazar.find(self.model_id)
       training_dataset = Dataset.find(model.training_dataset_id)
       prediction_feature = training_dataset.features.first
-      predictions[0..n-1].collect do |p|
-        compound = Compound.find(p[0])
-        neighbors = compound.neighbors.collect do |n|
-          neighbor = Compound.find(n[0])
-          values = training_dataset.values(neighbor,prediction_feature)
-          { :smiles => neighbor.smiles, :fingerprint => neighbor.fp4.collect{|id| Smarts.find(id).name},:similarity => n[1], :measurements => values}
+      predictions.collect do |p|
+        unless p.include? nil
+          compound = Compound.find(p[0])
+          neighbors = compound.send(model.neighbor_algorithm,model.neighbor_algorithm_parameters)
+          neighbors.collect! do |n|
+            neighbor = Compound.find(n[0])
+            values = training_dataset.values(neighbor,prediction_feature)
+            { :smiles => neighbor.smiles, :similarity => n[1], :measurements => values}
+          end
+          {
+            :smiles => compound.smiles, 
+            #:fingerprint => compound.fp4.collect{|id|  Smarts.find(id).name},
+            :measured => p[1],
+            :predicted => p[2],
+            #:relative_error => (Math.log10(p[1])-Math.log10(p[2])).abs/Math.log10(p[1]).to_f.abs,
+            :log_error => (Math.log10(p[1])-Math.log10(p[2])).abs,
+            :relative_error => (p[1]-p[2]).abs/p[1],
+            :confidence => p[3],
+            :neighbors => neighbors
+          }
         end
-        {
-          :smiles => compound.smiles, 
-          :fingerprint => compound.fp4.collect{|id|  Smarts.find(id).name},
-          :measured => p[1],
-          :predicted => p[2],
-          :relative_error => (p[1]-p[2]).abs/p[1].to_f,
-          :confidence => p[3],
-          :neighbors => neighbors
-        }
-      end
+      end.compact.sort{|a,b| p a; b[:relative_error] <=> a[:relative_error]}[0..n-1]
     end
 
     def confidence_plot
       tmpfile = "/tmp/#{id.to_s}_confidence.svg"
-      sorted_predictions = predictions.sort{|a,b| b[3]<=>a[3]}.collect{|p| [(Math.log10(p[1])-Math.log10(p[2]))**2,p[3]]}
+      sorted_predictions = predictions.collect{|p| [(Math.log10(p[1])-Math.log10(p[2])).abs,p[3]] if p[1] and p[2]}.compact
       R.assign "error", sorted_predictions.collect{|p| p[0]}
-      #R.assign "p", predictions.collect{|p| p[2]}
-      R.assign "confidence", predictions.collect{|p| p[2]}
-      #R.eval "diff = log(m)-log(p)"
-      R.eval "library(ggplot2)"
-      R.eval "svg(filename='#{tmpfile}')"
-      R.eval "image = qplot(confidence,error)"#,main='#{self.name}',asp=1,xlim=range, ylim=range)"
+      R.assign "confidence", sorted_predictions.collect{|p| p[1]}
+      # TODO fix axis names
+      R.eval "image = qplot(confidence,error)"
+      R.eval "image = image + stat_smooth(method='lm', se=FALSE)"
       R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        R.eval "dev.off()"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
-        plot_id = $gridfs.insert_one(file)
-        update(:confidence_plot_id => plot_id)
+      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+      plot_id = $gridfs.insert_one(file)
+      update(:confidence_plot_id => plot_id)
       $gridfs.find_one(_id: confidence_plot_id).data
     end
 
@@ -250,29 +267,17 @@ module OpenTox
         attributes = Model::Lazar.find(self.model_id).attributes
         attributes.delete_if{|key,_| key.match(/_id|_at/) or ["_id","creator","name"].include? key}
         attributes = attributes.values.collect{|v| v.is_a?(String) ? v.sub(/OpenTox::/,'') : v}.join("\n")
-        p "'"+attributes
-        R.eval "library(ggplot2)"
-        R.eval "library(grid)"
-        R.eval "library(gridExtra)"
         R.assign "measurement", x
         R.assign "prediction", y
-        #R.eval "error <- log(Measurement)-log(Prediction)"
-        #R.eval "rmse <- sqrt(mean(error^2, na.rm=T))"
-        #R.eval "mae <- mean(abs(error), na.rm=T)"
-        #R.eval "r <- cor(-log(prediction),-log(measurement))"
-        R.eval "svg(filename='#{tmpfile}')"
         R.eval "all = c(-log(measurement),-log(prediction))"
         R.eval "range = c(min(all), max(all))"
         R.eval "image = qplot(-log(prediction),-log(measurement),main='#{self.name}',asp=1,xlim=range, ylim=range)"
-        R.eval "image = image + geom_abline(intercept=0, slope=1) + stat_smooth(method='lm', se=FALSE)"
-        R.eval "text = textGrob(paste('RMSE: ', '#{rmse.round(2)},','MAE:','#{mae.round(2)},','r^2: ','#{r_squared.round(2)}','\n\n','#{attributes}'),just=c('left','top'),check.overlap = T)"
-        R.eval "grid.arrange(image, text, ncol=2)"
-        R.eval "dev.off()"
+        R.eval "image = image + geom_abline(intercept=0, slope=1)"
+        R.eval "ggsave(file='#{tmpfile}', plot=image)"
         file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.svg")
         plot_id = $gridfs.insert_one(file)
         update(:correlation_plot_id => plot_id)
       end
-      p correlation_plot_id
       $gridfs.find_one(_id: correlation_plot_id).data
     end
   end

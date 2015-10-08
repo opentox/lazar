@@ -11,7 +11,7 @@ module OpenTox
         confidence = 0.0
         neighbors.each do |row|
           n,sim,acts = row
-          confidence = sim if sim > confidence # distance to nearest neighbor
+          #confidence = sim if sim > confidence # distance to nearest neighbor
           acts.each do |act|
             weighted_sum[act] ||= 0
             weighted_sum[act] += sim
@@ -24,7 +24,7 @@ module OpenTox
           sim_sum = weighted_sum[weighted_sum.keys[0]]
           sim_sum -= weighted_sum[weighted_sum.keys[1]]
           sim_sum > 0 ? prediction = weighted_sum.keys[0] : prediction = weighted_sum.keys[1] 
-          #confidence = (sim_sum/neighbors.size).abs 
+          confidence = (sim_sum/neighbors.size).abs 
           return {:value => prediction,:confidence => confidence}
         else
           bad_request_error "Cannot predict more than 2 classes, multinomial classifications is not yet implemented. Received classes were: '#{weighted.sum.keys}'"

@@ -160,4 +160,17 @@ print c.sdf
       end
     end
   end
+
+  def test_fingerprint_db_neighbors
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    [
+      "CC(=O)CC(C)C#N",
+      "CC(=O)CC(C)C",
+      "C(=O)CC(C)C#N",
+    ].each do |smi|
+      c = OpenTox::Compound.from_smiles smi
+      neighbors = c.db_neighbors(:training_dataset_id => training_dataset.id, :min_sim => 0.2)
+      p neighbors
+    end
+  end
 end
