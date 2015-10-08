@@ -1,0 +1,4 @@
+--readme README
+--title 'Thin Ruby wrapper for the OpenTox REST API'
+--charset utf-8
+yardoc  lib/*.rb - README ChangeLog VERSION LICENSE

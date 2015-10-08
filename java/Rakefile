@@ -1,0 +1,15 @@
+# Java class, classpath
+java_classes = [
+  ["CdkDescriptors", "cdk-1.4.19.jar"],
+  ["CdkDescriptorInfo", "cdk-1.4.19.jar"],
+  ["JoelibDescriptors", "joelib2.jar:."],
+  ["JoelibDescriptorInfo", "joelib2.jar:."],
+]
+  
+task :default => java_classes.collect{|c| "#{c.first}.class"}
+
+java_classes.each do |c|
+  file "#{c.first}.class" => "#{c.first}.java" do
+    puts `javac -classpath #{c.last} #{c.first}.java`
+  end
+end

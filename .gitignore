@@ -1,0 +1,12 @@
+last-utils
+libfminer
+openbabel
+fminer_debug.txt
+test/fminer_debug.txt
+Gemfile.lock
+*.gem
+.bundle
+pkg/*
+*~
+.yardoc/
+doc/
