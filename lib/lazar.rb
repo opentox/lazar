@@ -9,28 +9,42 @@ require 'rserve'
 require "nokogiri"
 require "base64"
 
-# Mongo setup
-# TODO retrieve correct environment from Rack/Sinatra
-ENV["MONGOID_ENV"] ||= "development"
-# TODO remove config files, change default via ENV or directly in Mongoid class
-Mongoid.load!("#{File.expand_path(File.join(File.dirname(__FILE__),'..','mongoid.yml'))}")
+# Environment setup
+ENV["LAZAR_ENV"] ||= "production"
+raise "Incorrect lazar environment variable LAZAR_ENV '#{ENV["LAZAR_ENV"]}', please set it to 'production' or 'development'." unless ENV["LAZAR_ENV"].match(/production|development/)
+
+ENV["MONGOID_ENV"] = ENV["LAZAR_ENV"] 
+ENV["RACK_ENV"] = ENV["LAZAR_ENV"] # should set sinatra environment
+Mongoid.load_configuration({
+  :clients => {
+    :default => {
+      :database => ENV["LAZAR_ENV"],
+      :hosts => ["localhost:27017"],
+    }
+  }
+})
 Mongoid.raise_not_found_error = false # return nil if no document is found
-$mongo = Mongo::Client.new('mongodb://127.0.0.1:27017/opentox')
 #$mongo = Mongoid.default_client
+$mongo = Mongo::Client.new("mongodb://127.0.0.1:27017/#{ENV['LAZAR_ENV']}")
 $gridfs = $mongo.database.fs
+
+# Logger setup
+STDOUT.sync = true # for redirection, etc see http://stackoverflow.com/questions/8549443/why-doesnt-logger-output-to-stdout-get-redirected-to-files
+$logger = Logger.new STDOUT # STDERR did not work on my development machine (CH)
+case ENV["LAZAR_ENV"]
+when "production"
+  $logger.level = Logger::WARN
+  Mongo::Logger.level = Logger::WARN 
+when "development"
+  $logger.level = Logger::DEBUG
+  Mongo::Logger.level = Logger::WARN 
+end
 
 # R setup
 R = Rserve::Connection.new
 R.eval "library(ggplot2)"
 R.eval "library(grid)"
 R.eval "library(gridExtra)"
-
-# Logger setup
-STDOUT.sync = true # for redirection, etc see http://stackoverflow.com/questions/8549443/why-doesnt-logger-output-to-stdout-get-redirected-to-files
-$logger = Logger.new STDOUT # STDERR did not work on my development machine (CH)
-$logger.level = Logger::DEBUG
-Mongo::Logger.level = Logger::WARN 
-#Mongo::Logger.logger = $logger
 
 # Require sub-Repositories
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
@@ -62,7 +76,6 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Repeat
   "bbrc.rb",
   "model.rb",
   "similarity.rb",
-  #"neighbor.rb",
   "classification.rb",
   "regression.rb",
   "validation.rb",

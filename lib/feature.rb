@@ -42,41 +42,6 @@ module OpenTox
     field :dataset_id 
   end
 
-  # Feature for database fingerprints
-  # needs count for efficient retrieval (see compound.rb)
-  class FingerprintSmarts < Smarts
-    field :count, type: Integer
-    def self.fingerprint
-=begin
-      @@fp4 ||= OpenTox::FingerprintSmarts.all
-      unless @@fp4.size == 306
-        @@fp4 = []
-        # OpenBabel FP4 fingerprints
-        # OpenBabel http://open-babel.readthedocs.org/en/latest/Fingerprints/intro.html
-        # TODO investigate other types of fingerprints (MACCS)
-        # OpenBabel http://open-babel.readthedocs.org/en/latest/Fingerprints/intro.html
-        # http://www.dalkescientific.com/writings/diary/archive/2008/06/26/fingerprint_background.html
-        # OpenBabel MNA http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html#multilevel-neighborhoods-of-atoms-mna
-        # Morgan ECFP, FCFP
-        # http://cdk.github.io/cdk/1.5/docs/api/org/openscience/cdk/fingerprint/CircularFingerprinter.html
-        # http://www.rdkit.org/docs/GettingStartedInPython.html
-        # Chemfp
-        # https://chemfp.readthedocs.org/en/latest/using-tools.html
-        # CACTVS/PubChem
-
-        File.open(File.join(File.dirname(__FILE__),"SMARTS_InteLigand.txt")).each do |l| 
-          l.strip!
-          unless l.empty? or l.match /^#/
-            name,smarts = l.split(': ')
-            @@fp4 << OpenTox::FingerprintSmarts.find_or_create_by(:name => name, :smarts => smarts) unless smarts.nil?
-          end
-        end
-      end
-      @@fp4
-=end
-    end
-  end
-
   # Feature for physico-chemical descriptors
   class PhysChemDescriptor < NumericFeature
     field :algorithm, type: String, default: "OpenTox::Algorithm::Descriptor.physchem"
