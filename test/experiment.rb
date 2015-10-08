@@ -3,6 +3,7 @@ require_relative "setup.rb"
 class ExperimentTest < MiniTest::Test
 
   def test_regression_experiment
+    skip
     datasets = [
       "EPAFHM.medi.csv",
       #"EPAFHM.csv",
@@ -32,6 +33,7 @@ class ExperimentTest < MiniTest::Test
 
   def test_classification_experiment
 
+    skip
     datasets = [ "hamster_carcinogenicity.csv" ]
     experiment = Experiment.create(
       :name => "Fminer vs fingerprint classification for datasets #{datasets}.",
@@ -63,6 +65,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_regression_fingerprints
+    skip
 #=begin
     datasets = [
       "EPAFHM.medi.csv",
@@ -113,6 +116,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_mpd_fingerprints
+    skip
     datasets = [
       "EPAFHM.medi.csv",
     ]
@@ -141,6 +145,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_multiple_datasets
+    skip
     datasets = [
       "EPAFHM.medi.csv",
       "LOAEL_mmol_corrected_smiles.csv"
@@ -184,6 +189,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_mpd_mna_regression_fingerprints
+    skip
     datasets = [
       "EPAFHM.medi.csv",
       #"hamster_carcinogenicity.csv" 
@@ -239,6 +245,7 @@ class ExperimentTest < MiniTest::Test
   end
 
   def test_mpd_mna_classification_fingerprints
+    skip
     datasets = [
       #"EPAFHM.medi.csv",
       "hamster_carcinogenicity.csv" 
