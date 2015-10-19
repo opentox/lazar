@@ -141,6 +141,7 @@ class DatasetTest < MiniTest::Test
 
   def test_from_csv
     d = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    p d
     assert_equal Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size

@@ -128,26 +128,28 @@ module OpenTox
     end
 
     def confidence_plot
-      tmpfile = "/tmp/#{id.to_s}_confidence.svg"
-      accuracies = []
-      confidences = []
-      correct_predictions = 0
-      incorrect_predictions = 0
-      predictions.each do |p|
-        if p[1] and p[2]
-          p[1] == p [2] ? correct_predictions += 1 : incorrect_predictions += 1
-          accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
-          confidences << p[3]
+      unless confidence_plot_id
+        tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+        accuracies = []
+        confidences = []
+        correct_predictions = 0
+        incorrect_predictions = 0
+        predictions.each do |p|
+          if p[1] and p[2]
+            p[1] == p [2] ? correct_predictions += 1 : incorrect_predictions += 1
+            accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
+            confidences << p[3]
 
+          end
         end
+        R.assign "accuracy", accuracies
+        R.assign "confidence", confidences
+        R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
+        R.eval "ggsave(file='#{tmpfile}', plot=image)"
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+        plot_id = $gridfs.insert_one(file)
+        update(:confidence_plot_id => plot_id)
       end
-      R.assign "accuracy", accuracies
-      R.assign "confidence", confidences
-      R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
-      R.eval "ggsave(file='#{tmpfile}', plot=image)"
-      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
-      plot_id = $gridfs.insert_one(file)
-      update(:confidence_plot_id => plot_id)
       $gridfs.find_one(_id: confidence_plot_id).data
     end
 

@@ -5,21 +5,23 @@ module OpenTox
 
   class Dataset
 
-    attr_writer :data_entries
+    #attr_writer :data_entries
 
     # associations like has_many, belongs_to deteriorate performance
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
-    field :data_entries_id, type: BSON::ObjectId#, default: []
+    #field :data_entries_id, type: BSON::ObjectId
+    field :data_entries, type: Array, default: []
     field :source, type: String
 
     # Save all data including data_entries
     # Should be used instead of save
     def save_all
-      dump = Marshal.dump(@data_entries)
-      file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
-      entries_id = $gridfs.insert_one(file)
-      update(:data_entries_id => entries_id)
+      save
+      #dump = Marshal.dump(@data_entries)
+      #file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
+      #entries_id = $gridfs.insert_one(file)
+      #update(:data_entries_id => entries_id)
     end
 
     # Readers
@@ -36,6 +38,7 @@ module OpenTox
       @features
     end
 
+=begin
     # Get all data_entries
     def data_entries
       unless @data_entries
@@ -60,6 +63,7 @@ module OpenTox
       end
       @data_entries
     end
+=end
 
     # Find data entry values for a given compound and feature
     # @param compound [OpenTox::Compound] OpenTox Compound object
@@ -220,7 +224,8 @@ module OpenTox
       value_time = 0
 
       # compounds and values
-      @data_entries = [] #Array.new(table.size){Array.new(table.first.size-1)}
+      #@data_entries = [] #Array.new(table.size){Array.new(table.first.size-1)}
+      self.data_entries = []
 
       table.each_with_index do |vals,i|
         ct = Time.now
@@ -251,16 +256,16 @@ module OpenTox
         end
 
         compound_ids << compound.id
-        table.first.size == 0 ?  @data_entries << Array.new(0) : @data_entries << Array.new(table.first.size-1) 
+        table.first.size == 0 ?  self.data_entries << Array.new(0) : self.data_entries << Array.new(table.first.size-1) 
         
         vals.each_with_index do |v,j|
           if v.blank?
             warnings << "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
             next
           elsif numeric[j]
-            @data_entries.last[j] = v.to_f
+            self.data_entries.last[j] = v.to_f
           else
-            @data_entries.last[j] = v.strip
+            self.data_entries.last[j] = v.strip
           end
         end
       end
@@ -272,7 +277,7 @@ module OpenTox
       
       $logger.debug "Value parsing: #{Time.now-time} (Compound creation: #{compound_time})"
       time = Time.now
-      save_all
+      save
       $logger.debug "Saving: #{Time.now-time}"
 
     end
@@ -281,9 +286,9 @@ module OpenTox
     # @param any value
     def fill_nil_with n
       (0 .. compound_ids.size-1).each do |i|
-        @data_entries[i] ||= []
+        data_entries[i] ||= []
         (0 .. feature_ids.size-1).each do |j|
-          @data_entries[i][j] ||= n
+          data_entries[i][j] ||= n
         end
       end
     end
