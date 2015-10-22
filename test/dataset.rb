@@ -12,15 +12,16 @@ class DatasetTest < MiniTest::Test
     d1.delete
   end
 
-  #TODO
-  def test_create_without_features_csv
-    d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction.csv")
-    assert_equal Dataset, d.class
-    refute_nil d.id
-    dataset = Dataset.find d.id
-    #p dataset.compounds
-    assert_equal 24, d.compounds.size.to_i
-    d.delete
+  def test_create_without_features_smiles_and_inchi
+    ["smiles", "inchi"].each do |type|
+      d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction_#{type}_small.csv")
+      assert_equal Dataset, d.class
+      refute_nil d.id
+      dataset = Dataset.find d.id
+      #p dataset.compounds
+      assert_equal 3, d.compounds.size.to_i
+      d.delete
+    end
   end
 
   def test_create_empty
