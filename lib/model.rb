@@ -74,14 +74,8 @@ module OpenTox
         neighbors = []
         compounds.each_with_index do |compound,c|
           t = Time.new
-          database_activities = training_dataset.values(compound,prediction_feature)
-          if use_database_values and database_activities and !database_activities.empty?
-            database_activities = database_activities.first if database_activities.size == 1
-            predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
-            next
-          end
-          neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
 
+          neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
           # add activities
           # TODO: improve efficiency, takes 3 times longer than previous version
           neighbors.collect! do |n|
@@ -90,6 +84,13 @@ module OpenTox
             acts.empty? ? nil : n << acts
           end
           neighbors.compact! # remove neighbors without training activities
+
+          database_activities = training_dataset.values(compound,prediction_feature)
+          if use_database_values and database_activities and !database_activities.empty?
+            database_activities = database_activities.first if database_activities.size == 1
+            predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
+            next
+          end
           predictions << Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_size => training_dataset.data_entries.size})
 =begin
 # TODO scaled dataset for physchem
