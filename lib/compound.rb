@@ -21,6 +21,7 @@ module OpenTox
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
+    field :molecular_weight, type: Float
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
 
@@ -325,6 +326,38 @@ module OpenTox
       $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
+    
+    ## TODO: Should the following conversion functions are in overwrite.rb:class Numeric?!
+    # Get mg from logmmol (for nch LOAEL/pTD50 data)
+    # @return [Float] value in mg
+    def logmmol_to_mg(value, mw)
+      mg = (10**(-1.0*value.to_f)*(mw.to_f*1000))
+      return mg
+    end
+
+   # Get mg from mmol
+   # @return [Float] value in mg
+   def mmol_to_mg(value, mw)
+      mg = (value.to_f)*(mw.to_f)
+      return mg
+    end
+
+   # Get mg from logmg
+   # @return [Float] value in mg
+   def logmg_to_mg(value)
+      mg = 10**value.to_f
+      return mg
+    end
+    
+    # Calculate molecular weight of Compound with OB and store it in object
+    # @return [Float] molecular weight
+    def molecular_weight
+      if self["molecular_weight"]==0.0 || self["molecular_weight"].nil?
+        update(:molecular_weight => OpenTox::Algorithm::Descriptor.physchem(self, ["Openbabel.MW"]).first)
+      end
+      self["molecular_weight"]
+    end
+
 
     private
 
