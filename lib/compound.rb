@@ -87,13 +87,14 @@ module OpenTox
     # @param [String] smiles Smiles string
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
-      smiles = obconversion(smiles,"smi","can")
+      return nil if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
+      smiles = obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
       if smiles.empty?
         return nil
         #Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
       else
-        #Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
-        Compound.find_or_create_by(:smiles => smiles)
+        #Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
+        Compound.find_or_create_by :smiles => smiles 
       end
     end
 
