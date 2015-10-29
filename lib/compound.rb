@@ -327,7 +327,6 @@ module OpenTox
         
     end
     
-    ## TODO: Should the following conversion functions are in overwrite.rb:class Numeric?!
     # Get mg from logmmol (for nch LOAEL/pTD50 data)
     # @return [Float] value in mg
     def logmmol_to_mg(value, mw)
