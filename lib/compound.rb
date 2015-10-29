@@ -92,7 +92,8 @@ module OpenTox
         return nil
         #Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
       else
-        Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
+        #Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can")
+        Compound.find_or_create_by(:smiles => smiles)
       end
     end
 
