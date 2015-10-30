@@ -165,7 +165,7 @@ module OpenTox
         $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
       else
         $logger.debug "Parsing #{file}."
-        table = CSV.read file, :skip_blanks => true
+        table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
         dataset = self.new(:source => source, :name => name)
         dataset.parse_table table, bioassay
       end
