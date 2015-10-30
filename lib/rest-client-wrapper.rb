@@ -72,7 +72,7 @@ module OpenTox
               msg = "Could not parse error response from rest call '#{method}' to '#{uri}':\n#{response}"
               cause = nil
             end
-            Object.method(error[:method]).call msg, uri, cause # call error method
+            Object.method(error[:method]).call "#{msg}, #{uri}, #{cause}" # call error method
           else
             response
           end
