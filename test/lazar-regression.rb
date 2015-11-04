@@ -8,7 +8,7 @@ class LazarRegressionTest < MiniTest::Test
     compound = Compound.from_smiles "CC(C)(C)CN"
     prediction = model.predict compound
     assert_equal 7.2, prediction[:value].round(1)
-    assert_equal 91, prediction[:neighbors].size
+    assert_equal 88, prediction[:neighbors].size
   end
 
   def test_mpd_fingerprints
@@ -17,7 +17,7 @@ class LazarRegressionTest < MiniTest::Test
     model.neighbor_algorithm_parameters[:type] = "MP2D"
     compound = Compound.from_smiles "CCCSCCSCC"
     prediction = model.predict compound
-    assert_equal 0.02, prediction[:value].round(2)
+    assert_equal 0.04, prediction[:value].round(2)
     assert_equal 3, prediction[:neighbors].size
   end
 

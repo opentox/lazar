@@ -1,39 +1,26 @@
-# TODO install R packages kernlab, caret, doMC, class, e1071
-
-
-        # log transform activities (create new dataset)
-        # scale, normalize features, might not be necessary
-        # http://stats.stackexchange.com/questions/19216/variables-are-often-adjusted-e-g-standardised-before-making-a-model-when-is
-        # http://stats.stackexchange.com/questions/7112/when-and-how-to-use-standardized-explanatory-variables-in-linear-regression
-        # zero-order correlation and the semi-partial correlation
-        # seems to be necessary for svm
-        #   http://stats.stackexchange.com/questions/77876/why-would-scaling-features-decrease-svm-performance?lq=1
-        #   http://stackoverflow.com/questions/15436367/svm-scaling-input-values
-        # use lasso or elastic net??
-        # select relevant features
-        #   remove features with a single value
-        #   remove correlated features
-        #   remove features not correlated with endpoint
 module OpenTox
   module Algorithm
     
     class Regression
 
       def self.weighted_average compound, params
+        #p params.keys
         weighted_sum = 0.0
         sim_sum = 0.0
         confidence = 0.0
         neighbors = params[:neighbors]
         activities = []
         neighbors.each do |row|
-          n,sim,acts = row
-          confidence = sim if sim > confidence # distance to nearest neighbor
-          # TODO add LOO errors
-          acts.each do |act|
-            weighted_sum += sim*Math.log10(act)
-            activities << act
-            sim_sum += sim
-          end
+          #if row["dataset_ids"].include? params[:training_dataset_id]
+            sim = row["tanimoto"]
+            confidence = sim if sim > confidence # distance to nearest neighbor
+            # TODO add LOO errors
+            row["features"][params[:prediction_feature_id].to_s].each do |act|
+              weighted_sum += sim*Math.log10(act)
+              activities << act
+              sim_sum += sim
+            end
+          #end
         end
         #R.assign "activities", activities
         #R.eval "cv = cv(activities)"
@@ -47,10 +34,8 @@ module OpenTox
       end
 
       def self.local_linear_regression  compound, neighbors
-        p neighbors.size
         return nil unless neighbors.size > 0
         features = neighbors.collect{|n| Compound.find(n.first).fp4}.flatten.uniq
-        p features
         training_data = Array.new(neighbors.size){Array.new(features.size,0)}
         neighbors.each_with_index do |n,i|
           #p n.first

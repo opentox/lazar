@@ -136,7 +136,7 @@ module OpenTox
         incorrect_predictions = 0
         predictions.each do |p|
           if p[1] and p[2]
-            p[1] == p [2] ? correct_predictions += 1 : incorrect_predictions += 1
+            p[1] == p[2] ? correct_predictions += 1 : incorrect_predictions += 1
             accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
             confidences << p[3]
 
@@ -243,7 +243,7 @@ module OpenTox
             :neighbors => neighbors
           }
         end
-      end.compact.sort{|a,b| p a; b[:relative_error] <=> a[:relative_error]}[0..n-1]
+      end.compact.sort{|a,b| b[:relative_error] <=> a[:relative_error]}[0..n-1]
     end
 
     def confidence_plot

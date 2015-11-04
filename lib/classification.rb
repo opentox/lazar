@@ -5,14 +5,12 @@ module OpenTox
 
       def self.weighted_majority_vote compound, params
         neighbors = params[:neighbors]
-        return {:value => nil,:confidence => nil,:warning => "Cound not find similar compounds."} if neighbors.empty?
         weighted_sum = {}
         sim_sum = 0.0
         confidence = 0.0
         neighbors.each do |row|
-          n,sim,acts = row
-          #confidence = sim if sim > confidence # distance to nearest neighbor
-          acts.each do |act|
+          sim = row["tanimoto"]
+          row["features"][params[:prediction_feature_id].to_s].each do |act|
             weighted_sum[act] ||= 0
             weighted_sum[act] += sim
           end

@@ -3,6 +3,7 @@ require_relative "setup.rb"
 class LazarExtendedTest < MiniTest::Test
 
   def test_lazar_bbrc_ham_minfreq
+    skip
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     model = Model::LazarFminerClassification.create(dataset, :min_frequency => 5)
     feature_dataset = Dataset.find model.neighbor_algorithm_parameters[:feature_dataset_id]
@@ -21,6 +22,7 @@ class LazarExtendedTest < MiniTest::Test
   end
 
   def test_lazar_bbrc_large_ds
+    skip
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"multi_cell_call_no_dup.csv")
     model = Model::LazarFminerClassification.create dataset
     feature_dataset = Dataset.find model.neighbor_algorithm_parameters[:feature_dataset_id]
@@ -44,7 +46,8 @@ class LazarExtendedTest < MiniTest::Test
     feature_dataset.delete
   end
 
-  def test_lazar_kazius
+  def test_lazar_fminer_kazius
+    skip
     t = Time.now
     dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
     p "Dataset upload: #{Time.now-t}"
@@ -66,6 +69,24 @@ class LazarExtendedTest < MiniTest::Test
     end
     #dataset.delete
     #feature_dataset.delete
+  end
+
+  def test_lazar_kazius
+    t = Time.now
+    dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    p "Dataset upload: #{Time.now-t}"
+    t = Time.now
+    model = Model::LazarClassification.create(dataset)
+    p "Feature mining: #{Time.now-t}"
+    t = Time.now
+    2.times do
+      compound = Compound.from_smiles("Clc1ccccc1NN")
+      prediction = model.predict compound
+      #p prediction
+      assert_equal "1", prediction[:value]
+      #assert_in_delta 0.019858401199860445, prediction[:confidence], 0.001
+    end
+    dataset.delete
   end
 
 end

@@ -105,10 +105,18 @@ module OpenTox
         test_cids = test_idxs.collect{|i| self.compound_ids[i]}
         test_data_entries = test_idxs.collect{|i| self.data_entries[i]}
         test_dataset = self.class.new(:compound_ids => test_cids, :feature_ids => self.feature_ids, :data_entries => test_data_entries)
+        test_dataset.compounds.each do |compound|
+          compound.dataset_ids << test_dataset.id
+          compound.save
+        end
         training_idxs = indices-test_idxs
         training_cids = training_idxs.collect{|i| self.compound_ids[i]}
         training_data_entries = training_idxs.collect{|i| self.data_entries[i]}
         training_dataset = self.class.new(:compound_ids => training_cids, :feature_ids => self.feature_ids, :data_entries => training_data_entries)
+        training_dataset.compounds.each do |compound|
+          compound.dataset_ids << training_dataset.id
+          compound.save
+        end
         test_dataset.save_all
         training_dataset.save_all
         chunks << [training_dataset,test_dataset]
@@ -229,7 +237,7 @@ module OpenTox
 
       table.each_with_index do |vals,i|
         ct = Time.now
-        identifier = vals.shift
+        identifier = vals.shift.strip
         warnings << "No feature values for compound at position #{i+2}." if vals.compact.empty?
         begin
           case compound_format
@@ -246,7 +254,7 @@ module OpenTox
           warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
-        # TODO insert empty compounds to keep positions?
+        compound.dataset_ids << self.id unless compound.dataset_ids.include? self.id
         compound_time += Time.now-ct
           
         r += 1
@@ -263,10 +271,15 @@ module OpenTox
             warnings << "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
             next
           elsif numeric[j]
-            self.data_entries.last[j] = v.to_f
+            v = v.to_f
           else
-            self.data_entries.last[j] = v.strip
+            v = v.strip
           end
+          self.data_entries.last[j] = v
+          #i = compound.feature_ids.index feature_ids[j]
+          compound.features[feature_ids[j].to_s] ||= []
+          compound.features[feature_ids[j].to_s] << v
+          compound.save
         end
       end
       compounds.duplicates.each do |compound|

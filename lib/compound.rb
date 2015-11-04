@@ -23,13 +23,16 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
+    field :dataset_ids, type: Array, default: []
+    field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
+    #index({default_fingerprint: 1}, {unique: false})
 
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
       compound = self.find_or_initialize_by params
-      compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT)
+      compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT).size
       compound.save
       compound
     end
@@ -41,7 +44,7 @@ module OpenTox
         if type == "MP2D"
           fp = obconversion(smiles,"smi","mpd").strip.split("\t")
           name = fp.shift # remove Title
-          fingerprints[type] = fp
+          fingerprints[type] = fp.uniq # no fingerprint counts
         #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
         elsif type== "MNA"
           level = 2 # TODO: level as parameter, evaluate level 1, see paper
@@ -244,20 +247,23 @@ module OpenTox
     def fingerprint_neighbors params
       bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
       neighbors = []
-      #if params[:type] == DEFAULT_FINGERPRINT
-        #neighbors = db_neighbors params
-        #p neighbors
-      #else
+      if params[:type] == DEFAULT_FINGERPRINT
+        neighbors = db_neighbors params
+      else 
         query_fingerprint = self.fingerprint params[:type]
-        training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
-          unless self == compound
+        training_dataset = Dataset.find(params[:training_dataset_id])
+        prediction_feature = training_dataset.features.first
+        training_dataset.compounds.each do |compound|
+          #unless self == compound
             candidate_fingerprint = compound.fingerprint params[:type]
             sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-            neighbors << [compound.id, sim] if sim >= params[:min_sim]
-          end
+            feature_values = training_dataset.values(compound,prediction_feature)
+            neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
+          #end
         end
-      #end
-      neighbors.sort{|a,b| b.last <=> a.last}
+        neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
+      end
+      neighbors
     end
 
     def fminer_neighbors params
@@ -299,30 +305,34 @@ module OpenTox
     end
 
     def db_neighbors params
-      p "DB NEIGHBORS"
-      p params
-      # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
-      qn = fingerprint(params[:type]).size
+
+      #qn = default_fingerprint_size
       #qmin = qn * threshold
       #qmax = qn / threshold
       #not sure if it is worth the effort of keeping feature counts up to date (compound deletions, additions, ...)
       #reqbits = [count['_id'] for count in db.mfp_counts.find({'_id': {'$in': qfp}}).sort('count', 1).limit(qn - qmin + 1)]
       aggregate = [
         #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
-        {'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
+        #{'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
         {'$project' => {
           'tanimoto' => {'$let' => {
-            'vars' => {'common' => {'$size' => {'$setIntersection' => ["'$#{DEFAULT_FINGERPRINT}'", DEFAULT_FINGERPRINT]}}},
-            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [qn, '$default_fingerprint_size']}, '$$common']}]}
+            'vars' => {'common' => {'$size' => {'$setIntersection' => ["$fingerprints.#{DEFAULT_FINGERPRINT}", fingerprints[DEFAULT_FINGERPRINT]]}}},
+            #'vars' => {'common' => {'$size' => {'$setIntersection' => ["$default_fingerprint", default_fingerprint]}}},
+            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
-          '_id' => 1
+          '_id' => 1,
+          'features' => 1,
+          'dataset_ids' => 1
         }},
         {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
         {'$sort' => {'tanimoto' => -1}}
       ]
       
-      $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
+      $mongo["compounds"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
+
+
+      #$mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
 

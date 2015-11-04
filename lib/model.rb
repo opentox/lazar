@@ -76,22 +76,23 @@ module OpenTox
           t = Time.new
 
           neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
-          # add activities
-          # TODO: improve efficiency, takes 3 times longer than previous version
-          neighbors.collect! do |n|
-            rows = training_dataset.compound_ids.each_index.select{|i| training_dataset.compound_ids[i] == n.first}
-            acts = rows.collect{|row| training_dataset.data_entries[row][0]}.compact
-            acts.empty? ? nil : n << acts
-          end
-          neighbors.compact! # remove neighbors without training activities
+          # remove neighbors without prediction_feature
+          # check for database activities (neighbors may include query compound)
+          database_activities = nil
+          if neighbors.collect{|n| n["_id"]}.include? compound.id
 
-          database_activities = training_dataset.values(compound,prediction_feature)
-          if use_database_values and database_activities and !database_activities.empty?
-            database_activities = database_activities.first if database_activities.size == 1
-            predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
-            next
+            database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s]
+            neighbors.delete_if{|n| n["_id"] == compound.id}
           end
-          predictions << Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_size => training_dataset.data_entries.size})
+          neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
+          if neighbors.empty?
+            prediction = {:value => nil,:confidence => nil,:warning => "Cound not find similar compounds."}
+          else
+            prediction = Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset.id,:prediction_feature_id => prediction_feature.id})
+          end
+          prediction[:database_activities] = database_activities
+          predictions << prediction
+
 =begin
 # TODO scaled dataset for physchem
           p neighbor_algorithm_parameters
@@ -126,7 +127,7 @@ module OpenTox
           warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
           prediction_dataset.features = [ prediction_feature, confidence_feature, warning_feature ]
           prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence], p[:warning]]}
+          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:database_activities] ? "measured" : p[:confidence] , p[:warning]]}
           prediction_dataset.save_all
           return prediction_dataset
         end

@@ -107,7 +107,6 @@ module OpenTox
           des[lib] << descriptor
         end
         des.each do |lib,descriptors|
-          p lib, descriptors
           send(lib, descriptors)
         end
         serialize
