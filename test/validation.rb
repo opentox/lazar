@@ -128,4 +128,29 @@ class ValidationTest < MiniTest::Test
     p cv
   end
 
+  def test_classification_loo_validation
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    model = Model::LazarClassification.create dataset
+    loo = ClassificationLeaveOneOutValidation.create model
+    assert_equal 14, loo.nr_unpredicted
+    refute_empty loo.confusion_matrix
+    assert loo.accuracy > 0.77
+    assert loo.weighted_accuracy > 0.85
+    assert loo.accuracy < loo.weighted_accuracy
+  end
+
+  def test_regression_loo_validation
+    dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
+    model = Model::LazarRegression.create dataset
+    loo = RegressionLeaveOneOutValidation.create model
+    assert_equal 11, loo.nr_unpredicted
+    assert loo.weighted_mae < loo.mae
+    assert loo.r_squared > 0.34
+    #assert_equal 14, loo.nr_unpredicted
+    #p loo.confusion_matrix
+    #p loo.accuracy
+    #File.open("tmp.svg","w+"){|f| f.puts loo.correlation_plot}
+    #`inkview tmp.svg`
+  end
+
 end

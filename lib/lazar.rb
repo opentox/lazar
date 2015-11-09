@@ -60,7 +60,7 @@ ENV['FMINER_SILENT'] = 'true'
 ENV['FMINER_NR_HITS'] = 'true'
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -80,6 +80,7 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Repeat
   "regression.rb",
   "validation.rb",
   "crossvalidation.rb",
+  "leave-one-out-validation.rb",
   "experiment.rb",
 ].each{ |f| require_relative f }
 

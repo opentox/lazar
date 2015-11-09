@@ -344,16 +344,20 @@ module OpenTox
       return mg
     end
 
-   # Get mg from mmol
-   # @return [Float] value in mg
-   def mmol_to_mg(value, mw)
+    # Get mg from mmol
+    # @return [Float] value in mg
+    def mmol_to_mg(value, mw)
       mg = (value.to_f)*(mw.to_f)
       return mg
     end
 
-   # Get mg from logmg
-   # @return [Float] value in mg
-   def logmg_to_mg(value)
+    def mg_to_mmol mg
+      mg.to_f/molecular_weight
+    end
+
+    # Get mg from logmg
+    # @return [Float] value in mg
+    def logmg_to_mg(value)
       mg = 10**value.to_f
       return mg
     end
@@ -364,7 +368,7 @@ module OpenTox
       if self["molecular_weight"]==0.0 || self["molecular_weight"].nil?
         update(:molecular_weight => OpenTox::Algorithm::Descriptor.physchem(self, ["Openbabel.MW"]).first)
       end
-      self["molecular_weight"]
+      self["molecular_weight"].to_f
     end
 
 
