@@ -175,8 +175,6 @@ module OpenTox
       weighted_rse = 0
       mae = 0
       weighted_mae = 0
-      rae = 0
-      weighted_rae = 0
       confidence_sum = 0
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred

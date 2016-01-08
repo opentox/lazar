@@ -126,6 +126,17 @@ module OpenTox
     end
 
     # Diagnostics
+    
+    def duplicates feature=self.features.first
+      col = feature_ids.index feature.id
+      dups = {}
+      compound_ids.each_with_index do |cid,i|
+        rows = compound_ids.each_index.select{|r| compound_ids[r] == cid }
+        values = rows.collect{|row| data_entries[row][col]}
+        dups[cid] = values if values.size > 1
+      end
+      dups
+    end
 
     def correlation_plot training_dataset
       # TODO: create/store svg
@@ -162,10 +173,10 @@ module OpenTox
     # TODO
     #def self.from_sdf_file
     #end
-
+    
     # Create a dataset from CSV file
     # TODO: document structure
-    def self.from_csv_file file, source=nil, bioassay=true
+    def self.from_csv_file file, source=nil, bioassay=true#, layout={}
       source ||= file
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
@@ -175,7 +186,7 @@ module OpenTox
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
         dataset = self.new(:source => source, :name => name)
-        dataset.parse_table table, bioassay
+        dataset.parse_table table, bioassay#, layout
       end
       dataset
     end

@@ -337,29 +337,14 @@ module OpenTox
         
     end
     
-    # Get mg from logmmol (for nch LOAEL/pTD50 data)
-    # @return [Float] value in mg
-    def logmmol_to_mg(value, mw)
-      mg = (10**(-1.0*value.to_f)*(mw.to_f*1000))
-      return mg
-    end
-
     # Get mg from mmol
     # @return [Float] value in mg
-    def mmol_to_mg(value, mw)
-      mg = (value.to_f)*(mw.to_f)
-      return mg
+    def mmol_to_mg mmol
+      mmol.to_f*molecular_weight
     end
 
     def mg_to_mmol mg
       mg.to_f/molecular_weight
-    end
-
-    # Get mg from logmg
-    # @return [Float] value in mg
-    def logmg_to_mg(value)
-      mg = 10**value.to_f
-      return mg
     end
     
     # Calculate molecular weight of Compound with OB and store it in object
@@ -370,7 +355,6 @@ module OpenTox
       end
       self["molecular_weight"].to_f
     end
-
 
     private
 
