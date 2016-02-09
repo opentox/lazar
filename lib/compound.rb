@@ -38,7 +38,7 @@ module OpenTox
       compound
     end
 
-    def fingerprint type="MP2D"
+    def fingerprint type=DEFAULT_FINGERPRINT
       unless fingerprints[type]
         return [] unless self.smiles
         #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
@@ -337,12 +337,14 @@ module OpenTox
         
     end
     
-    # Get mg from mmol
+    # Convert mg to mmol
     # @return [Float] value in mg
     def mmol_to_mg mmol
       mmol.to_f*molecular_weight
     end
 
+    # Convert mmol to mg
+    # @return [Float] value in mg
     def mg_to_mmol mg
       mg.to_f/molecular_weight
     end

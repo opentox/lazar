@@ -30,7 +30,7 @@ class ValidationTest < MiniTest::Test
     model = Model::LazarRegression.create dataset
     cv = RegressionCrossValidation.create model
     #cv = RegressionCrossValidation.find '561503262b72ed54fd000001'
-    #p cv.id
+    p cv
     #File.open("tmp.svg","w+"){|f| f.puts cv.correlation_plot}
     #`inkview tmp.svg`
     #File.open("tmp.svg","w+"){|f| f.puts cv.confidence_plot}
@@ -68,6 +68,27 @@ class ValidationTest < MiniTest::Test
     end
 
     assert cv.rmse < 1.5, "RMSE > 30"
+    assert cv.mae < 1
+  end
+
+  def test_pls_regression_crossvalidation
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
+    #dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.csv"
+    params = {
+      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression",
+    }
+    model = Model::LazarRegression.create dataset, params
+    cv = RegressionCrossValidation.create model
+    #p cv
+    cv.validation_ids.each do |vid|
+      model = Model::Lazar.find(Validation.find(vid).model_id)
+      p model
+      #assert_equal params[:neighbor_algorithm_parameters][:type], model[:neighbor_algorithm_parameters][:type]
+      #assert_equal params[:neighbor_algorithm_parameters][:min_sim], model[:neighbor_algorithm_parameters][:min_sim]
+      #refute_equal params[:neighbor_algorithm_parameters][:training_dataset_id], model[:neighbor_algorithm_parameters][:training_dataset_id]
+    end
+
+    assert cv.rmse < 1.5, "RMSE > 1.5"
     assert cv.mae < 1
   end
 

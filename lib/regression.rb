@@ -9,7 +9,7 @@ module OpenTox
         sim_sum = 0.0
         confidence = 0.0
         neighbors = params[:neighbors]
-        activities = []
+        #activities = []
         neighbors.each do |row|
           #if row["dataset_ids"].include? params[:training_dataset_id]
             sim = row["tanimoto"]
@@ -17,7 +17,7 @@ module OpenTox
             # TODO add LOO errors
             row["features"][params[:prediction_feature_id].to_s].each do |act|
               weighted_sum += sim*Math.log10(act)
-              activities << act
+              #activities << act # TODO: Transformation??
               sim_sum += sim
             end
           #end
@@ -33,28 +33,51 @@ module OpenTox
         {:value => prediction,:confidence => confidence}
       end
 
-      def self.local_linear_regression  compound, neighbors
-        return nil unless neighbors.size > 0
-        features = neighbors.collect{|n| Compound.find(n.first).fp4}.flatten.uniq
-        training_data = Array.new(neighbors.size){Array.new(features.size,0)}
-        neighbors.each_with_index do |n,i|
-          #p n.first
-          neighbor = Compound.find n.first
-          features.each_with_index do |f,j|
-            training_data[i][j] = 1 if neighbor.fp4.include? f
+      def self.local_pls_regression  compound, params
+        neighbors = params[:neighbors]
+        return {:value => nil, :confidence => nil} unless neighbors.size > 0
+        activities = []
+        fingerprints = {}
+        weights = []
+        fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
+        
+        neighbors.each_with_index do |row,i|
+          neighbor = Compound.find row["_id"]
+          fingerprint = neighbor.fingerprint
+          row["features"][params[:prediction_feature_id].to_s].each do |act|
+            activities << Math.log10(act)
+            weights << row["tanimoto"]
+            fingerprint_ids.each_with_index do |id,j|
+              fingerprints[id] ||= []
+              fingerprints[id] << fingerprint.include?(id) 
+            end
           end
         end
-        p training_data
 
-        R.assign "activities", neighbors.collect{|n| n[2].median}
-        R.assign "features", training_data
-        R.eval "model <- lm(activities ~ features)"
-        R.eval "summary <- summary(model)"
-        p R.summary
-        compound_features = features.collect{|f| compound.fp4.include? f ? 1 : 0}
-        R.assign "compound_features", compound_features
-        R.eval "prediction <- predict(model,compound_features)"
-        p R.prediction
+        name = Feature.find(params[:prediction_feature_id]).name
+        R.assign "activities", activities
+        R.assign "weights", weights
+        variables = []
+        data_frame = ["c(#{activities.join ","})"]
+        fingerprints.each do |k,v| 
+          unless v.uniq.size == 1
+            data_frame << "factor(c(#{v.collect{|m| m ? "T" : "F"}.join ","}))"
+            variables << "'#{k}'"
+          end
+        end
+        begin
+          R.eval "data <- data.frame(#{data_frame.join ","})"
+          R.eval "names(data) <- c('activities',#{variables.join ','})"
+          R.eval "model <- plsr(activities ~ .,data = data, ncomp = 3, weights = weights)"
+          compound_features = fingerprint_ids.collect{|f| compound.fingerprint.include? f }
+          R.eval "fingerprint <- rbind(c(#{compound_features.collect{|f| f ? "T" : "F"}.join ','}))"
+          R.eval "names(fingerprint) <- c(#{variables.join ','})"
+          R.eval "prediction <- predict(model,fingerprint)"
+          prediction = 10**R.eval("prediction").to_f
+          {:value => prediction, :confidence => 1} # TODO confidence
+        rescue
+          {:value => nil, :confidence => nil} # TODO confidence
+        end
       
       end
 

@@ -35,14 +35,14 @@ module OpenTox
       predictions = []
       training_dataset = Dataset.find model.training_dataset_id
       training_dataset.folds(n).each_with_index do |fold,fold_nr|
-        fork do # parallel execution of validations
+        #fork do # parallel execution of validations
           $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
           t = Time.now
           validation = Validation.create(model, fold[0], fold[1],cv)
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
-        end
+        #end
       end
-      Process.waitall
+      #Process.waitall
       cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
       cv.validations.each do |validation|
         nr_instances += validation.nr_instances
@@ -176,6 +176,7 @@ module OpenTox
       mae = 0
       weighted_mae = 0
       confidence_sum = 0
+      p predictions
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
@@ -194,6 +195,8 @@ module OpenTox
       y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
+      p x
+      p y
       R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
       r = R.eval("r").to_ruby
 

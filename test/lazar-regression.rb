@@ -21,12 +21,13 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal 3, prediction[:neighbors].size
   end
 
-  def test_local_linear_regression
-    skip
+  def test_local_pls_regression
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
     model = Model::LazarRegression.create training_dataset
-    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_linear_regression")
     compound = Compound.from_smiles "NC(=O)OCCC"
+    prediction = model.predict compound
+    p prediction
+    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression")
     prediction = model.predict compound
     p prediction
     #assert_equal 13.6, prediction[:value].round(1)
