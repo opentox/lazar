@@ -4,23 +4,19 @@ module OpenTox
     class Regression
 
       def self.weighted_average compound, params
-        #p params.keys
         weighted_sum = 0.0
         sim_sum = 0.0
         confidence = 0.0
         neighbors = params[:neighbors]
-        #activities = []
         neighbors.each do |row|
-          #if row["dataset_ids"].include? params[:training_dataset_id]
-            sim = row["tanimoto"]
-            confidence = sim if sim > confidence # distance to nearest neighbor
-            # TODO add LOO errors
-            row["features"][params[:prediction_feature_id].to_s].each do |act|
-              weighted_sum += sim*Math.log10(act)
-              #activities << act # TODO: Transformation??
-              sim_sum += sim
-            end
-          #end
+          sim = row["tanimoto"]
+          confidence = sim if sim > confidence # distance to nearest neighbor
+          # TODO add LOO errors
+          row["features"][params[:prediction_feature_id].to_s].each do |act|
+            weighted_sum += sim*Math.log10(act)
+            #activities << act # TODO: Transformation??
+            sim_sum += sim
+          end
         end
         #R.assign "activities", activities
         #R.eval "cv = cv(activities)"
@@ -35,7 +31,7 @@ module OpenTox
 
       def self.local_pls_regression  compound, params
         neighbors = params[:neighbors]
-        return {:value => nil, :confidence => nil} unless neighbors.size > 0
+        return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
         activities = []
         fingerprints = {}
         weights = []
@@ -62,21 +58,37 @@ module OpenTox
         fingerprints.each do |k,v| 
           unless v.uniq.size == 1
             data_frame << "factor(c(#{v.collect{|m| m ? "T" : "F"}.join ","}))"
-            variables << "'#{k}'"
+            variables << k
           end
         end
-        begin
+        if variables.empty?
+            result = weighted_average(compound, params)
+            result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
+            return result
+          return {:value => nil, :confidence => nil} # TODO confidence
+        else
           R.eval "data <- data.frame(#{data_frame.join ","})"
-          R.eval "names(data) <- c('activities',#{variables.join ','})"
-          R.eval "model <- plsr(activities ~ .,data = data, ncomp = 3, weights = weights)"
-          compound_features = fingerprint_ids.collect{|f| compound.fingerprint.include? f }
-          R.eval "fingerprint <- rbind(c(#{compound_features.collect{|f| f ? "T" : "F"}.join ','}))"
-          R.eval "names(fingerprint) <- c(#{variables.join ','})"
-          R.eval "prediction <- predict(model,fingerprint)"
-          prediction = 10**R.eval("prediction").to_f
-          {:value => prediction, :confidence => 1} # TODO confidence
-        rescue
-          {:value => nil, :confidence => nil} # TODO confidence
+          R.assign "features", variables
+          R.eval "names(data) <- append(c('activities'),features)" #
+          begin
+            R.eval "model <- plsr(activities ~ .,data = data, ncomp = 4, weights = weights)"
+          rescue # fall back to weighted average
+            result = weighted_average(compound, params)
+            result[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
+            return result
+          end
+          #begin
+            #compound_features = fingerprint_ids.collect{|f| compound.fingerprint.include? f } # FIX
+            compound_features = variables.collect{|f| compound.fingerprint.include? f } 
+            R.eval "fingerprint <- rbind(c(#{compound_features.collect{|f| f ? "T" : "F"}.join ','}))"
+            R.eval "names(fingerprint) <- features" #
+            R.eval "prediction <- predict(model,fingerprint)"
+            prediction = 10**R.eval("prediction").to_f
+            return {:value => prediction, :confidence => 1} # TODO confidence
+          #rescue
+            #p "Prediction failed"
+            #return {:value => nil, :confidence => nil} # TODO confidence
+          #end
         end
       
       end

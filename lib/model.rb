@@ -48,7 +48,7 @@ module OpenTox
         self
       end
 
-      def predict object, use_database_values=true
+      def predict object
 
         t = Time.now
         at = Time.now
@@ -79,31 +79,21 @@ module OpenTox
           # remove neighbors without prediction_feature
           # check for database activities (neighbors may include query compound)
           database_activities = nil
+          prediction = {}
           if neighbors.collect{|n| n["_id"]}.include? compound.id
 
             database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s]
+            prediction[:database_activities] = database_activities
+            prediction[:warning] = "#{database_activities.size} structures have been removed from neighbors, because they have the same structure as the query compound."
             neighbors.delete_if{|n| n["_id"] == compound.id}
           end
           neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
           if neighbors.empty?
-            prediction = {:value => nil,:confidence => nil,:warning => "Cound not find similar compounds."}
+            prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset."})
           else
-            prediction = Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset.id,:prediction_feature_id => prediction_feature.id})
+            prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset.id,:prediction_feature_id => prediction_feature.id}))
           end
-          prediction[:database_activities] = database_activities
           predictions << prediction
-
-=begin
-# TODO scaled dataset for physchem
-          p neighbor_algorithm_parameters
-          p (neighbor_algorithm_parameters["feature_dataset_id"])
-          d = Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"])
-          p d
-          p d.class
-          if neighbor_algorithm_parameters["feature_dataset_id"] and Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"]).kind_of? ScaledDataset
-            p "SCALED"
-          end
-=end
         end 
 
         # serialize result
@@ -116,6 +106,8 @@ module OpenTox
           return predictions
         when "OpenTox::Dataset"
           # prepare prediction dataset
+          measurement_feature = prediction_feature
+          prediction_feature = OpenTox::NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
           prediction_dataset = LazarPrediction.new(
             :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
@@ -125,9 +117,11 @@ module OpenTox
           confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Prediction confidence" )
           # TODO move into warnings field
           warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
-          prediction_dataset.features = [ prediction_feature, confidence_feature, warning_feature ]
+          prediction_dataset.features = [ prediction_feature, confidence_feature, measurement_feature, warning_feature ]
           prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:database_activities] ? "measured" : p[:confidence] , p[:warning]]}
+          #prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:database_activities] ? "measured" : p[:confidence] , p[:warning]]}
+          # TODO fix dataset measurements
+          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence] , p[:dataset_activities].to_s, p[:warning]]}
           prediction_dataset.save_all
           return prediction_dataset
         end

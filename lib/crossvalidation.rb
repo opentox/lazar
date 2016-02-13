@@ -176,7 +176,6 @@ module OpenTox
       mae = 0
       weighted_mae = 0
       confidence_sum = 0
-      p predictions
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
@@ -195,8 +194,6 @@ module OpenTox
       y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
-      p x
-      p y
       R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
       r = R.eval("r").to_ruby
 

@@ -93,6 +93,7 @@ module OpenTox
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
+      # TODO fix splits for duplicates
       len = self.compound_ids.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
