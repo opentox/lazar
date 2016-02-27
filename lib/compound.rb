@@ -23,6 +23,7 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :molecular_weight, type: Float
     field :fingerprints, type: Hash, default: {}
+    field :physchem, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
     field :dataset_ids, type: Array, default: []
     field :features, type: Hash, default: {}

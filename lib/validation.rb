@@ -62,6 +62,13 @@ module OpenTox
       validation
     end
 
+  end
+
+  class ClassificationValidation < Validation
+  end
+
+  class RegressionValidation < Validation
+
     def statistics
       rmse = 0
       weighted_rmse = 0
@@ -105,18 +112,8 @@ module OpenTox
         finished_at: Time.now
       )
 =end
-      puts "R^2 #{r**2}"
-      puts "RMSE #{rmse}"
-      puts "MAE #{mae}"
-      return { "R^2" => r**2, "RMSE" => rmse, "MAE" => mae }
+      { "R^2" => r**2, "RMSE" => rmse, "MAE" => mae }
     end
-
-  end
-
-  class ClassificationValidation < Validation
-  end
-
-  class RegressionValidation < Validation
   end
 
 end

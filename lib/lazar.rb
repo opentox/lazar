@@ -45,7 +45,7 @@ R = Rserve::Connection.new
 R.eval "library(ggplot2)"
 R.eval "library(grid)"
 R.eval "library(gridExtra)"
-R.eval "library('pls')"
+R.eval "library(pls)"
 
 # Require sub-Repositories
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel

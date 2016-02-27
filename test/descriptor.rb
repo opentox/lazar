@@ -62,6 +62,7 @@ class DescriptorTest < MiniTest::Test
     assert_equal 330, result.size
     assert_equal 30.8723, result[2]
     assert_equal 5, result[328]
+    p result
   end
 
   def test_compound_descriptor_parameters

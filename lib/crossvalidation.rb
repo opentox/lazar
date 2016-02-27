@@ -55,7 +55,7 @@ module OpenTox
         predictions: predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
-      cv.statistics
+      #cv.statistics
       cv
     end
   end
@@ -179,12 +179,14 @@ module OpenTox
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
         if activity and prediction
-          error = Math.log10(prediction)-Math.log10(activity)
-          rmse += error**2
-          weighted_rmse += confidence*error**2
-          mae += error.abs
-          weighted_mae += confidence*error.abs
-          confidence_sum += confidence
+          activity.each do |act|
+            error = Math.log10(prediction)-Math.log10(act)
+            rmse += error**2
+            weighted_rmse += confidence*error**2
+            mae += error.abs
+            weighted_mae += confidence*error.abs
+            confidence_sum += confidence
+          end
         else
           warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
           $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."

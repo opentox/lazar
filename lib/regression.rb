@@ -93,6 +93,70 @@ module OpenTox
       
       end
 
+      def self.local_physchem_regression  compound, params
+        neighbors = params[:neighbors]
+        return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
+        activities = []
+        fingerprints = {}
+        weights = []
+        fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
+        
+        neighbors.each_with_index do |row,i|
+          neighbor = Compound.find row["_id"]
+          fingerprint = neighbor.fingerprint
+          row["features"][params[:prediction_feature_id].to_s].each do |act|
+            activities << Math.log10(act)
+            weights << row["tanimoto"]
+            fingerprint_ids.each_with_index do |id,j|
+              fingerprints[id] ||= []
+              fingerprints[id] << fingerprint.include?(id) 
+            end
+          end
+        end
+
+        name = Feature.find(params[:prediction_feature_id]).name
+        R.assign "activities", activities
+        R.assign "weights", weights
+        variables = []
+        data_frame = ["c(#{activities.join ","})"]
+        fingerprints.each do |k,v| 
+          unless v.uniq.size == 1
+            data_frame << "factor(c(#{v.collect{|m| m ? "T" : "F"}.join ","}))"
+            variables << k
+          end
+        end
+        if variables.empty?
+            result = weighted_average(compound, params)
+            result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
+            return result
+          return {:value => nil, :confidence => nil} # TODO confidence
+        else
+          R.eval "data <- data.frame(#{data_frame.join ","})"
+          R.assign "features", variables
+          R.eval "names(data) <- append(c('activities'),features)" #
+          begin
+            R.eval "model <- plsr(activities ~ .,data = data, ncomp = 4, weights = weights)"
+          rescue # fall back to weighted average
+            result = weighted_average(compound, params)
+            result[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
+            return result
+          end
+          #begin
+            #compound_features = fingerprint_ids.collect{|f| compound.fingerprint.include? f } # FIX
+            compound_features = variables.collect{|f| compound.fingerprint.include? f } 
+            R.eval "fingerprint <- rbind(c(#{compound_features.collect{|f| f ? "T" : "F"}.join ','}))"
+            R.eval "names(fingerprint) <- features" #
+            R.eval "prediction <- predict(model,fingerprint)"
+            prediction = 10**R.eval("prediction").to_f
+            return {:value => prediction, :confidence => 1} # TODO confidence
+          #rescue
+            #p "Prediction failed"
+            #return {:value => nil, :confidence => nil} # TODO confidence
+          #end
+        end
+      
+      end
+
       def self.weighted_average_with_relevant_fingerprints neighbors
         weighted_sum = 0.0
         sim_sum = 0.0

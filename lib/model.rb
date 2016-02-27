@@ -34,7 +34,7 @@ module OpenTox
       def initialize training_dataset, params={}
 
         super params
-        bad_request_error "More than one prediction feature found in training_dataset #{training_dataset.id}" unless training_dataset.features.size == 1
+        #bad_request_error "More than one prediction feature found in training_dataset #{training_dataset.id}" unless training_dataset.features.size == 1
 
         # TODO document convention
         prediction_feature = training_dataset.features.first
@@ -159,7 +159,7 @@ module OpenTox
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
         model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.weighted_average" 
+        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_pls_regression" 
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "MP2D",
