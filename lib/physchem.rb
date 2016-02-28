@@ -37,10 +37,12 @@ module OpenTox
 
     DESCRIPTORS = OBDESCRIPTORS.merge(CDKDESCRIPTORS.merge(JOELIBDESCRIPTORS))
 
+
     require_relative "unique_descriptors.rb"
 
-    def self.descriptors
-      DESCRIPTORS.collect do |name,description|
+    def self.descriptors desc=DESCRIPTORS
+      # TODO create PhysChem features @startup
+      desc.collect do |name,description|
         lib,desc = name.split('.',2)
         self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
       end
@@ -64,25 +66,20 @@ module OpenTox
       udesc
     end
 
-    # Description of available descriptors
-    def self.description descriptor
-      lib = descriptor.split('_').first
-      case lib
-      when "Openbabel"
-        OBDESCRIPTORS[descriptor]
-      when "Cdk"
-        name = descriptor.split('_')[0..-2].join('_')
-        CDKDESCRIPTORS[name]
-      when "Joelib"
-        JOELIBDESCRIPTORS[descriptor]
-      when "lookup"
-        "Read feature values from a dataset"
-      end
+    def self.openbabel_descriptors
+      descriptors OBDESCRIPTORS
+    end
+
+    def self.cdk_descriptors
+      descriptors CDKDESCRIPTORS
+    end
+
+    def self.joelib_descriptors
+      descriptors JOELIBDESCRIPTORS
     end
 
     def calculate compound
       result = send library.downcase,descriptor,compound
-      p result
       result[self.name]
     end
 

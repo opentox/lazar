@@ -57,7 +57,10 @@ class FeatureTest < MiniTest::Test
 
   def test_physchem_description
     assert_equal 355, PhysChem.descriptors.size
-    assert_equal 330, PhysChem.unique_descriptors.size
+    assert_equal 15, PhysChem.openbabel_descriptors.size
+    assert_equal 295, PhysChem.cdk_descriptors.size
+    assert_equal 45, PhysChem.joelib_descriptors.size
+    assert_equal 310, PhysChem.unique_descriptors.size
   end
 
   def test_physchem

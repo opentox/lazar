@@ -17,7 +17,6 @@ module OpenTox
     field :smiles, type: String
     field :inchikey, type: String
     field :names, type: Array
-    #field :warnings, type: Array, default: []
     field :cid, type: String
     field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
@@ -88,17 +87,26 @@ module OpenTox
       fingerprints[type]
     end
 
-    def physchem descriptor_ids
-      calculated_descriptor_ids = self[:physchem_descriptors].keys
-      p names
-      new = UNIQUEDESCRIPTORS-names
-      p new
-      d = self.physchem(self, new)
-      #p d
-      #self[:physchem_descriptors].merge! d
-      self.update_attribute(:physchem_descriptors, self[:physchem_descriptors].merge(d))
+    def physchem descriptors=PhysChem.openbabel_descriptors
+      # TODO: speedup java descriptors
+      calculated_ids = physchem_descriptors.keys
+      # BSON::ObjectId instances are not allowed as keys in a BSON document.
+      new_ids = descriptors.collect{|d| d.id.to_s} - calculated_ids
+      descs = {}
+      algos = {}
+      new_ids.each do |id|
+        descriptor = PhysChem.find id
+        descs[[descriptor.library, descriptor.descriptor]]  = descriptor
+        algos[descriptor.name] = descriptor
+      end
+      # avoid recalculating Cdk features with multiple values
+      descs.keys.uniq.each do |k|
+        descs[k].send(k[0].downcase,k[1],self).each do |n,v|
+          physchem_descriptors[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
+        end
+      end
       save
-      self[:physchem_descriptors]
+      physchem_descriptors
     end
 
     # Create a compound from smiles string

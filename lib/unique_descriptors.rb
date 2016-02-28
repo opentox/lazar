@@ -24,7 +24,7 @@ UNIQUEDESCRIPTORS = [
   "Cdk.ALOGP", #Calculates atom additive logP and molar refractivity values as described by Ghose and Crippen and
   "Cdk.APol", #Descriptor that calculates the sum of the atomic polarizabilities (including implicit hydrogens).
   "Cdk.AcidicGroupCount", #Returns the number of acidic groups.
-  "Cdk.AminoAcidCount", #Returns the number of amino acids found in the system
+  #"Cdk.AminoAcidCount", #Returns the number of amino acids found in the system
   #"Cdk.AromaticAtomsCount", #Descriptor based on the number of aromatic atoms of a molecule.
   #"Cdk.AromaticBondsCount", #Descriptor based on the number of aromatic bonds of a molecule.
   #"Cdk.AtomCount", #Descriptor based on the number of atoms of a certain element type.
