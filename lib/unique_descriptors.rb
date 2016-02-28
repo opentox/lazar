@@ -12,7 +12,7 @@ UNIQUEDESCRIPTORS = [
   "Openbabel.HBA1", #Number of Hydrogen Bond Acceptors 1 (JoelLib)
   "Openbabel.HBA2", #Number of Hydrogen Bond Acceptors 2 (JoelLib)
   "Openbabel.HBD", #Number of Hydrogen Bond Donors (JoelLib)
-  #"Openbabel.L5", #Lipinski Rule of Five# TODO Openbabel.L5 returns nil, investigate!!!
+  #"Openbabe..L5", #Lipinski Rule of Five# TODO Openbabel.L5 returns nil, investigate!!!
   "Openbabel.logP", #octanol/water partition coefficient
   "Openbabel.MP", #Melting point
   "Openbabel.MR", #molar refractivity
@@ -75,7 +75,7 @@ UNIQUEDESCRIPTORS = [
   "Joelib.count.NumberOfP", #no description available
   "Joelib.count.NumberOfO", #no description available
   "Joelib.count.NumberOfN", #no description available
-  #"Joelib.count.AromaticBonds", #no description available
+  #"Joeli#.count.AromaticBonds", #no description available
   "Joelib.count.NumberOfI", #no description available
   "Joelib.count.NumberOfF", #no description available
   "Joelib.count.NumberOfC", #no description available
@@ -91,7 +91,7 @@ UNIQUEDESCRIPTORS = [
   "Joelib.GeometricalShapeCoefficient", #no description available
   #"Joelib.MolecularWeight", #no description available
   "Joelib.FractionRotatableBonds", #no description available
-  #"Joelib.count.HBD2", #no description available
+  #"Joeli..count.HBD2", #no description available
   #"Joelib.count.HBD1", #no description available
   "Joelib.LogP", #no description available
   "Joelib.GraphShapeCoefficient", #no description available
@@ -116,5 +116,4 @@ UNIQUEDESCRIPTORS = [
   "Joelib.count.SOGroups", #no description available
   "Joelib.TopologicalDiameter", #no description available
   "Joelib.count.NumberOfHal", #no description available
-
-].sort
+]

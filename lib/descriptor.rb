@@ -4,10 +4,10 @@ ENV["JAVA_HOME"] ||= "/usr/lib/jvm/java-7-openjdk"
 
 module OpenTox
 
-  module Algorithm 
+  #module Algorithm 
     
     # Class for descriptor calculations
-    class Descriptor 
+    module Descriptor 
       include OpenTox
 
       JAVA_DIR = File.join(File.dirname(__FILE__),"..","java")
@@ -19,20 +19,19 @@ module OpenTox
       obexclude = ["cansmi","cansmiNS","formula","InChI","InChIKey","s","smarts","title","L5"]
       OBDESCRIPTORS = Hash[OpenBabel::OBDescriptor.list_as_string("descriptors").split("\n").collect do |d|
         name,description = d.split(/\s+/,2)
-        ["Openbabel."+name,description] unless obexclude.include? name
+        ["Openbabel_"+name,description] unless obexclude.include? name
       end.compact.sort{|a,b| a[0] <=> b[0]}]
 
       cdk_desc = YAML.load(`java -classpath #{CDK_JAR}:#{JAVA_DIR}  CdkDescriptorInfo`)
-      CDKDESCRIPTORS = Hash[cdk_desc.collect { |d| ["Cdk."+d[:java_class].split('.').last.sub(/Descriptor/,''), d[:description]] }.sort{|a,b| a[0] <=> b[0]}]
-      CDKDESCRIPTOR_VALUES = cdk_desc.collect { |d| prefix="Cdk."+d[:java_class].split('.').last.sub(/Descriptor/,''); d[:names].collect{ |name| prefix+"."+name } }.flatten
+      CDKDESCRIPTORS = Hash[cdk_desc.collect { |d| ["Cdk_"+d[:java_class].split('.').last.sub(/Descriptor/,''), d[:description]] }.sort{|a,b| a[0] <=> b[0]}]
+      CDKDESCRIPTOR_VALUES = cdk_desc.collect { |d| prefix="Cdk_"+d[:java_class].split('.').last.sub(/Descriptor/,''); d[:names].collect{ |name| prefix+"_"+name } }.flatten
 
       # exclude Hashcode (not a physchem property) and GlobalTopologicalChargeIndex (Joelib bug)
       joelibexclude = ["MoleculeHashcode","GlobalTopologicalChargeIndex"]
       # strip Joelib messages from stdout
       JOELIBDESCRIPTORS = Hash[YAML.load(`java -classpath #{JOELIB_JAR}:#{LOG4J_JAR}:#{JAVA_DIR}  JoelibDescriptorInfo | sed '0,/---/d'`).collect do |d|
-        name = d[:java_class].sub(/^joelib2.feature.types./,'')
-        # impossible to obtain meaningful descriptions from JOELIb, see java/JoelibDescriptors.java
-        ["Joelib."+name, "no description available"] unless joelibexclude.include? name
+        name = d[:java_class].sub(/^joelib2.feature.types./,'').gsub(/\./,"_")
+        ["Joelib_"+name, "impossible to obtain meaningful descriptions from JOELIb, see java/JoelibDescriptors.java"] unless joelibexclude.include? name
       end.compact.sort{|a,b| a[0] <=> b[0]}] 
 
       DESCRIPTORS = OBDESCRIPTORS.merge(CDKDESCRIPTORS.merge(JOELIBDESCRIPTORS))
@@ -42,12 +41,12 @@ module OpenTox
 
       # Description of available descriptors
       def self.description descriptor
-        lib = descriptor.split('.').first
+        lib = descriptor.split('_').first
         case lib
         when "Openbabel"
           OBDESCRIPTORS[descriptor]
         when "Cdk"
-          name = descriptor.split('.')[0..-2].join('.')
+          name = descriptor.split('_')[0..-2].join('_')
           CDKDESCRIPTORS[name]
         when "Joelib"
           JOELIBDESCRIPTORS[descriptor]
@@ -101,7 +100,7 @@ module OpenTox
         @physchem_descriptors = [] # CDK may return more than one result per descriptor, they are stored as separate features
         des = {}
         @descriptors.each do |d|
-          lib, descriptor = d.split(".",2)
+          lib, descriptor = d.split("_",2)
           lib = lib.downcase.to_sym
           des[lib] ||= []
           des[lib] << descriptor
@@ -125,7 +124,7 @@ module OpenTox
             @data_entries[c][d+last_feature_idx] = fix_value(descriptor.predict(obmol))
           end
         end
-        @physchem_descriptors += descriptors.collect{|d| "Openbabel.#{d}"}
+        @physchem_descriptors += descriptors.collect{|d| "Openbabel_#{d}"}
       end
 
       def self.java_descriptors descriptors, lib
@@ -208,10 +207,16 @@ module OpenTox
       end
 
       def self.serialize
-        @data_entries.collect!{|de| de.collect{|v| v.round(5) unless v.nil?}}
+        #@data_entries.collect!{|de| de.collect{|v| v.round(5) unless v.nil?}}
         case @input_class
+          # TODO beautify and fix for other objects
         when "OpenTox::Compound"
-          @data_entries.first
+          r = {}
+          @data_entries.first.each_with_index do |d,i|
+            # TODO fix @ source
+            r[@physchem_descriptors[i].gsub(/\./,'_')] = d
+          end
+          r 
         when "Array"
           @data_entries
         when "OpenTox::Dataset"
@@ -243,5 +248,5 @@ module OpenTox
       end
       private_class_method :sdf_3d, :fix_value, :parse, :run_cmd, :serialize
     end
-  end
+  #end
 end

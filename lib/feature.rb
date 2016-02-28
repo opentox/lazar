@@ -5,6 +5,7 @@ module OpenTox
     field :nominal, type: Boolean
     field :numeric, type: Boolean
     field :measured, type: Boolean
+    field :calculated, type: Boolean
   end
 
   # Feature for categorical variables
@@ -40,13 +41,6 @@ module OpenTox
     # TODO check if effect is used
     field :effect, type: String
     field :dataset_id 
-  end
-
-  # Feature for physico-chemical descriptors
-  class PhysChemDescriptor < NumericFeature
-    field :algorithm, type: String, default: "OpenTox::Algorithm::Descriptor.physchem"
-    field :parameters, type: Hash
-    field :creator, type: String
   end
 
   # Feature for categorical bioassay results

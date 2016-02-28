@@ -7,7 +7,9 @@ CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
 module OpenTox
 
   class Compound
+    require_relative "unique_descriptors.rb"
     include OpenTox
+    include OpenTox::Descriptor
 
     DEFAULT_FINGERPRINT = "MP2D"
 
@@ -15,7 +17,7 @@ module OpenTox
     field :smiles, type: String
     field :inchikey, type: String
     field :names, type: Array
-    field :warning, type: String
+    #field :warnings, type: Array, default: []
     field :cid, type: String
     field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
@@ -23,8 +25,8 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :molecular_weight, type: Float
     field :fingerprints, type: Hash, default: {}
-    field :physchem, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
+    field :physchem_descriptors, type: Hash, default: {}
     field :dataset_ids, type: Array, default: []
     field :features, type: Hash, default: {}
 
@@ -86,19 +88,34 @@ module OpenTox
       fingerprints[type]
     end
 
+    def physchem descriptor_ids
+      calculated_descriptor_ids = self[:physchem_descriptors].keys
+      p names
+      new = UNIQUEDESCRIPTORS-names
+      p new
+      d = self.physchem(self, new)
+      #p d
+      #self[:physchem_descriptors].merge! d
+      self.update_attribute(:physchem_descriptors, self[:physchem_descriptors].merge(d))
+      save
+      self[:physchem_descriptors]
+    end
+
     # Create a compound from smiles string
     # @example
     #   compound = OpenTox::Compound.from_smiles("c1ccccc1")
     # @param [String] smiles Smiles string
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
-      return nil if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
+      if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
+        $logger.warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
+        return nil
+      end
       smiles = obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
       if smiles.empty?
+        $logger.warn "SMILES parsing failed for '#{smiles}'', this may be caused by an incorrect SMILES string."
         return nil
-        #Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
       else
-        #Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
         Compound.find_or_create_by :smiles => smiles 
       end
     end
@@ -113,7 +130,7 @@ module OpenTox
       #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?
-        Compound.find_or_create_by(:warning => "InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries.")
+        Compound.find_or_create_by(:warnings => ["InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries."])
       else
         Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
       end
