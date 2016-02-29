@@ -232,7 +232,7 @@ module OpenTox
             dataset.feature_calculation_algorithm = "#{self}.physchem"
             #TODO params?
           end
-          dataset.save_all
+          dataset.save
           dataset
         end
       end

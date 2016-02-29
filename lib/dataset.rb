@@ -5,24 +5,11 @@ module OpenTox
 
   class Dataset
 
-    #attr_writer :data_entries
-
     # associations like has_many, belongs_to deteriorate performance
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
-    #field :data_entries_id, type: BSON::ObjectId
     field :data_entries, type: Array, default: []
     field :source, type: String
-
-    # Save all data including data_entries
-    # Should be used instead of save
-    def save_all
-      save
-      #dump = Marshal.dump(@data_entries)
-      #file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
-      #entries_id = $gridfs.insert_one(file)
-      #update(:data_entries_id => entries_id)
-    end
 
     # Readers
 
@@ -37,33 +24,6 @@ module OpenTox
       @features ||= self.feature_ids.collect{|id| OpenTox::Feature.find(id)}
       @features
     end
-
-=begin
-    # Get all data_entries
-    def data_entries
-      unless @data_entries
-        t = Time.now
-        data_entry_file = $gridfs.find_one(_id: data_entries_id)
-        if data_entry_file.nil?
-          @data_entries = []
-        else
-          @data_entries = Marshal.load(data_entry_file.data)
-          bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
-          unless @data_entries.first.size == feature_ids.size
-            # TODO: fix (unknown) source of empty data_entries
-            sleep 1
-            data_entry_file = $gridfs.find_one(_id: data_entries_id)
-            @data_entries = Marshal.load(data_entry_file.data)
-          end
-          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
-          # TODO: data_entries can be empty, poorly reproducible, mongo problem?
-          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
-          #$logger.debug "Retrieving data: #{Time.now-t}"
-        end
-      end
-      @data_entries
-    end
-=end
 
     # Find data entry values for a given compound and feature
     # @param compound [OpenTox::Compound] OpenTox Compound object
@@ -92,9 +52,11 @@ module OpenTox
     # Split a dataset into n folds
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
+=begin
     def folds n
       # TODO fix splits for duplicates
-      len = self.compound_ids.size
+      unique_compound_ids = compound_ids.uniq
+      len = unique_compond_ids.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
       chunks = []
@@ -103,7 +65,7 @@ module OpenTox
         last = start+mid
         last = last-1 unless len%n >= i
         test_idxs = indices[start..last] || []
-        test_cids = test_idxs.collect{|i| self.compound_ids[i]}
+        test_cids = test_idxs.collect{|i| unique_compond_ids[i]}
         test_data_entries = test_idxs.collect{|i| self.data_entries[i]}
         test_dataset = self.class.new(:compound_ids => test_cids, :feature_ids => self.feature_ids, :data_entries => test_data_entries)
         test_dataset.compounds.each do |compound|
@@ -111,18 +73,66 @@ module OpenTox
           compound.save
         end
         training_idxs = indices-test_idxs
-        training_cids = training_idxs.collect{|i| self.compound_ids[i]}
+        training_cids = training_idxs.collect{|i| unique_compond_ids[i]}
         training_data_entries = training_idxs.collect{|i| self.data_entries[i]}
         training_dataset = self.class.new(:compound_ids => training_cids, :feature_ids => self.feature_ids, :data_entries => training_data_entries)
         training_dataset.compounds.each do |compound|
           compound.dataset_ids << training_dataset.id
           compound.save
         end
-        test_dataset.save_all
-        training_dataset.save_all
+        test_dataset.save
+        training_dataset.save
         chunks << [training_dataset,test_dataset]
         start = last+1
       end
+      chunks
+    end
+=end
+
+    # Split a dataset into n folds
+    # @param [Integer] number of folds
+    # @return [Array] Array with folds [training_dataset,test_dataset]
+    def folds n
+      unique_compound_data = {}
+      compound_ids.each_with_index do |cid,i|
+        unique_compound_data[cid] ||= []
+        unique_compound_data[cid] << data_entries[i]
+      end
+      unique_compound_ids = unique_compound_data.keys
+      len = unique_compound_ids.size
+      indices = (0..len-1).to_a.shuffle
+      mid = (len/n)
+      chunks = []
+      start = 0
+      1.upto(n) do |i|
+        last = start+mid
+        last = last-1 unless len%n >= i
+        test_idxs = indices[start..last] || []
+        test_cids = test_idxs.collect{|i| unique_compound_ids[i]}
+        training_idxs = indices-test_idxs
+        training_cids = training_idxs.collect{|i| unique_compound_ids[i]}
+        chunk = [training_cids,test_cids].collect do |unique_cids|
+          cids = []
+          data_entries = []
+          unique_cids.each do |cid| 
+            unique_compound_data[cid].each do |de|
+              cids << cid
+              data_entries << de
+            end
+          end
+          dataset = self.class.new(:compound_ids => cids, :feature_ids => self.feature_ids, :data_entries => data_entries, :source => self.id )
+=begin
+          dataset.compounds.each do |compound|
+            compound.dataset_ids << dataset.id
+            compound.save
+          end
+=end
+          dataset
+        end
+        start = last+1
+        chunks << chunk
+      end
+      puts chunks.inspect
       chunks
     end
 
@@ -337,7 +347,7 @@ module OpenTox
       scaled_dataset.centers = centers
       scaled_dataset.scales = scales
       scaled_dataset.data_entries = scaled_data_entries
-      scaled_dataset.save_all
+      scaled_dataset.save
       scaled_dataset
     end
   end

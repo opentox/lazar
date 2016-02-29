@@ -154,7 +154,7 @@ module OpenTox
 
         $logger.debug "Prepare save: #{Time.now-time}"
         time = Time.now
-        feature_dataset.save_all
+        feature_dataset.save
 
         $logger.debug "Save: #{Time.now-time}"
         feature_dataset

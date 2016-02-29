@@ -122,7 +122,7 @@ module OpenTox
           #prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:database_activities] ? "measured" : p[:confidence] , p[:warning]]}
           # TODO fix dataset measurements
           prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence] , p[:dataset_activities].to_s, p[:warning]]}
-          prediction_dataset.save_all
+          prediction_dataset.save
           return prediction_dataset
         end
 

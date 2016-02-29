@@ -213,5 +213,17 @@ class DatasetTest < MiniTest::Test
     end
   end
 
+  def test_folds
+    dataset = Dataset.from_csv_file File.join(DATA_DIR,"loael.csv")
+    dataset.folds(10).each do |fold|
+      fold.each do |d|
+        assert_equal d.data_entries.size, d.compound_ids.size
+        assert_operator d.compound_ids.size, :>=, d.compound_ids.uniq.size
+      end
+      assert_operator fold[0].compound_ids.uniq.size, :>=, fold[1].compound_ids.uniq.size
+    end
+    #puts dataset.folds 10
+  end
+
 end
 
