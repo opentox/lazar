@@ -21,18 +21,13 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal 3, prediction[:neighbors].size
   end
 
-  def test_local_pls_regression
+  def test_local_fingerprint_regression
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    model = Model::LazarRegression.create training_dataset
+    model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_fingerprint_regression")
     compound = Compound.from_smiles "NC(=O)OCCC"
     prediction = model.predict compound
-    p prediction
-    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression")
-    prediction = model.predict compound
-    p prediction
-    #assert_equal 13.6, prediction[:value].round(1)
-    #assert_equal 0.83, prediction[:confidence].round(2)
-    #assert_equal 1, prediction[:neighbors].size
+    p prediction[:value]
+    refute_nil prediction[:value]
   end
 
   def test_local_physchem_regression
@@ -40,12 +35,8 @@ class LazarRegressionTest < MiniTest::Test
     model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     compound = Compound.from_smiles "NC(=O)OCCC"
     prediction = model.predict compound
-    model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression")
-    prediction = model.predict compound
-    # TODO assertions
-    #assert_equal 13.6, prediction[:value].round(1)
-    #assert_equal 0.83, prediction[:confidence].round(2)
-    #assert_equal 1, prediction[:neighbors].size
+    p prediction[:value]
+    refute_nil prediction[:value]
   end
 
 end
