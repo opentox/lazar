@@ -1,6 +1,7 @@
 module OpenTox
   module Algorithm
     
+    # TODO add LOO errors
     class Regression
 
       def self.weighted_average compound, params
@@ -11,19 +12,11 @@ module OpenTox
         neighbors.each do |row|
           sim = row["tanimoto"]
           confidence = sim if sim > confidence # distance to nearest neighbor
-          # TODO add LOO errors
           row["features"][params[:prediction_feature_id].to_s].each do |act|
             weighted_sum += sim*Math.log10(act)
-            #activities << act # TODO: Transformation??
             sim_sum += sim
           end
         end
-        #R.assign "activities", activities
-        #R.eval "cv = cv(activities)"
-        #confidence /= activities.standard_deviation#/activities.mean
-        #confidence = sim_sum*neighbors.size.to_f/params[:training_dataset_size]
-        #confidence = sim_sum/neighbors.size.to_f
-        #confidence = neighbors.size.to_f
         confidence = 0 if confidence.nan?
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
         {:value => prediction,:confidence => confidence}
@@ -94,45 +87,46 @@ module OpenTox
       end
 
       def self.local_physchem_regression  compound, params
+
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
+        return {:value => neighbors.first["features"][params[:prediction_feature_id]], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
+
         activities = []
-        fingerprints = {}
         weights = []
-        fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
+        physchem = {}
         
         neighbors.each_with_index do |row,i|
           neighbor = Compound.find row["_id"]
-          fingerprint = neighbor.fingerprint
           row["features"][params[:prediction_feature_id].to_s].each do |act|
             activities << Math.log10(act)
-            weights << row["tanimoto"]
-            fingerprint_ids.each_with_index do |id,j|
-              fingerprints[id] ||= []
-              fingerprints[id] << fingerprint.include?(id) 
+            weights << row["tanimoto"] # TODO cosine ?
+            neighbor.physchem.each do |pid,v| # insert physchem only if there is an activity
+              physchem[pid] ||= []
+              physchem[pid] <<  v
             end
           end
         end
 
-        name = Feature.find(params[:prediction_feature_id]).name
-        R.assign "activities", activities
-        R.assign "weights", weights
-        variables = []
-        data_frame = ["c(#{activities.join ","})"]
-        fingerprints.each do |k,v| 
-          unless v.uniq.size == 1
-            data_frame << "factor(c(#{v.collect{|m| m ? "T" : "F"}.join ","}))"
-            variables << k
-          end
+        # remove properties with a single value
+        physchem.each do |pid,v|
+          physchem.delete(pid) if v.uniq.size <= 1
         end
-        if variables.empty?
-            result = weighted_average(compound, params)
-            result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
-            return result
-          return {:value => nil, :confidence => nil} # TODO confidence
+
+        if physchem.empty?
+          result = weighted_average(compound, params)
+          result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
+          return result
         else
+
+          name = Feature.find(params[:prediction_feature_id]).name
+          R.assign "weights", weights
+          data_frame = ["c(#{activities.join ","})"]
+          physchem.keys.each do |pid| 
+            data_frame << "c(#{physchem[pid].join ","})" 
+          end
           R.eval "data <- data.frame(#{data_frame.join ","})"
-          R.assign "features", variables
+          R.assign "features", physchem.keys
           R.eval "names(data) <- append(c('activities'),features)" #
           begin
             R.eval "model <- plsr(activities ~ .,data = data, ncomp = 4, weights = weights)"
@@ -141,18 +135,12 @@ module OpenTox
             result[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return result
           end
-          #begin
-            #compound_features = fingerprint_ids.collect{|f| compound.fingerprint.include? f } # FIX
-            compound_features = variables.collect{|f| compound.fingerprint.include? f } 
-            R.eval "fingerprint <- rbind(c(#{compound_features.collect{|f| f ? "T" : "F"}.join ','}))"
-            R.eval "names(fingerprint) <- features" #
-            R.eval "prediction <- predict(model,fingerprint)"
-            prediction = 10**R.eval("prediction").to_f
-            return {:value => prediction, :confidence => 1} # TODO confidence
-          #rescue
-            #p "Prediction failed"
-            #return {:value => nil, :confidence => nil} # TODO confidence
-          #end
+          compound_features = physchem.keys.collect{|pid| compound.physchem[pid]}
+          R.eval "fingerprint <- rbind(c(#{compound_features.join ','}))"
+          R.eval "names(fingerprint) <- features" #
+          R.eval "prediction <- predict(model,fingerprint)"
+          prediction = 10**R.eval("prediction").to_f
+          return {:value => prediction, :confidence => 1} # TODO confidence
         end
       
       end

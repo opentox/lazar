@@ -115,28 +115,14 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_physchem_regression_crossvalidation
-    skip
-
-    @descriptors = OpenTox::Algorithm::Descriptor::OBDESCRIPTORS.keys
-    refute_empty @descriptors
 
     # UPLOAD DATA
     training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
-    feature_dataset = Algorithm::Descriptor.physchem training_dataset, @descriptors
-    feature_dataset.save
-    scaled_feature_dataset = feature_dataset.scale
-    scaled_feature_dataset.save
-    model = Model::LazarRegression.create training_dataset
-    model.neighbor_algorithm = "physchem_neighbors"
-    model.neighbor_algorithm_parameters = {
-      :feature_calculation_algorithm => "OpenTox::Algorithm::Descriptor.physchem",
-      :descriptors => @descriptors,
-      :feature_dataset_id => scaled_feature_dataset.id,
-      :min_sim => 0.3
-    }
-    model.save
+    model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     cv = RegressionCrossValidation.create model
     p cv
+    p cv.id
+    p cv.statistics
   end
 
   def test_classification_loo_validation

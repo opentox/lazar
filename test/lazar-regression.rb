@@ -42,7 +42,7 @@ class LazarRegressionTest < MiniTest::Test
     prediction = model.predict compound
     model.update(:prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression")
     prediction = model.predict compound
-    p prediction
+    # TODO assertions
     #assert_equal 13.6, prediction[:value].round(1)
     #assert_equal 0.83, prediction[:confidence].round(2)
     #assert_equal 1, prediction[:neighbors].size

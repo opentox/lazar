@@ -176,11 +176,15 @@ module OpenTox
       mae = 0
       weighted_mae = 0
       confidence_sum = 0
+      x = []
+      y = []
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
-        if activity and prediction
-          activity.each do |act|
-            error = Math.log10(prediction)-Math.log10(act)
+        if activity and prediction 
+          unless activity == [nil]
+            x << -Math.log10(activity.median)
+            y << -Math.log10(prediction)
+            error = Math.log10(prediction)-Math.log10(activity.median)
             rmse += error**2
             weighted_rmse += confidence*error**2
             mae += error.abs
@@ -192,22 +196,20 @@ module OpenTox
           $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
         end
       end
-      x = predictions.collect{|p| p[1]}
-      y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
       R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
       r = R.eval("r").to_ruby
 
       mae = mae/predictions.size
-      weighted_mae = weighted_mae/confidence_sum
+      #weighted_mae = weighted_mae/confidence_sum
       rmse = Math.sqrt(rmse/predictions.size)
-      weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
+      #weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
       update_attributes(
         mae: mae,
         rmse: rmse,
-        weighted_mae: weighted_mae,
-        weighted_rmse: weighted_rmse,
+        #weighted_mae: weighted_mae,
+        #weighted_rmse: weighted_rmse,
         r_squared: r**2,
         finished_at: Time.now
       )
