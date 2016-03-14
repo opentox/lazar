@@ -17,7 +17,7 @@ lib_dir = File.join openbabel_dir, "lib", "openbabel"
 ruby_src_dir = File.join src_dir, "scripts", "ruby"
 
 begin
-  nr_processors = `grep processor /proc/cpuinfo | wc -l` # speed up compilation, Linux only
+  nr_processors = `getconf _NPROCESSORS_ONLN`.to_i # should be POSIX compatible
 rescue
   nr_processors = 1
 end

@@ -41,6 +41,9 @@ when "development"
 end
 
 # R setup
+# should work on POSIX including os x
+# http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
+NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
 R.eval "
 suppressPackageStartupMessages({
@@ -49,14 +52,14 @@ suppressPackageStartupMessages({
   library(gridExtra)
   library(caret)
   library(doMC)
-  registerDoMC(4)
+  registerDoMC(#{NR_CORES})
 })
 "
 
 # Require sub-Repositories
-require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
-require_relative '../libfminer/liblast/last' # 
-require_relative '../last-utils/lu.rb'
+#require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
+#require_relative '../libfminer/liblast/last' # 
+#require_relative '../last-utils/lu.rb'
 require_relative '../openbabel/lib/openbabel'
 
 # Fminer environment variables
@@ -81,7 +84,7 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveO
   "dataset.rb",
   "descriptor.rb",
   "algorithm.rb",
-  "bbrc.rb",
+  #"bbrc.rb",
   "model.rb",
   "similarity.rb",
   "classification.rb",
