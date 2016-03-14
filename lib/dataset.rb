@@ -52,46 +52,6 @@ module OpenTox
     # Split a dataset into n folds
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
-=begin
-    def folds n
-      # TODO fix splits for duplicates
-      unique_compound_ids = compound_ids.uniq
-      len = unique_compond_ids.size
-      indices = (0..len-1).to_a.shuffle
-      mid = (len/n)
-      chunks = []
-      start = 0
-      1.upto(n) do |i|
-        last = start+mid
-        last = last-1 unless len%n >= i
-        test_idxs = indices[start..last] || []
-        test_cids = test_idxs.collect{|i| unique_compond_ids[i]}
-        test_data_entries = test_idxs.collect{|i| self.data_entries[i]}
-        test_dataset = self.class.new(:compound_ids => test_cids, :feature_ids => self.feature_ids, :data_entries => test_data_entries)
-        test_dataset.compounds.each do |compound|
-          compound.dataset_ids << test_dataset.id
-          compound.save
-        end
-        training_idxs = indices-test_idxs
-        training_cids = training_idxs.collect{|i| unique_compond_ids[i]}
-        training_data_entries = training_idxs.collect{|i| self.data_entries[i]}
-        training_dataset = self.class.new(:compound_ids => training_cids, :feature_ids => self.feature_ids, :data_entries => training_data_entries)
-        training_dataset.compounds.each do |compound|
-          compound.dataset_ids << training_dataset.id
-          compound.save
-        end
-        test_dataset.save
-        training_dataset.save
-        chunks << [training_dataset,test_dataset]
-        start = last+1
-      end
-      chunks
-    end
-=end
-
-    # Split a dataset into n folds
-    # @param [Integer] number of folds
-    # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
       unique_compound_data = {}
       compound_ids.each_with_index do |cid,i|
@@ -121,18 +81,15 @@ module OpenTox
             end
           end
           dataset = self.class.new(:compound_ids => cids, :feature_ids => self.feature_ids, :data_entries => data_entries, :source => self.id )
-=begin
           dataset.compounds.each do |compound|
             compound.dataset_ids << dataset.id
             compound.save
           end
-=end
           dataset
         end
         start = last+1
         chunks << chunk
       end
-      puts chunks.inspect
       chunks
     end
 

@@ -34,7 +34,6 @@ module OpenTox
       def initialize training_dataset, params={}
 
         super params
-        #bad_request_error "More than one prediction feature found in training_dataset #{training_dataset.id}" unless training_dataset.features.size == 1
 
         # TODO document convention
         prediction_feature = training_dataset.features.first
@@ -82,16 +81,16 @@ module OpenTox
           prediction = {}
           if neighbors.collect{|n| n["_id"]}.include? compound.id
 
-            database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s]
+            database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s].uniq
             prediction[:database_activities] = database_activities
-            prediction[:warning] = "#{database_activities.size} structures have been removed from neighbors, because they have the same structure as the query compound."
+            prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
             neighbors.delete_if{|n| n["_id"] == compound.id}
           end
           neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
           if neighbors.empty?
             prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset."})
           else
-            prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset.id,:prediction_feature_id => prediction_feature.id}))
+            prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset_id,:prediction_feature_id => prediction_feature.id}))
           end
           predictions << prediction
         end 
@@ -114,14 +113,13 @@ module OpenTox
             :prediction_feature_id => prediction_feature.id
 
           )
-          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Prediction confidence" )
+          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Model RMSE" )
           # TODO move into warnings field
           warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
           prediction_dataset.features = [ prediction_feature, confidence_feature, measurement_feature, warning_feature ]
           prediction_dataset.compounds = compounds
-          #prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:database_activities] ? "measured" : p[:confidence] , p[:warning]]}
           # TODO fix dataset measurements
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence] , p[:dataset_activities].to_s, p[:warning]]}
+          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:rmse] , p[:dataset_activities].to_s, p[:warning]]}
           prediction_dataset.save
           return prediction_dataset
         end
@@ -159,14 +157,13 @@ module OpenTox
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
         model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_pls_regression" 
+        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "MP2D",
           :training_dataset_id => training_dataset.id,
           :min_sim => 0.1
           #:type => "FP4",
-          #:training_dataset_id => training_dataset.id,
           #:min_sim => 0.7
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value

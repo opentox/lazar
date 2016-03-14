@@ -42,10 +42,16 @@ end
 
 # R setup
 R = Rserve::Connection.new
-R.eval "library(ggplot2)"
-R.eval "library(grid)"
-R.eval "library(gridExtra)"
-R.eval "library(pls)"
+R.eval "
+suppressPackageStartupMessages({
+  library(ggplot2)
+  library(grid)
+  library(gridExtra)
+  library(caret)
+  library(doMC)
+  registerDoMC(4)
+})
+"
 
 # Require sub-Repositories
 require_relative '../libfminer/libbbrc/bbrc' # include before openbabel

@@ -4,7 +4,7 @@ module OpenTox
     # TODO add LOO errors
     class Regression
 
-      def self.weighted_average compound, params
+      def self.local_weighted_average compound, params
         weighted_sum = 0.0
         sim_sum = 0.0
         confidence = 0.0
@@ -23,7 +23,8 @@ module OpenTox
       end
 
       # TODO explicit neighbors, also for physchem
-      def self.local_fingerprint_regression  compound, params, algorithm="plsr", algorithm_params="ncomp = 4"
+      #def self.local_fingerprint_regression  compound, params, method="pls", method_params="ncomp = 4"
+      def self.local_fingerprint_regression  compound, params, method='pls'#, method_params="sigma=0.05"
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
         activities = []
@@ -54,25 +55,27 @@ module OpenTox
         end
 
         if variables.empty?
-            result = weighted_average(compound, params)
+            result = local_weighted_average(compound, params)
             result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
             return result
 
         else
           compound_features = variables.collect{|f| compound.fingerprint.include?(f) ? "T" : "F"} 
-          prediction = r_model_prediction algorithm, algorithm_params, data_frame, variables, weights, compound_features
+          prediction = r_model_prediction method, data_frame, variables, weights, compound_features
           if prediction.nil?
-            prediction = weighted_average(compound, params)
+            prediction = local_weighted_average(compound, params)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
           else
-            return {:value => 10**prediction, :confidence => 1} # TODO confidence
+            prediction[:value] = 10**prediction[:value]
+            prediction[:rmse] = 10**prediction[:rmse]
+            prediction
           end
         end
       
       end
 
-      def self.local_physchem_regression  compound, params, algorithm="plsr", algorithm_params="ncomp = 4"
+      def self.local_physchem_regression  compound, params, method="plsr"#, method_params="ncomp = 4"
 
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
@@ -100,39 +103,44 @@ module OpenTox
         end
 
         if physchem.empty?
-          result = weighted_average(compound, params)
+          result = local_weighted_average(compound, params)
           result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
           return result
 
         else
           data_frame = [activities] + physchem.keys.collect { |pid| physchem[pid] }
-          prediction = r_model_prediction algorithm, algorithm_params, data_frame, physchem.keys, weights, physchem.keys.collect{|pid| compound.physchem[pid]}
+          prediction = r_model_prediction method, data_frame, physchem.keys, weights, physchem.keys.collect{|pid| compound.physchem[pid]}
           if prediction.nil?
-            prediction = weighted_average(compound, params)
+            prediction = local_weighted_average(compound, params)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
           else
-            return {:value => 10**prediction, :confidence => 1} # TODO confidence
+            prediction[:value] = 10**prediction[:value]
+            prediction
           end
         end
       
       end
 
-      def self.r_model_prediction algorithm, params, training_data, training_features, training_weights, query_feature_values
+      def self.r_model_prediction method, training_data, training_features, training_weights, query_feature_values
         R.assign "weights", training_weights
         r_data_frame = "data.frame(#{training_data.collect{|r| "c(#{r.join(',')})"}.join(', ')})"
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
         R.eval "names(data) <- append(c('activities'),features)" #
         begin
-          R.eval "model <- #{algorithm}(activities ~ .,data = data, weights = weights, #{params})"
+          R.eval "model <- train(activities ~ ., data = data, method = '#{method}')"#, #{params}"
         rescue 
           return nil
         end
-        R.eval "fingerprint <- rbind(c(#{query_feature_values.join ','}))"
+        R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
         R.eval "names(fingerprint) <- features" 
         R.eval "prediction <- predict(model,fingerprint)"
-        R.eval("prediction").to_f
+        {
+          :value => R.eval("prediction").to_f,
+          :rmse => R.eval("getTrainPerf(model)$TrainRMSE").to_f,
+          :r_squared => R.eval("getTrainPerf(model)$TrainRsquared").to_f,
+        }
       end
 
     end
