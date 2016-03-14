@@ -69,7 +69,7 @@ class DatasetTest < MiniTest::Test
     assert_equal 3, d.compounds.size
     assert_equal 2, d.features.size
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
-    d.save_all
+    d.save
     # check if dataset has been saved correctly
     new_dataset = Dataset.find d.id
     assert_equal 3, new_dataset.compounds.size

@@ -102,16 +102,6 @@ module OpenTox
       weighted_mae = weighted_mae/confidence_sum
       rmse = Math.sqrt(rmse/predictions.size)
       weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
-=begin
-      update_attributes(
-        mae: mae,
-        rmse: rmse,
-        weighted_mae: weighted_mae,
-        weighted_rmse: weighted_rmse,
-        r_squared: r**2,
-        finished_at: Time.now
-      )
-=end
       { "R^2" => r**2, "RMSE" => rmse, "MAE" => mae }
     end
   end

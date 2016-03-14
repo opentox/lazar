@@ -10,7 +10,6 @@ module OpenTox
 
   # Feature for categorical variables
   class NominalFeature < Feature
-    # TODO check if accept_values are still needed 
     field :accept_values, type: Array
     def initialize params
       super params
@@ -33,14 +32,6 @@ module OpenTox
     def self.from_smarts smarts
       self.find_or_create_by :smarts => smarts
     end
-  end
-
-  # Feature for supervised fragments from Fminer algorithm
-  class FminerSmarts < Smarts
-    field :p_value, type: Float
-    # TODO check if effect is used
-    field :effect, type: String
-    field :dataset_id 
   end
 
   # Feature for categorical bioassay results

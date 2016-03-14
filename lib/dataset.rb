@@ -132,7 +132,6 @@ module OpenTox
       end
     end
 
-
     # Parsers
 
     # Create a dataset from file (csv,sdf,...)
@@ -211,7 +210,6 @@ module OpenTox
       value_time = 0
 
       # compounds and values
-      #@data_entries = [] #Array.new(table.size){Array.new(table.first.size-1)}
       self.data_entries = []
 
       table.each_with_index do |vals,i|

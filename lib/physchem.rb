@@ -37,6 +37,10 @@ module OpenTox
 
     DESCRIPTORS = OBDESCRIPTORS.merge(CDKDESCRIPTORS.merge(JOELIBDESCRIPTORS))
 
+    DESCRIPTORS.each do |name,description|
+      lib,desc = name.split('.',2)
+      self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+    end
 
     require_relative "unique_descriptors.rb"
 

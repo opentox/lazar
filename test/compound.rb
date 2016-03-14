@@ -64,8 +64,7 @@ print c.sdf
 
   def test_chemblid
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
-    #assert_equal "CHEMBL277500", c.chemblid
-    assert_equal "CHEMBL581676", c.chemblid
+    assert_equal "CHEMBL277500", c.chemblid
   end
 
   def test_sdf_storage

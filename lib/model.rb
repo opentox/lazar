@@ -163,8 +163,6 @@ module OpenTox
           :type => "MP2D",
           :training_dataset_id => training_dataset.id,
           :min_sim => 0.1
-          #:type => "FP4",
-          #:min_sim => 0.7
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end
@@ -197,7 +195,6 @@ module OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      # TODO cv -> repeated cv
       # TODO field Validations
       field :endpoint, type: String
       field :species, type: String

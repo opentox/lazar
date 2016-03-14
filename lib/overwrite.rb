@@ -23,10 +23,10 @@ class Numeric
 end
 
 class Float
-  # round to significant digits
+  # round to n significant digits
   # http://stackoverflow.com/questions/8382619/how-to-round-a-float-to-a-specified-number-of-significant-digits-in-ruby
-  def signif(signs)
-    Float("%.#{signs}g" % self)
+  def signif(n)
+    Float("%.#{n}g" % self)
   end
 end
 

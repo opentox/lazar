@@ -1,7 +1,3 @@
-# TODO: check
-# *** Open Babel Error  in ParseFile
-#    Could not find contribution data file.
-
 CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
@@ -9,7 +5,6 @@ module OpenTox
   class Compound
     require_relative "unique_descriptors.rb"
     include OpenTox
-    include OpenTox::Descriptor
 
     DEFAULT_FINGERPRINT = "MP2D"
 
@@ -22,7 +17,6 @@ module OpenTox
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
-    field :molecular_weight, type: Float
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
     field :physchem_descriptors, type: Hash, default: {}
@@ -30,7 +24,6 @@ module OpenTox
     field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
-    #index({default_fingerprint: 1}, {unique: false})
 
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
@@ -106,7 +99,24 @@ module OpenTox
         end
       end
       save
-      physchem_descriptors
+      physchem_descriptors.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
+    end
+
+    def smarts_match smarts, count=false
+      obconversion = OpenBabel::OBConversion.new
+      obmol = OpenBabel::OBMol.new
+      obconversion.set_in_format('smi')
+      obconversion.read_string(obmol,self.smiles)
+      smarts_pattern = OpenBabel::OBSmartsPattern.new
+      smarts.collect do |sma|
+        smarts_pattern.init(sma.smarts)
+        if smarts_pattern.match(obmol)
+          count ? value = smarts_pattern.get_map_list.to_a.size : value = 1
+        else
+          value = 0 
+        end
+        value
+      end
     end
 
     # Create a compound from smiles string
@@ -281,30 +291,12 @@ module OpenTox
         training_dataset = Dataset.find(params[:training_dataset_id])
         prediction_feature = training_dataset.features.first
         training_dataset.compounds.each do |compound|
-          #unless self == compound
-            candidate_fingerprint = compound.fingerprint params[:type]
-            sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-            feature_values = training_dataset.values(compound,prediction_feature)
-            neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
-          #end
+          candidate_fingerprint = compound.fingerprint params[:type]
+          sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
+          feature_values = training_dataset.values(compound,prediction_feature)
+          neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
         end
         neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
-      end
-      neighbors
-    end
-
-    def fminer_neighbors params
-      bad_request_error "Incorrect parameters for Compound#fminer_neighbors. Please provide :feature_dataset_id, :min_sim." unless params[:feature_dataset_id] and params[:min_sim]
-      feature_dataset = Dataset.find params[:feature_dataset_id]
-      query_fingerprint = Algorithm::Descriptor.smarts_match(self, feature_dataset.features)
-      neighbors = []
-
-      # find neighbors
-      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
-        sim = Algorithm::Similarity.tanimoto candidate_fingerprint, query_fingerprint
-        if sim >= params[:min_sim]
-          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
-        end
       end
       neighbors
     end
@@ -317,13 +309,7 @@ module OpenTox
         # TODO implement pearson and cosine similarity separatly
         R.assign "x", query_fingerprint
         R.assign "y", candidate_fingerprint
-        # pearson r
-        #sim = R.eval("cor(x,y,use='complete.obs',method='pearson')").to_ruby
-        #p "pearson"
-        #p sim
-        #p "cosine"
         sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
-        #p sim
         if sim >= params[:min_sim]
           neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
         end
@@ -357,9 +343,6 @@ module OpenTox
       ]
       
       $mongo["compounds"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
-
-
-      #$mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
         
     end
     
@@ -378,10 +361,8 @@ module OpenTox
     # Calculate molecular weight of Compound with OB and store it in object
     # @return [Float] molecular weight
     def molecular_weight
-      if self["molecular_weight"]==0.0 || self["molecular_weight"].nil?
-        update(:molecular_weight => OpenTox::Algorithm::Descriptor.physchem(self, ["Openbabel.MW"]).first)
-      end
-      self["molecular_weight"].to_f
+      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
+      physchem([mw_feature])[mw_feature.id.to_s]
     end
 
     private

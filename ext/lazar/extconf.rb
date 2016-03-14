@@ -5,11 +5,10 @@ main_dir = File.expand_path(File.join(File.dirname(__FILE__),"..",".."))
 
 # install OpenBabel
 
-
 openbabel_version = "2.3.2"
 
 openbabel_dir = File.join main_dir, "openbabel"
-src_dir = openbabel_dir #File.join openbabel_dir, "openbabel-#{openbabel_version}"
+src_dir = openbabel_dir 
 build_dir = File.join src_dir, "build"
 install_dir = openbabel_dir 
 install_lib_dir = File.join install_dir, "lib"
@@ -52,37 +51,4 @@ end
 ob_include= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/include/openbabel-2.0")
 ob_lib= File.expand_path File.join(File.dirname(__FILE__),"../../openbabel/lib")
 
-# compile ruby bindings
-=begin
-puts "Compiling and installing OpenBabel Ruby bindings."
-Dir.chdir ruby_src_dir do
-  # fix rpath
-  system "sed -i 's|with_ldflags.*$|with_ldflags(\"#\$LDFLAGS -dynamic -Wl,-rpath,#{install_lib_dir}\") do|' #{File.join(ruby_src_dir,'extconf.rb')}"
-  system "#{RbConfig.ruby} extconf.rb --with-openbabel-include=#{ob_include} --with-openbabel-lib=#{ob_lib}"
-  system "make -j#{nr_processors}"
-end
-=end
-
-# install fminer
-fminer_dir = File.join main_dir, "libfminer"
-system "git clone git://github.com/amaunz/fminer2.git #{fminer_dir}"
-
-["libbbrc","liblast"].each do |lib|
-  FileUtils.cd File.join(fminer_dir,lib)
-  system "sed -i 's,^INCLUDE_OB.*,INCLUDE_OB\ =\ #{ob_include},g' Makefile" 
-  system "sed -i 's,^LDFLAGS_OB.*,LDFLAGS_OB\ =\ #{ob_lib},g' Makefile"
-  system "sed -i 's,^INCLUDE_RB.*,INCLUDE_RB\ =\ #{RbConfig::CONFIG['rubyhdrdir']},g' Makefile" 
-  # TODO fix in fminer Makefile
-  system "sed -i 's,-g, -g -I #{RbConfig::CONFIG['rubyhdrdir']} -I #{RbConfig::CONFIG['rubyarchhdrdir']} -I,' Makefile" # fix include path (CH)
-  system "sed -i '74s/$(CC)/$(CC) -Wl,-rpath,#{ob_lib.gsub('/','\/')} -L/' Makefile" # fix library path (CH)
-  system "make ruby"
-end
-
-# install last-utils
-FileUtils.cd main_dir
-system "git clone git://github.com/amaunz/last-utils.git"
-FileUtils.cd File.join(main_dir,"last-utils")
-`sed -i '8s/"openbabel", //' lu.rb`
-
-# install R packagemain_dir
 $makefile_created = true

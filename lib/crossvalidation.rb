@@ -55,7 +55,6 @@ module OpenTox
         predictions: predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
-      #cv.statistics
       cv
     end
   end

@@ -92,7 +92,6 @@ module OpenTox
           prediction = local_svm_prop( props, activities, params[:min_train_performance]) # params[:props].nil? signals non-prop setting
           prediction = prediction.sub(/Val/,"") if prediction # Convert back
           confidence = 0.0 if prediction.nil?
-          #$logger.debug "Prediction: '" + prediction.to_s + "' ('#{prediction.class}')."
           confidence = get_confidence({:sims => params[:sims][1], :activities => params[:activities]})
         end
         {:value => prediction, :confidence => confidence}

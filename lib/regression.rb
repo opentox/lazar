@@ -23,7 +23,6 @@ module OpenTox
       end
 
       # TODO explicit neighbors, also for physchem
-      #def self.local_fingerprint_regression  compound, params, method="pls", method_params="ncomp = 4"
       def self.local_fingerprint_regression  compound, params, method='pls'#, method_params="sigma=0.05"
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
@@ -129,7 +128,7 @@ module OpenTox
         R.assign "features", training_features
         R.eval "names(data) <- append(c('activities'),features)" #
         begin
-          R.eval "model <- train(activities ~ ., data = data, method = '#{method}')"#, #{params}"
+          R.eval "model <- train(activities ~ ., data = data, method = '#{method}')"
         rescue 
           return nil
         end
