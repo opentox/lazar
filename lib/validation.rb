@@ -37,11 +37,10 @@ module OpenTox
       nr_unpredicted = 0
       activities = test_set.data_entries.collect{|de| de.first}
       prediction_dataset.data_entries.each_with_index do |de,i|
-        if de[0] and de[1] 
+        if de[0] #and de[1] 
           cid = prediction_dataset.compound_ids[i]
           rows = cids.each_index.select{|r| cids[r] == cid }
           activities = rows.collect{|r| test_set.data_entries[r][0]}
-          #activity = activities[i]
           prediction = de.first
           confidence = de[1]
           predictions << [prediction_dataset.compound_ids[i], activities, prediction, de[1]]

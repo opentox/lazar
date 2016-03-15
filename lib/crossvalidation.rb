@@ -52,9 +52,10 @@ module OpenTox
       cv.update_attributes(
         nr_instances: nr_instances,
         nr_unpredicted: nr_unpredicted,
-        predictions: predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
+        predictions: predictions#.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
+      cv.statistics
       cv
     end
   end
@@ -78,23 +79,26 @@ module OpenTox
       true_rate = {}
       predictivity = {}
       predictions.each do |pred|
-        compound_id,activity,prediction,confidence = pred
-        if activity and prediction and confidence.numeric? 
-          if prediction == activity
-            if prediction == accept_values[0]
-              confusion_matrix[0][0] += 1
-              weighted_confusion_matrix[0][0] += confidence
-            elsif prediction == accept_values[1]
-              confusion_matrix[1][1] += 1
-              weighted_confusion_matrix[1][1] += confidence
-            end
-          elsif prediction != activity
-            if prediction == accept_values[0]
-              confusion_matrix[0][1] += 1
-              weighted_confusion_matrix[0][1] += confidence
-            elsif prediction == accept_values[1]
-              confusion_matrix[1][0] += 1
-              weighted_confusion_matrix[1][0] += confidence
+        compound_id,activities,prediction,confidence = pred
+        if activities and prediction #and confidence.numeric? 
+          if activities.uniq.size == 1
+            activity = activities.uniq.first
+            if prediction == activity
+              if prediction == accept_values[0]
+                confusion_matrix[0][0] += 1
+                #weighted_confusion_matrix[0][0] += confidence
+              elsif prediction == accept_values[1]
+                confusion_matrix[1][1] += 1
+                #weighted_confusion_matrix[1][1] += confidence
+              end
+            elsif prediction != activity
+              if prediction == accept_values[0]
+                confusion_matrix[0][1] += 1
+                #weighted_confusion_matrix[0][1] += confidence
+              elsif prediction == accept_values[1]
+                confusion_matrix[1][0] += 1
+                #weighted_confusion_matrix[1][0] += confidence
+              end
             end
           end
         else
@@ -108,17 +112,17 @@ module OpenTox
         predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
       end
       confidence_sum = 0
-      weighted_confusion_matrix.each do |r|
-        r.each do |c|
-          confidence_sum += c
-        end
-      end
+      #weighted_confusion_matrix.each do |r|
+        #r.each do |c|
+          #confidence_sum += c
+        #end
+      #end
       update_attributes(
         accept_values: accept_values,
         confusion_matrix: confusion_matrix,
-        weighted_confusion_matrix: weighted_confusion_matrix,
+        #weighted_confusion_matrix: weighted_confusion_matrix,
         accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
-        weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
+        #weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
         true_rate: true_rate,
         predictivity: predictivity,
         finished_at: Time.now
@@ -161,20 +165,12 @@ module OpenTox
 
     field :rmse, type: Float
     field :mae, type: Float
-    field :weighted_rmse, type: Float
-    field :weighted_mae, type: Float
     field :r_squared, type: Float
     field :correlation_plot_id, type: BSON::ObjectId
-    field :confidence_plot_id, type: BSON::ObjectId
 
     def statistics
       rmse = 0
-      weighted_rmse = 0
-      rse = 0
-      weighted_rse = 0
       mae = 0
-      weighted_mae = 0
-      confidence_sum = 0
       x = []
       y = []
       predictions.each do |pred|
@@ -185,10 +181,10 @@ module OpenTox
             y << -Math.log10(prediction)
             error = Math.log10(prediction)-Math.log10(activity.median)
             rmse += error**2
-            weighted_rmse += confidence*error**2
+            #weighted_rmse += confidence*error**2
             mae += error.abs
-            weighted_mae += confidence*error.abs
-            confidence_sum += confidence
+            #weighted_mae += confidence*error.abs
+            #confidence_sum += confidence
           end
         else
           warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."

@@ -2,56 +2,25 @@ require_relative "setup.rb"
 
 class ValidationTest < MiniTest::Test
 
-  def test_fminer_crossvalidation
-    skip
+  def test_default_classification_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarFminerClassification.create dataset
+    model = Model::LazarClassification.create dataset
     cv = ClassificationCrossValidation.create model
-    refute_empty cv.validation_ids
-    assert cv.accuracy > 0.8, "Crossvalidation accuracy lower than 0.8"
-    assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) larger than unweighted accuracy(#{cv.accuracy}) "
-  end
-
-  def test_classification_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarClassification.create dataset#, features
-    cv = ClassificationCrossValidation.create model
-    #p cv
     assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7"
-    #File.open("tmp.svg","w+"){|f| f.puts cv.confidence_plot}
-    #`inkview tmp.svg`
-    p cv.nr_unpredicted
-    p cv.accuracy
-    assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) should be larger than unweighted accuracy (#{cv.accuracy}) ."
   end
 
   def test_default_regression_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
     model = Model::LazarRegression.create dataset
     cv = RegressionCrossValidation.create model
-    #cv = RegressionCrossValidation.find '561503262b72ed54fd000001'
-    p cv
-    #File.open("tmp.svg","w+"){|f| f.puts cv.correlation_plot}
-    #`inkview tmp.svg`
-    #File.open("tmp.svg","w+"){|f| f.puts cv.confidence_plot}
-    #`inkview tmp.svg`
-    
-    #puts cv.misclassifications.to_yaml
-    p cv.rmse
-    p cv.weighted_rmse 
     assert cv.rmse < 1.5, "RMSE > 1.5"
-    #assert cv.weighted_rmse < cv.rmse, "Weighted RMSE (#{cv.weighted_rmse}) larger than unweighted RMSE(#{cv.rmse}) "
-    p cv.mae 
-    p cv.weighted_mae 
     assert cv.mae < 1
-    #assert cv.weighted_mae < cv.mae
   end
 
   def test_regression_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    #dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.csv"
     params = {
-      :prediction_algorithm => "OpenTox::Algorithm::Regression.weighted_average",
+      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average",
       :neighbor_algorithm => "fingerprint_neighbors",
       :neighbor_algorithm_parameters => {
         :type => "MACCS",
@@ -67,17 +36,15 @@ class ValidationTest < MiniTest::Test
       refute_equal params[:neighbor_algorithm_parameters][:training_dataset_id], model[:neighbor_algorithm_parameters][:training_dataset_id]
     end
 
-    assert cv.rmse < 1.5, "RMSE > 30"
-    assert cv.mae < 1
+    refute_nil cv.rmse
+    refute_nil cv.mae 
   end
 
   def test_pls_regression_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    params = { :prediction_algorithm => "OpenTox::Algorithm::Regression.local_pls_regression", }
+    params = { :prediction_algorithm => "OpenTox::Algorithm::Regression.local_fingerprint_regression", }
     model = Model::LazarRegression.create dataset, params
     cv = RegressionCrossValidation.create model
-    p cv.nr_instances
-    p cv.nr_unpredicted
     assert cv.rmse < 1.5, "RMSE > 1.5"
     assert cv.mae < 1
   end
@@ -88,13 +55,13 @@ class ValidationTest < MiniTest::Test
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
       assert_operator cv.accuracy, :>, 0.7, "model accuracy < 0.7, this may happen by chance due to an unfavorable training/test set split"
-      assert_operator cv.weighted_accuracy, :>, cv.accuracy
     end
   end
 
   def test_crossvalidation_parameters
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     params = {
+        :training_dataset_id => dataset.id,
       :neighbor_algorithm_parameters => {
         :min_sim => 0.3,
         :type => "FP3"
@@ -116,13 +83,11 @@ class ValidationTest < MiniTest::Test
 
   def test_physchem_regression_crossvalidation
 
-    # UPLOAD DATA
     training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
     model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     cv = RegressionCrossValidation.create model
-    p cv
-    p cv.id
-    p cv.statistics
+    refute_nil cv.rmse
+    refute_nil cv.mae 
   end
 
   def test_classification_loo_validation
@@ -132,22 +97,13 @@ class ValidationTest < MiniTest::Test
     assert_equal 14, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
     assert loo.accuracy > 0.77
-    assert loo.weighted_accuracy > 0.85
-    assert loo.accuracy < loo.weighted_accuracy
   end
 
   def test_regression_loo_validation
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
     model = Model::LazarRegression.create dataset
     loo = RegressionLeaveOneOutValidation.create model
-    assert_equal 11, loo.nr_unpredicted
-    assert loo.weighted_mae < loo.mae
     assert loo.r_squared > 0.34
-    #assert_equal 14, loo.nr_unpredicted
-    #p loo.confusion_matrix
-    #p loo.accuracy
-    #File.open("tmp.svg","w+"){|f| f.puts loo.correlation_plot}
-    #`inkview tmp.svg`
   end
 
 end

@@ -4,7 +4,7 @@ class LazarRegressionTest < MiniTest::Test
 
   def test_weighted_average
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    model = Model::LazarRegression.create training_dataset, {:neighbor_algorithm_parameters => {:min_sim => 0}, :prediction_algorithm => "OpenTox::Algorithm::Regression.weighted_average"}
+    model = Model::LazarRegression.create training_dataset, {:neighbor_algorithm_parameters => {:min_sim => 0}, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average"}
     compound = Compound.from_smiles "CC(C)(C)CN"
     prediction = model.predict compound
     assert_equal 7.2, prediction[:value].round(1)

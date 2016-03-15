@@ -18,7 +18,7 @@ module OpenTox
       predictions.select!{|p| p[:database_activities] and !p[:database_activities].empty?}
       loo.nr_instances = predictions.size
       predictions.select!{|p| p[:value]} # remove unpredicted
-      loo.predictions = predictions.sort{|a,b| b[:confidence] <=> a[:confidence]}
+      loo.predictions = predictions#.sort{|a,b| b[:confidence] <=> a[:confidence]}
       loo.nr_unpredicted = loo.nr_instances - loo.predictions.size
       loo.statistics
       loo.save
@@ -126,8 +126,8 @@ module OpenTox
 
     field :rmse, type: Float, default: 0.0
     field :mae, type: Float, default: 0
-    field :weighted_rmse, type: Float, default: 0
-    field :weighted_mae, type: Float, default: 0
+    #field :weighted_rmse, type: Float, default: 0
+    #field :weighted_mae, type: Float, default: 0
     field :r_squared, type: Float
     field :correlation_plot_id, type: BSON::ObjectId
     field :confidence_plot_id, type: BSON::ObjectId
@@ -143,10 +143,10 @@ module OpenTox
             measured_values << activity
             error = Math.log10(pred[:value])-Math.log10(activity)
             self.rmse += error**2
-            self.weighted_rmse += pred[:confidence]*error**2
+            #self.weighted_rmse += pred[:confidence]*error**2
             self.mae += error.abs
-            self.weighted_mae += pred[:confidence]*error.abs
-            confidence_sum += pred[:confidence]
+            #self.weighted_mae += pred[:confidence]*error.abs
+            #confidence_sum += pred[:confidence]
           end
         end
         if pred[:database_activities].empty?
@@ -160,9 +160,9 @@ module OpenTox
       r = R.eval("r").to_ruby
 
       self.mae = self.mae/predictions.size
-      self.weighted_mae = self.weighted_mae/confidence_sum
+      #self.weighted_mae = self.weighted_mae/confidence_sum
       self.rmse = Math.sqrt(self.rmse/predictions.size)
-      self.weighted_rmse = Math.sqrt(self.weighted_rmse/confidence_sum)
+      #self.weighted_rmse = Math.sqrt(self.weighted_rmse/confidence_sum)
       self.r_squared = r**2
       self.finished_at = Time.now
       save

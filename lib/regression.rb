@@ -1,25 +1,23 @@
 module OpenTox
   module Algorithm
     
-    # TODO add LOO errors
     class Regression
 
       def self.local_weighted_average compound, params
         weighted_sum = 0.0
         sim_sum = 0.0
-        confidence = 0.0
         neighbors = params[:neighbors]
         neighbors.each do |row|
           sim = row["tanimoto"]
-          confidence = sim if sim > confidence # distance to nearest neighbor
-          row["features"][params[:prediction_feature_id].to_s].each do |act|
-            weighted_sum += sim*Math.log10(act)
-            sim_sum += sim
+          if row["features"][params[:prediction_feature_id].to_s]
+            row["features"][params[:prediction_feature_id].to_s].each do |act|
+              weighted_sum += sim*Math.log10(act)
+              sim_sum += sim
+            end
           end
         end
-        confidence = 0 if confidence.nan?
         sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
-        {:value => prediction,:confidence => confidence}
+        {:value => prediction}
       end
 
       # TODO explicit neighbors, also for physchem
@@ -31,15 +29,18 @@ module OpenTox
         weights = []
         fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
         
+        #p neighbors
         neighbors.each_with_index do |row,i|
           neighbor = Compound.find row["_id"]
           fingerprint = neighbor.fingerprint
-          row["features"][params[:prediction_feature_id].to_s].each do |act|
-            activities << Math.log10(act)
-            weights << row["tanimoto"]
-            fingerprint_ids.each_with_index do |id,j|
-              fingerprints[id] ||= []
-              fingerprints[id] << fingerprint.include?(id) 
+          if row["features"][params[:prediction_feature_id].to_s]
+            row["features"][params[:prediction_feature_id].to_s].each do |act|
+              activities << Math.log10(act)
+              weights << row["tanimoto"]
+              fingerprint_ids.each_with_index do |id,j|
+                fingerprints[id] ||= []
+                fingerprints[id] << fingerprint.include?(id) 
+              end
             end
           end
         end
@@ -86,12 +87,14 @@ module OpenTox
         
         neighbors.each_with_index do |row,i|
           neighbor = Compound.find row["_id"]
-          row["features"][params[:prediction_feature_id].to_s].each do |act|
-            activities << Math.log10(act)
-            weights << row["tanimoto"] # TODO cosine ?
-            neighbor.physchem.each do |pid,v| # insert physchem only if there is an activity
-              physchem[pid] ||= []
-              physchem[pid] <<  v
+          if row["features"][params[:prediction_feature_id].to_s]
+            row["features"][params[:prediction_feature_id].to_s].each do |act|
+              activities << Math.log10(act)
+              weights << row["tanimoto"] # TODO cosine ?
+              neighbor.physchem.each do |pid,v| # insert physchem only if there is an activity
+                physchem[pid] ||= []
+                physchem[pid] <<  v
+              end
             end
           end
         end

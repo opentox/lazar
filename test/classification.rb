@@ -4,8 +4,7 @@ class LazarClassificationTest < MiniTest::Test
 
   def test_lazar_classification
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = Model::LazarClassification.create training_dataset#, feature_dataset
-    #assert_equal 'C-C-C=C', feature_dataset.features.first.smarts
+    model = Model::LazarClassification.create training_dataset
 
     [ {
       :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
@@ -34,8 +33,8 @@ class LazarClassificationTest < MiniTest::Test
     prediction = model.predict compound_dataset
     assert_equal compound_dataset.compounds, prediction.compounds
 
-    assert_equal "Cound not find similar compounds.", prediction.data_entries[7][2]
-    assert_equal "measured", prediction.data_entries[14][1]
+    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction.data_entries[7][3]
+    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction.data_entries[14][3]
     # cleanup
     [training_dataset,model,compound_dataset].each{|o| o.delete}
   end

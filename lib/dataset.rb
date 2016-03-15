@@ -85,6 +85,7 @@ module OpenTox
             compound.dataset_ids << dataset.id
             compound.save
           end
+          dataset.save
           dataset
         end
         start = last+1
@@ -283,28 +284,6 @@ module OpenTox
       end
     end
 
-    def scale
-      scaled_data_entries = Array.new(data_entries.size){Array.new(data_entries.first.size)}
-      centers = []
-      scales = []
-      feature_ids.each_with_index do |feature_id,col| 
-        R.assign "x", data_entries.collect{|de| de[col]}
-        R.eval "scaled = scale(x,center=T,scale=T)"
-        centers[col] = R.eval("attr(scaled, 'scaled:center')").to_ruby
-        scales[col] = R.eval("attr(scaled, 'scaled:scale')").to_ruby
-        R.eval("scaled").to_ruby.each_with_index do |value,row|
-          scaled_data_entries[row][col] = value
-        end
-      end
-      scaled_dataset = ScaledDataset.new(attributes)
-      scaled_dataset["_id"] = BSON::ObjectId.new
-      scaled_dataset["_type"] = "OpenTox::ScaledDataset"
-      scaled_dataset.centers = centers
-      scaled_dataset.scales = scales
-      scaled_dataset.data_entries = scaled_data_entries
-      scaled_dataset.save
-      scaled_dataset
-    end
   end
 
   # Dataset for lazar predictions
