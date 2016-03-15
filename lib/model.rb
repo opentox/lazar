@@ -66,6 +66,7 @@ module OpenTox
           prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset."})
         else
           prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset_id,:prediction_feature_id => prediction_feature.id}))
+          prediction[:neighbors] = neighbors
         end
         prediction
       end
@@ -95,7 +96,7 @@ module OpenTox
         case object.class.to_s
         when "OpenTox::Compound"
           prediction = predictions.first
-          prediction[:neighbors] = neighbors.sort{|a,b| b[1] <=> a[1]} # sort according to similarity
+          prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
           return prediction
         when "Array"
           return predictions

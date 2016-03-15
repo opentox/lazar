@@ -62,7 +62,7 @@ module OpenTox
         else
           compound_features = variables.collect{|f| compound.fingerprint.include?(f) ? "T" : "F"} 
           prediction = r_model_prediction method, data_frame, variables, weights, compound_features
-          if prediction.nil?
+          if prediction.nil? or prediction[:value].nil?
             prediction = local_weighted_average(compound, params)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
