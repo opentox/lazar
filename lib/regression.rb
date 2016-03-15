@@ -29,7 +29,6 @@ module OpenTox
         weights = []
         fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
         
-        #p neighbors
         neighbors.each_with_index do |row,i|
           neighbor = Compound.find row["_id"]
           fingerprint = neighbor.fingerprint
