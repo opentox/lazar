@@ -8,7 +8,7 @@ Dependencies
 
   lazar depends on a couple of external programs and libraries. On Debian 7 "Wheezy" systems you can install them with
 
-   `sudo apt-get install build-essential ruby ruby-dev git cmake swig r-base r-base-dev r-cran-rserve openjdk-7-jre libgsl0-dev libxml2-dev zlib1g-dev libcairo2-dev`
+   `sudo apt-get install build-essential ruby ruby-dev git cmake swig r-base r-base-dev openjdk-7-jre libgsl0-dev libxml2-dev zlib1g-dev libcairo2-dev`
   
   You will also need at least mongodb version 3.0, but Debian "Wheezy" provides version 2.4. Please follow the instructions at http://docs.mongodb.org/manual/tutorial/install-mongodb-on-debian/:
 
@@ -30,6 +30,7 @@ Installation
   git clone https://github.com/opentox/lazar.git
   cd lazar
   ruby ext/lazar/extconf.rb
+  sudo Rscript ext/lazar/rinstall.R
   bundle install
   ```
 

@@ -132,7 +132,7 @@ module OpenTox
 
     def confidence_plot
       unless confidence_plot_id
-        tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+        tmpfile = "/tmp/#{id.to_s}_confidence.png"
         accuracies = []
         confidences = []
         correct_predictions = 0
@@ -149,7 +149,7 @@ module OpenTox
         R.assign "confidence", confidences
         R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
         R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.png")
         plot_id = $gridfs.insert_one(file)
         update(:confidence_plot_id => plot_id)
       end
@@ -244,7 +244,7 @@ module OpenTox
     end
 
     def confidence_plot
-      tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+      tmpfile = "/tmp/#{id.to_s}_confidence.png"
       sorted_predictions = predictions.collect{|p| [(Math.log10(p[1])-Math.log10(p[2])).abs,p[3]] if p[1] and p[2]}.compact
       R.assign "error", sorted_predictions.collect{|p| p[0]}
       R.assign "confidence", sorted_predictions.collect{|p| p[1]}
@@ -252,7 +252,7 @@ module OpenTox
       R.eval "image = qplot(confidence,error)"
       R.eval "image = image + stat_smooth(method='lm', se=FALSE)"
       R.eval "ggsave(file='#{tmpfile}', plot=image)"
-      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.png")
       plot_id = $gridfs.insert_one(file)
       update(:confidence_plot_id => plot_id)
       $gridfs.find_one(_id: confidence_plot_id).data
@@ -260,7 +260,7 @@ module OpenTox
 
     def correlation_plot
       unless correlation_plot_id
-        tmpfile = "/tmp/#{id.to_s}_correlation.svg"
+        tmpfile = "/tmp/#{id.to_s}_correlation.png"
         x = predictions.collect{|p| p[1]}
         y = predictions.collect{|p| p[2]}
         attributes = Model::Lazar.find(self.model_id).attributes
@@ -273,7 +273,7 @@ module OpenTox
         R.eval "image = qplot(-log(prediction),-log(measurement),main='#{self.name}',asp=1,xlim=range, ylim=range)"
         R.eval "image = image + geom_abline(intercept=0, slope=1)"
         R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.svg")
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.png")
         plot_id = $gridfs.insert_one(file)
         update(:correlation_plot_id => plot_id)
       end
