@@ -26,7 +26,10 @@ class LazarRegressionTest < MiniTest::Test
     model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_fingerprint_regression")
     compound = Compound.from_smiles "NC(=O)OCCC"
     prediction = model.predict compound
+    p prediction
     refute_nil prediction[:value]
+    refute_nil prediction[:prediction_interval]
+    refute_empty prediction[:neighbors]
   end
 
   def test_local_physchem_regression

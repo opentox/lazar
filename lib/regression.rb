@@ -66,6 +66,7 @@ module OpenTox
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
           else
+            prediction[:prediction_interval] = [10**(prediction[:value]-1.96*prediction[:rmse]), 10**(prediction[:value]+1.96*prediction[:rmse])]
             prediction[:value] = 10**prediction[:value]
             prediction[:rmse] = 10**prediction[:rmse]
             prediction
