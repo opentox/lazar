@@ -40,30 +40,24 @@ when "development"
 end
 
 # R setup
+rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
 # should work on POSIX including os x
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
 R.eval "
 suppressPackageStartupMessages({
-  library(ggplot2)
-  library(grid)
-  library(gridExtra)
-  library(caret)
-  library(doMC)
+  library(ggplot2,lib=\"#{rlib}\")
+  library(grid,lib=\"#{rlib}\")
+  library(gridExtra,lib=\"#{rlib}\")
+  library(caret,lib=\"#{rlib}\")
+  library(doMC,lib=\"#{rlib}\")
   registerDoMC(#{NR_CORES})
 })
 "
 
 # Require sub-Repositories
 require_relative '../openbabel/lib/openbabel'
-
-# Fminer environment variables
-ENV['FMINER_SMARTS'] = 'true'
-ENV['FMINER_NO_AROMATIC'] = 'true'
-ENV['FMINER_PVALUES'] = 'true'
-ENV['FMINER_SILENT'] = 'true'
-ENV['FMINER_NR_HITS'] = 'true'
 
 # OpenTox classes and includes
 CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
