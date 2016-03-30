@@ -50,6 +50,7 @@ suppressPackageStartupMessages({
   library(ggplot2,lib=\"#{rlib}\")
   library(grid,lib=\"#{rlib}\")
   library(gridExtra,lib=\"#{rlib}\")
+  library(pls,lib=\"#{rlib}\")
   library(caret,lib=\"#{rlib}\")
   library(doMC,lib=\"#{rlib}\")
   registerDoMC(#{NR_CORES})
