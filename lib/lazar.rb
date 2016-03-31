@@ -8,6 +8,7 @@ require 'mongoid'
 require 'rserve'
 require "nokogiri"
 require "base64"
+require 'openbabel'
 
 # Environment setup
 ENV["LAZAR_ENV"] ||= "production"
@@ -56,9 +57,6 @@ suppressPackageStartupMessages({
   registerDoMC(#{NR_CORES})
 })
 "
-
-# Require sub-Repositories
-require_relative '../openbabel/lib/openbabel'
 
 # OpenTox classes and includes
 CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules

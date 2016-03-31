@@ -1,9 +1,8 @@
 libdir = commandArgs(trailingOnly=TRUE)[1]
-# chooseCRANmirror(ind=19); does not have any impact on selected server
-#args=paste0("--prefix=",libdir,"/..")
 #install.packages("Rserve",lib=libdir,configure.args=args)
-install.packages("gridExtra",lib=libdir);
-install.packages("ggplot2",lib=libdir);
-install.packages("pls",lib=libdir);
-install.packages("caret",lib=libdir);
-install.packages("doMC",lib=libdir);
+repo = "https://stat.ethz.ch/CRAN/"
+install.packages("gridExtra",lib=libdir,repos=repo);
+install.packages("ggplot2",lib=libdir,repos=repo);
+install.packages("pls",lib=libdir,repos=repo);
+install.packages("caret",lib=libdir,repos=repo);
+install.packages("doMC",lib=libdir,repos=repo);
