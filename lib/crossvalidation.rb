@@ -193,7 +193,7 @@ module OpenTox
       end
       R.assign "measurement", x
       R.assign "prediction", y
-      R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
+      R.eval "r <- cor(measurement,prediction,use='complete')"
       r = R.eval("r").to_ruby
 
       mae = mae/predictions.size
