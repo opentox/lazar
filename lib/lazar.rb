@@ -48,7 +48,6 @@ NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
 R.eval "
 suppressPackageStartupMessages({
-  library(Rserve,lib=\"#{rlib}\")
   library(iterators,lib=\"#{rlib}\")
   library(foreach,lib=\"#{rlib}\")
   library(ggplot2,lib=\"#{rlib}\")
