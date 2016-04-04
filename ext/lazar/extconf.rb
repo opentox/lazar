@@ -10,7 +10,7 @@ programs.each do |program|
   abort "Please install #{program} on your system." unless find_executable program
 end
 
-#abort "Please install Rserve on your system. Execute 'install.packages('Rserve')' in a R console running as root ('sudo R')."  unless `R CMD Rserve --version`.match(/^Rserve/)
+abort "Please install Rserve on your system. Execute 'install.packages('Rserve')' in a R console running as root ('sudo R')."  unless `R CMD Rserve --version`.match(/^Rserve/)
 
 # install R packages
 r_dir = File.join main_dir, "R"
