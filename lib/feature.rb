@@ -6,6 +6,7 @@ module OpenTox
     field :numeric, type: Boolean
     field :measured, type: Boolean
     field :calculated, type: Boolean
+    field :unit, type: String
   end
 
   # Feature for categorical variables

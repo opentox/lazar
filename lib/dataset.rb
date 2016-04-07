@@ -9,7 +9,6 @@ module OpenTox
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
     field :data_entries, type: Array, default: []
-    field :source, type: String
 
     # Readers
 
