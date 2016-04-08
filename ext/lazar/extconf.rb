@@ -19,6 +19,9 @@ FileUtils.mkdir_p File.join(main_dir,"bin") # for Rserve binary
 rinstall = File.expand_path(File.join(File.dirname(__FILE__),"rinstall.R"))
 puts `Rscript --vanilla #{rinstall} #{r_dir}`
 
+r_libs = Dir[File.join(r_dir,"*")].collect{|l| l.sub(r_dir, '').sub('/','')}.sort
+abort "Failed to install R packages." unless r_libs == ["caret","doMC","foreach","ggplot2","gridExtra","iterators","pls"].sort
+
 # create a fake Makefile
 File.open(File.join(File.dirname(__FILE__),"Makefile"),"w+") do |makefile|
   makefile.puts "all:\n\ttrue\n\ninstall:\n\ttrue\n"
