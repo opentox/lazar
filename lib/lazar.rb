@@ -81,5 +81,6 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveO
   "crossvalidation.rb",
   "leave-one-out-validation.rb",
   "experiment.rb",
+  "import.rb",
 ].each{ |f| require_relative f }
 OpenTox::PhysChem.descriptors # load descriptor features

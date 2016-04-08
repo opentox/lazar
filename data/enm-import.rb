@@ -1,6 +1,7 @@
 require_relative '../lib/lazar.rb'
 include OpenTox
-
+$mongo.database.drop
+$gridfs = $mongo.database.fs
 
 #get list of bundle URIs
 bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
@@ -13,38 +14,34 @@ bundles.each do |bundle|
         :name => np["values"]["https://data.enanomapper.net/identifier/name"],
         :source => np["compound"]["URI"],
       )
+      nanoparticle.bundles << uri
+      nanoparticle.bundles.uniq!
       np["composition"].each do |comp|
         case comp["relation"]
         when "HAS_CORE"
-          nanoparticle[:core] = comp["component"]["compound"]["URI"]
+          nanoparticle.core = comp["component"]["compound"]["URI"]
         when "HAS_COATING"
-          nanoparticle[:coating] ||= []
-          nanoparticle[:coating] << comp["component"]["compound"]["URI"]
+          nanoparticle.coating << comp["component"]["compound"]["URI"]
         end
       end if np["composition"]
       np["values"].each do |u,v|
         if u.match(/property/)
-          name, unit = nil
+          name, unit, source = nil
           features.each do |uri,feat|
             if u.match(/#{uri}/)
               name = feat["title"]
               unit = feat["units"]
+              source = uri
             end
           end
           feature = Feature.find_or_create_by(
             :name => name,
             :unit => unit,
-            #:source => uri
+            :source => source
           )
-          nanoparticle[:features] ||= {}
-          if v.size == 1 and v.first.keys == ["loValue"]
-            nanoparticle[:features][feature.id] = v.first["loValue"]
-          else
-            #TODO
-          end
         end
+        v.each{|value| nanoparticle.parse_ambit_value feature, value} if v.is_a? Array
       end
-      p nanoparticle
-      nanoparticle.save
+      nanoparticle.save!
   end
 end

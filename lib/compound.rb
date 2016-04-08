@@ -21,6 +21,7 @@ module OpenTox
     field :default_fingerprint_size, type: Integer
     field :physchem_descriptors, type: Hash, default: {}
     field :dataset_ids, type: Array, default: []
+    # TODO separate between physchem, bio and tox
     field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
