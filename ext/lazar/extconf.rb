@@ -20,7 +20,9 @@ rinstall = File.expand_path(File.join(File.dirname(__FILE__),"rinstall.R"))
 puts `Rscript --vanilla #{rinstall} #{r_dir}`
 
 r_libs = Dir[File.join(r_dir,"*")].collect{|l| l.sub(r_dir, '').sub('/','')}.sort
-abort "Failed to install R packages." unless r_libs == ["caret","doMC","foreach","ggplot2","gridExtra","iterators","pls"].sort
+["caret","doMC","foreach","ggplot2","gridExtra","iterators","pls"].each do |lib|
+  abort "Failed to install R package '#{lib}'." unless r_libs.include?(lib)
+end
 
 # create a fake Makefile
 File.open(File.join(File.dirname(__FILE__),"Makefile"),"w+") do |makefile|
