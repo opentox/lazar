@@ -6,21 +6,25 @@ module OpenTox
   class Dataset
 
     # associations like has_many, belongs_to deteriorate performance
-    field :feature_ids, type: Array, default: []
-    field :compound_ids, type: Array, default: []
-    field :data_entries, type: Array, default: []
+    #field :feature_ids, type: Array, default: []
+    #field :substance_ids, type: Array, default: []
+    field :data_entries, type: Hash, default: {}
 
     # Readers
 
-    # Get all compounds
     def compounds
-      @compounds ||= self.compound_ids.collect{|id| OpenTox::Compound.find id}
-      @compounds
+      substances.select{|s| s.is_a? Compound}
+    end
+
+    # Get all substances
+    def substances
+      @substances ||= data_entries.keys.collect{|id| OpenTox::Substance.find id}
+      @substances
     end
 
     # Get all features
     def features
-      @features ||= self.feature_ids.collect{|id| OpenTox::Feature.find(id)}
+      @features ||= data_entries.collect{|cid,f| f.keys}.flatten.uniq.collect{|id| OpenTox::Feature.find(id)}
       @features
     end
 
@@ -29,22 +33,20 @@ module OpenTox
     # @param feature [OpenTox::Feature] OpenTox Feature object
     # @return [Array] Data entry values
     def values(compound, feature)
-      rows = compound_ids.each_index.select{|r| compound_ids[r] == compound.id }
-      col = feature_ids.index feature.id
-      rows.collect{|row| data_entries[row][col]}
+      data_entries[compound.id,feature.id]
     end
 
     # Writers
 
     # Set compounds
     def compounds=(compounds)
-      self.compound_ids = compounds.collect{|c| c.id}
+      self.substance_ids = compounds.collect{|c| c.id}
     end
 
     # Set features
-    def features=(features)
-      self.feature_ids = features.collect{|f| f.id}
-    end
+    #def features=(features)
+      #self.feature_ids = features.collect{|f| f.id}
+    #end
 
     # Dataset operations
 
@@ -52,13 +54,8 @@ module OpenTox
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
-      unique_compound_data = {}
-      compound_ids.each_with_index do |cid,i|
-        unique_compound_data[cid] ||= []
-        unique_compound_data[cid] << data_entries[i]
-      end
-      unique_compound_ids = unique_compound_data.keys
-      len = unique_compound_ids.size
+      substance_ids = data_entries.keys
+      len = substance_ids.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
       chunks = []
@@ -67,19 +64,19 @@ module OpenTox
         last = start+mid
         last = last-1 unless len%n >= i
         test_idxs = indices[start..last] || []
-        test_cids = test_idxs.collect{|i| unique_compound_ids[i]}
+        test_cids = test_idxs.collect{|i| substance_ids[i]}
         training_idxs = indices-test_idxs
-        training_cids = training_idxs.collect{|i| unique_compound_ids[i]}
-        chunk = [training_cids,test_cids].collect do |unique_cids|
-          cids = []
-          data_entries = []
-          unique_cids.each do |cid| 
-            unique_compound_data[cid].each do |de|
-              cids << cid
-              data_entries << de
+        training_cids = training_idxs.collect{|i| substance_ids[i]}
+        chunk = [training_cids,test_cids].collect do |cids|
+          new_cids = []
+          new_data_entries = []
+          cids.each do |cid| 
+            data_entries[cid].each do |de|
+              new_cids << cid
+              new_data_entries << de
             end
           end
-          dataset = self.class.new(:compound_ids => cids, :feature_ids => self.feature_ids, :data_entries => data_entries, :source => self.id )
+          dataset = self.class.new(:data_entries => data_entries, :source => self.id )
           dataset.compounds.each do |compound|
             compound.dataset_ids << dataset.id
             compound.save
@@ -96,27 +93,7 @@ module OpenTox
     # Diagnostics
     
     def duplicates feature=self.features.first
-      col = feature_ids.index feature.id
-      dups = {}
-      compound_ids.each_with_index do |cid,i|
-        rows = compound_ids.each_index.select{|r| compound_ids[r] == cid }
-        values = rows.collect{|row| data_entries[row][col]}
-        dups[cid] = values if values.size > 1
-      end
-      dups
-    end
-
-    def correlation_plot training_dataset
-      # TODO: create/store svg
-      R.assign "features", data_entries
-      R.assign "activities", training_dataset.data_entries.collect{|de| de.first}
-      R.eval "featurePlot(features,activities)"
-    end
-
-    def density_plot
-      # TODO: create/store svg
-      R.assign "acts", data_entries.collect{|r| r.first }#.compact
-      R.eval "plot(density(-log(acts),na.rm= TRUE), main='-log(#{features.first.name})')"
+      data_entries.select{|sid,f| f[feature.id].size > 1}
     end
 
     # Serialisation
@@ -124,10 +101,15 @@ module OpenTox
     # converts dataset to csv format including compound smiles as first column, other column headers are feature names
     # @return [String]
     def to_csv(inchi=false)
-      CSV.generate() do |csv| #{:force_quotes=>true}
+      CSV.generate() do |csv| 
         csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
-        compounds.each_with_index do |c,i|
-          csv << [inchi ? c.inchi : c.smiles] + data_entries[i]
+        data_entries.each do |sid,f|
+          substance = Substance.find cid
+          features.each do |feature|
+            f[feature.id].each do |v|
+              csv << [inchi ? substance.inchi : substance.smiles , v]
+            end
+          end
         end
       end
     end
@@ -143,7 +125,7 @@ module OpenTox
     
     # Create a dataset from CSV file
     # TODO: document structure
-    def self.from_csv_file file, source=nil, bioassay=true#, layout={}
+    def self.from_csv_file file, source=nil
       source ||= file
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
@@ -153,21 +135,22 @@ module OpenTox
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
         dataset = self.new(:source => source, :name => name)
-        dataset.parse_table table, bioassay#, layout
+        dataset.parse_table table
       end
       dataset
     end
 
     # parse data in tabular format (e.g. from csv)
     # does a lot of guesswork in order to determine feature types
-    def parse_table table, bioassay=true
+    def parse_table table
 
       time = Time.now
 
       # features
       feature_names = table.shift.collect{|f| f.strip}
-      warnings << "Duplicate features in table header." unless feature_names.size == feature_names.uniq.size
+      warnings << "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
       compound_format = feature_names.shift.strip
+      # TODO nanoparticles
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
 
       numeric = []
@@ -176,30 +159,20 @@ module OpenTox
         metadata = {:name => f}
         values = table.collect{|row| val=row[i+1].to_s.strip; val.blank? ? nil : val }.uniq.compact
         types = values.collect{|v| v.numeric? ? true : false}.uniq
+        feature = nil
         if values.size == 0 # empty feature
         elsif  values.size > 5 and types.size == 1 and types.first == true # 5 max classes
           metadata["numeric"] = true
           numeric[i] = true
+          feature = NumericFeature.find_or_create_by(metadata)
         else
           metadata["nominal"] = true
           metadata["accept_values"] = values
           numeric[i] = false
+          feature = NominalFeature.find_or_create_by(metadata)
         end
-        if bioassay
-          if metadata["numeric"]
-            feature = NumericBioAssay.find_or_create_by(metadata)
-          elsif metadata["nominal"]
-            feature = NominalBioAssay.find_or_create_by(metadata)
-          end
-        else
-          metadata.merge({:measured => false, :calculated => true})
-          if metadata["numeric"]
-            feature = NumericFeature.find_or_create_by(metadata)
-          elsif metadata["nominal"]
-            feature = NominalFeature.find_or_create_by(metadata)
-          end
-        end
-        feature_ids << feature.id if feature
+        @features ||= []
+        @features << feature if feature
       end
       
       $logger.debug "Feature values: #{Time.now-time}"
@@ -210,7 +183,6 @@ module OpenTox
       value_time = 0
 
       # compounds and values
-      self.data_entries = []
 
       table.each_with_index do |vals,i|
         ct = Time.now
@@ -222,6 +194,7 @@ module OpenTox
             compound = OpenTox::Compound.from_smiles(identifier)
           when /InChI/i
             compound = OpenTox::Compound.from_inchi(identifier)
+          # TODO nanoparticle
           end
         rescue 
           compound = nil
@@ -235,13 +208,13 @@ module OpenTox
         compound_time += Time.now-ct
           
         r += 1
-        unless vals.size == feature_ids.size # way cheaper than accessing features
+        unless vals.size == @features.size 
           warnings << "Number of values at position #{i+2} is different than header size (#{vals.size} vs. #{features.size}), all entries are ignored."
           next
         end
 
-        compound_ids << compound.id
-        table.first.size == 0 ?  self.data_entries << Array.new(0) : self.data_entries << Array.new(table.first.size-1) 
+        #substance_ids << compound.id
+        #table.first.size == 0 ?  self.data_entries[compound.id] = Array.new(0) : self.data_entries[compound.id] = Array.new(table.first.size-1) 
         
         vals.each_with_index do |v,j|
           if v.blank?
@@ -252,10 +225,13 @@ module OpenTox
           else
             v = v.strip
           end
-          self.data_entries.last[j] = v
+          self.data_entries[compound.id.to_s] ||= {}
+          self.data_entries[compound.id.to_s][@features[j].id.to_s] ||= []
+          self.data_entries[compound.id.to_s][@features[j].id.to_s] << v
           #i = compound.feature_ids.index feature_ids[j]
-          compound.features[feature_ids[j].to_s] ||= []
-          compound.features[feature_ids[j].to_s] << v
+          #TODO
+          #compound.features[feature_ids[j].to_s] ||= []
+          #compound.features[feature_ids[j].to_s] << v
           compound.save
         end
       end
@@ -272,17 +248,6 @@ module OpenTox
 
     end
 
-    # Fill unset data entries 
-    # @param any value
-    def fill_nil_with n
-      (0 .. compound_ids.size-1).each do |i|
-        data_entries[i] ||= []
-        (0 .. feature_ids.size-1).each do |j|
-          data_entries[i][j] ||= n
-        end
-      end
-    end
-
   end
 
   # Dataset for lazar predictions
@@ -294,30 +259,6 @@ module OpenTox
       Feature.find prediction_feature_id
     end
 
-  end
-
-  # Dataset for descriptors (physchem)
-  class DescriptorDataset < Dataset
-    field :feature_calculation_algorithm, type: String
-
-  end
-
-  class ScaledDataset < DescriptorDataset
-
-    field :centers, type: Array, default: []
-    field :scales, type: Array, default: []
-
-    def original_value value, i
-      value * scales[i] + centers[i]
-    end
-  end
-
-  # Dataset for fminer descriptors
-  class FminerDataset < DescriptorDataset
-    field :training_algorithm, type: String
-    field :training_dataset_id, type: BSON::ObjectId
-    field :training_feature_id, type: BSON::ObjectId
-    field :training_parameters, type: Hash
   end
 
 end

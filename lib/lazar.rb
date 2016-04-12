@@ -61,7 +61,8 @@ suppressPackageStartupMessages({
 "
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment","Nanoparticle"]# Algorithm and Models are modules
+#CLASSES = ["Feature","Substance::Compound","Substance::Nanoparticle","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Substance","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",

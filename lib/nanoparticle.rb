@@ -1,9 +1,8 @@
 module OpenTox
 
-  class Nanoparticle
+  class Nanoparticle < Substance
     include OpenTox
 
-    #field :particle_id, type: String
     field :core, type: String
     field :coating, type: Array, default: []
 

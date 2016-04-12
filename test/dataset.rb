@@ -36,38 +36,34 @@ class DatasetTest < MiniTest::Test
     assert_equal Dataset, d.class
     d.name = "Create dataset test"
 
-    # features not set
-    # << operator was removed for efficiency reasons (CH)
-    #assert_raises BadRequestError do
-    #  d << [Compound.from_smiles("c1ccccc1NN"), 1,2]
-    #end
-
     # add data entries
-    d.features = ["test1", "test2"].collect do |title|
+    features = ["test1", "test2"].collect do |title|
       f = Feature.new 
       f.name = title
       f.numeric = true
       f.save
       f
     end
-
-    # wrong feature size
-    # << operator was removed for efficiency reasons (CH)
-    #assert_raises BadRequestError do
-    #  d << [Compound.from_smiles("c1ccccc1NN"), 1,2,3]
-    #end
     
     # manual low-level insertions without consistency checks for runtime efficiency
+    compounds = ["c1ccccc1NN", "CC(C)N", "C1C(C)CCCC1"].collect do |smi|
+      Compound.from_smiles smi
+    end
     data_entries = []
-    d.compound_ids << Compound.from_smiles("c1ccccc1NN").id
     data_entries << [1,2]
-    d.compound_ids << Compound.from_smiles("CC(C)N").id
     data_entries << [4,5]
-    d.compound_ids << Compound.from_smiles("C1C(C)CCCC1").id
     data_entries << [6,7]
-    d.data_entries = data_entries
+    compounds.each_with_index do |c,i|
+      features.each_with_index do |f,j|
+        d.data_entries[c.id.to_s] ||= {}
+        d.data_entries[c.id.to_s][f.id.to_s] ||= []
+        d.data_entries[c.id.to_s][f.id.to_s] << data_entries[i][j]
+      end
+    end
+
     assert_equal 3, d.compounds.size
     assert_equal 2, d.features.size
+    p d.data_entries
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
     d.save
     # check if dataset has been saved correctly
@@ -89,8 +85,14 @@ class DatasetTest < MiniTest::Test
     assert_equal "multicolumn",  new_dataset.name
     # get features
     assert_equal 6, new_dataset.features.size
-    assert_equal 7, new_dataset.compounds.size
-    assert_equal ["1", nil, "false", nil, nil, 1.0], new_dataset.data_entries.last
+    assert_equal 5, new_dataset.compounds.size
+    de = new_dataset.data_entries[new_dataset.compounds.last.id.to_s]
+    fid = new_dataset.features.first.id.to_s
+    assert_equal ["1"], de[fid]
+    fid = new_dataset.features.last.id.to_s
+    assert_equal [1.0], de[fid]
+    fid = new_dataset.features[2].id.to_s
+    assert_equal ["false"], de[fid]
     d.delete
   end
 
@@ -117,7 +119,7 @@ class DatasetTest < MiniTest::Test
     assert d.warnings.grep(/Duplicate compound/)  
     assert d.warnings.grep(/3, 5/)  
     assert_equal 6, d.features.size
-    assert_equal 7, d.compounds.size
+    assert_equal 5, d.compounds.size
     assert_equal 5, d.compounds.collect{|c| c.inchi}.uniq.size
     assert_equal [["1", "1", "true", "true", "test", 1.1], ["1", "2", "false", "7.5", "test", 0.24], ["1", "3", "true", "5", "test", 3578.239], ["0", "4", "false", "false", "test", -2.35], ["1", "2", "true", "4", "test_2", 1], ["1", "2", "false", "false", "test", -1.5], ["1", nil, "false", nil, nil, 1.0]], d.data_entries
     assert_equal "c1ccc[nH]1,1,,false,,,1.0", d.to_csv.split("\n")[7]
@@ -195,7 +197,7 @@ class DatasetTest < MiniTest::Test
     assert_match "EPAFHM.mini.csv",  d.source
     assert_equal 1, d.features.size
     feature = d.features.first
-    assert_kind_of NumericBioAssay, feature
+    assert_kind_of NumericFeature, feature
     assert_equal 0.0113, d.data_entries[0][0]
     assert_equal 0.00323, d.data_entries[5][0]
     d2 = Dataset.find d.id
@@ -207,10 +209,10 @@ class DatasetTest < MiniTest::Test
     dataset = Dataset.from_csv_file File.join(DATA_DIR,"loael.csv")
     dataset.folds(10).each do |fold|
       fold.each do |d|
-        assert_equal d.data_entries.size, d.compound_ids.size
-        assert_operator d.compound_ids.size, :>=, d.compound_ids.uniq.size
+        assert_equal d.data_entries.size, d.compounds.size
+        assert_equal d.compounds.size, :>=, d.compounds.uniq.size
       end
-      assert_operator fold[0].compound_ids.uniq.size, :>=, fold[1].compound_ids.uniq.size
+      assert_operator fold[0].compounds.size, :>=, fold[1].compounds.size
     end
     #puts dataset.folds 10
   end

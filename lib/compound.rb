@@ -2,10 +2,8 @@ CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
 
-  class Compound
+  class Compound < Substance
     require_relative "unique_descriptors.rb"
-    include OpenTox
-
     DEFAULT_FINGERPRINT = "MP2D"
 
     field :inchi, type: String
@@ -347,14 +345,14 @@ module OpenTox
         
     end
     
-    # Convert mg to mmol
+    # Convert mmol to mg
     # @return [Float] value in mg
     def mmol_to_mg mmol
       mmol.to_f*molecular_weight
     end
 
-    # Convert mmol to mg
-    # @return [Float] value in mg
+    # Convert mg to mmol
+    # @return [Float] value in mmol
     def mg_to_mmol mg
       mg.to_f/molecular_weight
     end

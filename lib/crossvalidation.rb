@@ -297,5 +297,4 @@ module OpenTox
     end
   end
 
-
 end

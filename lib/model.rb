@@ -227,6 +227,45 @@ module OpenTox
       end
     end
 
+    class NanoLazar
+      include OpenTox
+      include Mongoid::Document
+      include Mongoid::Timestamps
+      store_in collection: "models"
+
+      field :name, type: String
+      field :creator, type: String, default: __FILE__
+      # datasets
+      field :training_dataset_id, type: BSON::ObjectId
+      # algorithms
+      field :prediction_algorithm, type: String
+      # prediction feature
+      field :prediction_feature_id, type: BSON::ObjectId
+      field :training_particle_ids, type: Array
+
+      def self.create_all
+        nanoparticles = Nanoparticle.all
+        toxfeatures = Nanoparticle.all.collect{|np| np.toxicities.keys}.flatten.uniq.collect{|id| Feature.find id}
+        tox = {}
+        toxfeatures.each do |t|
+          tox[t] = nanoparticles.select{|np| np.toxicities.keys.include? t.id.to_s}
+        end
+        tox.select!{|t,nps| nps.size > 50}
+        tox.collect do |t,nps|
+          find_or_create_by(:prediction_feature_id => t.id, :training_particle_ids => nps.collect{|np| np.id})
+        end
+      end
+
+      def predict nanoparticle
+        training = training_particle_ids.collect{|id| Nanoparticle.find id}
+        training_features = training.collect{|t| t.physchem_descriptors.keys}.flatten.uniq
+        query_features = nanoparticle.physchem_descriptors.keys
+        common_features = (training_features & query_features)
+        p common_features
+      end
+
+    end
+
   end
 
 end
