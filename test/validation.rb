@@ -8,15 +8,15 @@ class ValidationTest < MiniTest::Test
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::LazarClassification.create dataset
     cv = ClassificationCrossValidation.create model
-    assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7"
+    assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7, this may occur due to an unfavorable training/test set split"
   end
 
   def test_default_regression_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
     model = Model::LazarRegression.create dataset
     cv = RegressionCrossValidation.create model
-    assert cv.rmse < 1.5, "RMSE > 1.5"
-    assert cv.mae < 1
+    assert cv.rmse < 1.5, "RMSE #{cv.rmse} should be larger than 1.5, this may occur due to an unfavorable training/test set split"
+    assert cv.mae < 1, "MAE #{cv.mae} should be larger than 1, this may occur due to an unfavorable training/test set split"
   end
 
   # parameters

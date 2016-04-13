@@ -341,7 +341,7 @@ module OpenTox
         {'$sort' => {'tanimoto' => -1}}
       ]
       
-      $mongo["compounds"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
+      $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
         
     end
     

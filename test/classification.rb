@@ -33,8 +33,10 @@ class LazarClassificationTest < MiniTest::Test
     prediction = model.predict compound_dataset
     assert_equal compound_dataset.compounds, prediction.compounds
 
-    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction.data_entries[7][3]
-    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction.data_entries[14][3]
+    cid = prediction.compounds[7].id.to_s
+    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction.predictions[cid][:warning]
+    cid = prediction.compounds[9].id.to_s
+    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction.predictions[cid][:warning]
     # cleanup
     [training_dataset,model,compound_dataset].each{|o| o.delete}
   end

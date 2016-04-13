@@ -90,33 +90,36 @@ module OpenTox
         end
 
         # make predictions
-        predictions = []
-        predictions = compounds.collect{|c| predict_compound c}
+        predictions = {}
+        compounds.each do |c|
+          predictions[c.id.to_s] = predict_compound c
+          predictions[c.id.to_s][:prediction_feature_id] = prediction_feature_id 
+        end
 
         # serialize result
         case object.class.to_s
         when "OpenTox::Compound"
-          prediction = predictions.first
+          prediction = predictions[compounds.first.id.to_s]
           prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
-          return prediction
+          return predictions
         when "Array"
           return predictions
         when "OpenTox::Dataset"
+          predictions.each{|cid,p| p.delete(:neighbors)}
           # prepare prediction dataset
           measurement_feature = Feature.find prediction_feature_id
 
-          prediction_feature = OpenTox::NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
+          prediction_feature = NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
           prediction_dataset = LazarPrediction.new(
             :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
             :prediction_feature_id => prediction_feature.id
 
           )
-          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Model RMSE" )
-          warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
-          prediction_dataset.features = [ prediction_feature, confidence_feature, measurement_feature, warning_feature ]
-          prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:rmse] , p[:dataset_activities].to_s, p[:warning]]}
+
+          compounds.each_with_index do |c,i|
+            prediction_dataset.predictions[c.id.to_s] = predictions[i]
+          end
           prediction_dataset.save
           return prediction_dataset
         end

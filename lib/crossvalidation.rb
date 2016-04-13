@@ -6,7 +6,7 @@ module OpenTox
     field :folds, type: Integer
     field :nr_instances, type: Integer
     field :nr_unpredicted, type: Integer
-    field :predictions, type: Array, default: []
+    field :predictions, type: Hash, default: {}
     field :finished_at, type: Time 
 
     def time
@@ -32,7 +32,7 @@ module OpenTox
       cv.save # set created_at
       nr_instances = 0
       nr_unpredicted = 0
-      predictions = []
+      predictions = {}
       training_dataset = Dataset.find model.training_dataset_id
       training_dataset.folds(n).each_with_index do |fold,fold_nr|
         #fork do # parallel execution of validations
@@ -42,12 +42,12 @@ module OpenTox
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
         #end
       end
-      #Process.waitall
+      Process.waitall
       cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
       cv.validations.each do |validation|
         nr_instances += validation.nr_instances
         nr_unpredicted += validation.nr_unpredicted
-        predictions += validation.predictions
+        predictions.merge! validation.predictions
       end
       cv.update_attributes(
         nr_instances: nr_instances,
@@ -73,61 +73,8 @@ module OpenTox
     # TODO auc, f-measure (usability??)
 
     def statistics
-      accept_values = Feature.find(model.prediction_feature_id).accept_values
-      confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
-      weighted_confusion_matrix = Array.new(accept_values.size,0){Array.new(accept_values.size,0)}
-      true_rate = {}
-      predictivity = {}
-      predictions.each do |pred|
-        compound_id,activities,prediction,confidence = pred
-        if activities and prediction #and confidence.numeric? 
-          if activities.uniq.size == 1
-            activity = activities.uniq.first
-            if prediction == activity
-              if prediction == accept_values[0]
-                confusion_matrix[0][0] += 1
-                #weighted_confusion_matrix[0][0] += confidence
-              elsif prediction == accept_values[1]
-                confusion_matrix[1][1] += 1
-                #weighted_confusion_matrix[1][1] += confidence
-              end
-            elsif prediction != activity
-              if prediction == accept_values[0]
-                confusion_matrix[0][1] += 1
-                #weighted_confusion_matrix[0][1] += confidence
-              elsif prediction == accept_values[1]
-                confusion_matrix[1][0] += 1
-                #weighted_confusion_matrix[1][0] += confidence
-              end
-            end
-          end
-        else
-          nr_unpredicted += 1 if prediction.nil?
-        end
-      end
-      true_rate = {}
-      predictivity = {}
-      accept_values.each_with_index do |v,i|
-        true_rate[v] = confusion_matrix[i][i]/confusion_matrix[i].reduce(:+).to_f
-        predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
-      end
-      confidence_sum = 0
-      #weighted_confusion_matrix.each do |r|
-        #r.each do |c|
-          #confidence_sum += c
-        #end
-      #end
-      update_attributes(
-        accept_values: accept_values,
-        confusion_matrix: confusion_matrix,
-        #weighted_confusion_matrix: weighted_confusion_matrix,
-        accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
-        #weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
-        true_rate: true_rate,
-        predictivity: predictivity,
-        finished_at: Time.now
-      )
-      $logger.debug "Accuracy #{accuracy}"
+      stat = ValidationStatistics.classification(predictions, Feature.find(model.prediction_feature_id).accept_values)
+      update_attributes(stat)
     end
 
     def confidence_plot
@@ -169,48 +116,8 @@ module OpenTox
     field :correlation_plot_id, type: BSON::ObjectId
 
     def statistics
-      rmse = 0
-      mae = 0
-      x = []
-      y = []
-      predictions.each do |pred|
-        compound_id,activity,prediction,confidence = pred
-        if activity and prediction 
-          unless activity == [nil]
-            x << -Math.log10(activity.median)
-            y << -Math.log10(prediction)
-            error = Math.log10(prediction)-Math.log10(activity.median)
-            rmse += error**2
-            #weighted_rmse += confidence*error**2
-            mae += error.abs
-            #weighted_mae += confidence*error.abs
-            #confidence_sum += confidence
-          end
-        else
-          warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
-          $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
-        end
-      end
-      R.assign "measurement", x
-      R.assign "prediction", y
-      R.eval "r <- cor(measurement,prediction,use='complete')"
-      r = R.eval("r").to_ruby
-
-      mae = mae/predictions.size
-      #weighted_mae = weighted_mae/confidence_sum
-      rmse = Math.sqrt(rmse/predictions.size)
-      #weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
-      update_attributes(
-        mae: mae,
-        rmse: rmse,
-        #weighted_mae: weighted_mae,
-        #weighted_rmse: weighted_rmse,
-        r_squared: r**2,
-        finished_at: Time.now
-      )
-      $logger.debug "R^2 #{r**2}"
-      $logger.debug "RMSE #{rmse}"
-      $logger.debug "MAE #{mae}"
+      stat = ValidationStatistics.regression predictions
+      update_attributes(stat)
     end
 
     def misclassifications n=nil

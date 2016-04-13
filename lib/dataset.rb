@@ -5,9 +5,6 @@ module OpenTox
 
   class Dataset
 
-    # associations like has_many, belongs_to deteriorate performance
-    #field :feature_ids, type: Array, default: []
-    #field :substance_ids, type: Array, default: []
     field :data_entries, type: Hash, default: {}
 
     # Readers
@@ -24,7 +21,7 @@ module OpenTox
 
     # Get all features
     def features
-      @features ||= data_entries.collect{|cid,f| f.keys}.flatten.uniq.collect{|id| OpenTox::Feature.find(id)}
+      @features ||= data_entries.collect{|cid,f| f.first}.flatten.uniq.collect{|id| OpenTox::Feature.find(id)}
       @features
     end
 
@@ -33,7 +30,7 @@ module OpenTox
     # @param feature [OpenTox::Feature] OpenTox Feature object
     # @return [Array] Data entry values
     def values(compound, feature)
-      data_entries[compound.id,feature.id]
+      data_entries[compound.id.to_s][feature.id.to_s]
     end
 
     # Writers
@@ -68,15 +65,14 @@ module OpenTox
         training_idxs = indices-test_idxs
         training_cids = training_idxs.collect{|i| substance_ids[i]}
         chunk = [training_cids,test_cids].collect do |cids|
-          new_cids = []
-          new_data_entries = []
+          new_data_entries = {}
           cids.each do |cid| 
-            data_entries[cid].each do |de|
-              new_cids << cid
-              new_data_entries << de
+            data_entries[cid].each do |f,v|
+              new_data_entries[cid] ||= {}
+              new_data_entries[cid][f] = v
             end
           end
-          dataset = self.class.new(:data_entries => data_entries, :source => self.id )
+          dataset = self.class.new(:data_entries => new_data_entries, :source => self.id )
           dataset.compounds.each do |compound|
             compound.dataset_ids << dataset.id
             compound.save
@@ -213,9 +209,6 @@ module OpenTox
           next
         end
 
-        #substance_ids << compound.id
-        #table.first.size == 0 ?  self.data_entries[compound.id] = Array.new(0) : self.data_entries[compound.id] = Array.new(table.first.size-1) 
-        
         vals.each_with_index do |v,j|
           if v.blank?
             warnings << "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
@@ -228,10 +221,8 @@ module OpenTox
           self.data_entries[compound.id.to_s] ||= {}
           self.data_entries[compound.id.to_s][@features[j].id.to_s] ||= []
           self.data_entries[compound.id.to_s][@features[j].id.to_s] << v
-          #i = compound.feature_ids.index feature_ids[j]
-          #TODO
-          #compound.features[feature_ids[j].to_s] ||= []
-          #compound.features[feature_ids[j].to_s] << v
+          compound.features[@features[j].id.to_s] ||= []
+          compound.features[@features[j].id.to_s] << v
           compound.save
         end
       end
@@ -251,12 +242,21 @@ module OpenTox
   end
 
   # Dataset for lazar predictions
-  class LazarPrediction < Dataset
+  class LazarPrediction #< Dataset
     field :creator, type: String
-    field :prediction_feature_id, type: String
+    field :prediction_feature_id, type: BSON::ObjectId
+    field :predictions, type: Hash, default: {}
 
     def prediction_feature
       Feature.find prediction_feature_id
+    end
+
+    def compounds
+      substances.select{|s| s.is_a? Compound}
+    end
+
+    def substances
+      predictions.keys.collect{|id| Substance.find id}
     end
 
   end
