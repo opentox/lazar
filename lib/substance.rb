@@ -1,9 +1,8 @@
 module OpenTox
 
   class Substance
-    include OpenTox
-    include Mongoid::Document
-    include Mongoid::Timestamps
+    field :physchem_descriptors, type: Hash, default: {}
+    field :dataset_ids, type: Array, default: []
   end
 
 end

@@ -6,7 +6,6 @@ module OpenTox
     field :core, type: String
     field :coating, type: Array, default: []
 
-    field :physchem_descriptors, type: Hash, default: {}
     field :toxicities, type: Hash, default: {}
     #field :features, type: Hash, default: {}
     field :bundles, type: Array, default: []

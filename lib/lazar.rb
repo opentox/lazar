@@ -71,6 +71,7 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","Cross
   "opentox.rb",
   "feature.rb",
   "physchem.rb",
+  "substance.rb",
   "compound.rb",
   "nanoparticle.rb",
   "dataset.rb",
