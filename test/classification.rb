@@ -30,14 +30,14 @@ class LazarClassificationTest < MiniTest::Test
 
     # make a dataset prediction
     compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini.csv")
-    prediction = model.predict compound_dataset
-    assert_equal compound_dataset.compounds, prediction.compounds
+    prediction_dataset = model.predict compound_dataset
+    assert_equal compound_dataset.compounds, prediction_dataset.compounds
 
-    cid = prediction.compounds[7].id.to_s
-    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction.predictions[cid][:warning]
-    cid = prediction.compounds[9].id.to_s
-    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction.predictions[cid][:warning]
+    cid = prediction_dataset.compounds[7].id.to_s
+    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warning]
+    cid = prediction_dataset.compounds[9].id.to_s
+    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction_dataset.predictions[cid][:warning]
     # cleanup
-    [training_dataset,model,compound_dataset].each{|o| o.delete}
+    [training_dataset,model,compound_dataset,prediction_dataset].each{|o| o.delete}
   end
 end

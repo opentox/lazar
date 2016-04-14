@@ -17,8 +17,6 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
-    # TODO separate between physchem, bio and tox
-    field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
 
@@ -291,7 +289,7 @@ module OpenTox
           candidate_fingerprint = compound.fingerprint params[:type]
           sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
           feature_values = training_dataset.values(compound,prediction_feature)
-          neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
+          neighbors << {"_id" => compound.id, "toxicities" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
         end
         neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
       end
@@ -332,7 +330,7 @@ module OpenTox
             'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
           '_id' => 1,
-          'features' => 1,
+          'toxicities' => 1,
           'dataset_ids' => 1
         }},
         {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},

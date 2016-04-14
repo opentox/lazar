@@ -15,6 +15,11 @@ module OpenTox
       field :name,  type: String
       field :source,  type: String
       field :warnings, type: Array, default: []
+
+      def warn warning
+        $logger.warn warning
+        warnings << warning
+      end
     end
     OpenTox.const_set klass,c
   end

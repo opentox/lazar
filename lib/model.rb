@@ -36,6 +36,7 @@ module OpenTox
         super params
 
         # TODO document convention
+        #p training_dataset.features
         prediction_feature = training_dataset.features.first
         # set defaults for empty parameters
         self.prediction_feature_id ||= prediction_feature.id
@@ -56,12 +57,13 @@ module OpenTox
         prediction = {}
         if neighbors.collect{|n| n["_id"]}.include? compound.id
 
-          database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s].uniq
+          #TODO restrict to dataset features
+          database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["toxicities"][prediction_feature.id.to_s].uniq
           prediction[:database_activities] = database_activities
           prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
           neighbors.delete_if{|n| n["_id"] == compound.id}
         end
-        neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
+        neighbors.delete_if{|n| n['toxicities'].empty? or n['toxicities'][prediction_feature.id.to_s] == [nil] }
         if neighbors.empty?
           prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
         else
@@ -78,12 +80,11 @@ module OpenTox
 
         # parse data
         compounds = []
-        case object.class.to_s
-        when "OpenTox::Compound"
+        if object.is_a? Substance
           compounds = [object] 
-        when "Array"
+        elsif object.is_a? Array
           compounds = object
-        when "OpenTox::Dataset"
+        elsif object.is_a? Dataset
           compounds = object.compounds
         else 
           bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Compounds or an OpenTox::Dataset as parameter."
@@ -97,30 +98,26 @@ module OpenTox
         end
 
         # serialize result
-        case object.class.to_s
-        when "OpenTox::Compound"
+        if object.is_a? Substance
           prediction = predictions[compounds.first.id.to_s]
           prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
+          return prediction
+        elsif object.is_a? Array
           return predictions
-        when "Array"
-          return predictions
-        when "OpenTox::Dataset"
+        elsif object.is_a? Dataset
           predictions.each{|cid,p| p.delete(:neighbors)}
           # prepare prediction dataset
           measurement_feature = Feature.find prediction_feature_id
 
           prediction_feature = NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
-          prediction_dataset = LazarPrediction.new(
+          prediction_dataset = LazarPrediction.create(
             :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
-            :prediction_feature_id => prediction_feature.id
-
+            :prediction_feature_id => prediction_feature.id,
+            :predictions => predictions
           )
 
-          compounds.each_with_index do |c,i|
-            prediction_dataset.predictions[c.id.to_s] = predictions[i]
-          end
-          prediction_dataset.save
+          #prediction_dataset.save
           return prediction_dataset
         end
 
@@ -264,7 +261,7 @@ module OpenTox
         training_features = training.collect{|t| t.physchem_descriptors.keys}.flatten.uniq
         query_features = nanoparticle.physchem_descriptors.keys
         common_features = (training_features & query_features)
-        p common_features
+        #p common_features
       end
 
     end

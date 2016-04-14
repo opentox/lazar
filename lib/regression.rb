@@ -9,8 +9,8 @@ module OpenTox
         neighbors = params[:neighbors]
         neighbors.each do |row|
           sim = row["tanimoto"]
-          if row["features"][params[:prediction_feature_id].to_s]
-            row["features"][params[:prediction_feature_id].to_s].each do |act|
+          if row["toxicities"][params[:prediction_feature_id].to_s]
+            row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
               weighted_sum += sim*Math.log10(act)
               sim_sum += sim
             end
@@ -32,8 +32,8 @@ module OpenTox
         neighbors.each_with_index do |row,i|
           neighbor = Compound.find row["_id"]
           fingerprint = neighbor.fingerprint
-          if row["features"][params[:prediction_feature_id].to_s]
-            row["features"][params[:prediction_feature_id].to_s].each do |act|
+          if row["toxicities"][params[:prediction_feature_id].to_s]
+            row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
               activities << Math.log10(act)
               weights << row["tanimoto"]
               fingerprint_ids.each_with_index do |id,j|
@@ -79,21 +79,24 @@ module OpenTox
 
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
-        return {:value => neighbors.first["features"][params[:prediction_feature_id]], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
+        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id]], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
 
         activities = []
         weights = []
         physchem = {}
         
-        neighbors.each_with_index do |row,i|
-          neighbor = Compound.find row["_id"]
-          if row["features"][params[:prediction_feature_id].to_s]
-            row["features"][params[:prediction_feature_id].to_s].each do |act|
-              activities << Math.log10(act)
-              weights << row["tanimoto"] # TODO cosine ?
-              neighbor.physchem.each do |pid,v| # insert physchem only if there is an activity
+        neighbors.each_with_index do |n,i|
+          if n["toxicities"][params[:prediction_feature_id].to_s]
+            n["toxicities"][params[:prediction_feature_id].to_s].each do |act|
+              # TODO fix!!!!
+              activities << -Math.log10(act)
+              #if act.numeric?
+              #activities << act
+              n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
+              neighbor = Substance.find(n["_id"])
+              neighbor.physchem_descriptors.each do |pid,v| # insert physchem only if there is an activity
                 physchem[pid] ||= []
-                physchem[pid] <<  v
+                physchem[pid] +=  v
               end
             end
           end
@@ -110,8 +113,8 @@ module OpenTox
           return result
 
         else
-          data_frame = [activities] + physchem.keys.collect { |pid| physchem[pid] }
-          prediction = r_model_prediction method, data_frame, physchem.keys, weights, physchem.keys.collect{|pid| compound.physchem[pid]}
+          data_frame = [activities] + physchem.keys.collect { |pid| physchem[pid].collect{|v| "\"#{v.sub('[','').sub(']','')}\"" if v.is_a? String }}
+          prediction = r_model_prediction method, data_frame, physchem.keys, weights, physchem.keys.collect{|pid| compound.physchem_descriptors[pid]}
           if prediction.nil?
             prediction = local_weighted_average(compound, params)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
@@ -127,6 +130,8 @@ module OpenTox
       def self.r_model_prediction method, training_data, training_features, training_weights, query_feature_values
         R.assign "weights", training_weights
         r_data_frame = "data.frame(#{training_data.collect{|r| "c(#{r.join(',')})"}.join(', ')})"
+        #p r_data_frame
+        File.open("tmp.R","w+"){|f| f.puts "data <- #{r_data_frame}\n"}
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
         R.eval "names(data) <- append(c('activities'),features)" #

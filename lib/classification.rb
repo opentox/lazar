@@ -10,7 +10,7 @@ module OpenTox
         confidence = 0.0
         neighbors.each do |row|
           sim = row["tanimoto"]
-          row["features"][params[:prediction_feature_id].to_s].each do |act|
+          row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
             weighted_sum[act] ||= 0
             weighted_sum[act] += sim
           end

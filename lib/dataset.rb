@@ -13,6 +13,10 @@ module OpenTox
       substances.select{|s| s.is_a? Compound}
     end
 
+    def nanoparticles
+      substances.select{|s| s.is_a? Nanoparticle}
+    end
+
     # Get all substances
     def substances
       @substances ||= data_entries.keys.collect{|id| OpenTox::Substance.find id}
@@ -21,7 +25,7 @@ module OpenTox
 
     # Get all features
     def features
-      @features ||= data_entries.collect{|cid,f| f.first}.flatten.uniq.collect{|id| OpenTox::Feature.find(id)}
+      @features ||= data_entries.collect{|cid,f| f.first}.flatten.uniq.compact.collect{|id| OpenTox::Feature.find(id)}.compact
       @features
     end
 
@@ -98,13 +102,22 @@ module OpenTox
     # @return [String]
     def to_csv(inchi=false)
       CSV.generate() do |csv| 
-        csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
+        compound = Substance.find(data_entries.first.first).is_a? Compound
+        if compound
+          csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
+        else
+          csv << ["Name"] + features.collect{|f| f.name}
+        end
         data_entries.each do |sid,f|
-          substance = Substance.find cid
+          substance = Substance.find sid
           features.each do |feature|
-            f[feature.id].each do |v|
-              csv << [inchi ? substance.inchi : substance.smiles , v]
-            end
+            f[feature.id.to_s].each do |v|
+              if compound
+                csv << [inchi ? substance.inchi : substance.smiles , v]
+              else
+                csv << [substance.name , v]
+              end
+            end if f[feature.id.to_s]
           end
         end
       end
@@ -221,8 +234,8 @@ module OpenTox
           self.data_entries[compound.id.to_s] ||= {}
           self.data_entries[compound.id.to_s][@features[j].id.to_s] ||= []
           self.data_entries[compound.id.to_s][@features[j].id.to_s] << v
-          compound.features[@features[j].id.to_s] ||= []
-          compound.features[@features[j].id.to_s] << v
+          compound.toxicities[@features[j].id.to_s] ||= []
+          compound.toxicities[@features[j].id.to_s] << v
           compound.save
         end
       end
