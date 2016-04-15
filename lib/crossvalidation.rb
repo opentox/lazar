@@ -22,8 +22,10 @@ module OpenTox
     end
 
     def self.create model, n=10
-      model.training_dataset.features.first.nominal? ? klass = ClassificationCrossValidation : klass = RegressionCrossValidation
-      bad_request_error "#{dataset.features.first} is neither nominal nor numeric." unless klass
+      klass = ClassificationCrossValidation if model.is_a? Model::LazarClassification
+      klass = RegressionCrossValidation if model.is_a? Model::LazarRegression
+      bad_request_error "Unknown model class #{model.class}." unless klass
+
       cv = klass.new(
         name: model.name,
         model_id: model.id,
@@ -35,7 +37,7 @@ module OpenTox
       predictions = {}
       training_dataset = Dataset.find model.training_dataset_id
       training_dataset.folds(n).each_with_index do |fold,fold_nr|
-        #fork do # parallel execution of validations
+        #fork do # parallel execution of validations can lead to Rserve and memory problems
           $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
           t = Time.now
           validation = Validation.create(model, fold[0], fold[1],cv)
@@ -121,7 +123,6 @@ module OpenTox
     end
 
     def misclassifications n=nil
-      #n = predictions.size unless n
       n ||= 10 
       model = Model::Lazar.find(self.model_id)
       training_dataset = Dataset.find(model.training_dataset_id)
@@ -132,8 +133,7 @@ module OpenTox
           neighbors = compound.send(model.neighbor_algorithm,model.neighbor_algorithm_parameters)
           neighbors.collect! do |n|
             neighbor = Compound.find(n[0])
-            values = training_dataset.values(neighbor,prediction_feature)
-            { :smiles => neighbor.smiles, :similarity => n[1], :measurements => values}
+            { :smiles => neighbor.smiles, :similarity => n[1], :measurements => neighbor.toxicities[prediction_feature.id.to_s]}
           end
           {
             :smiles => compound.smiles, 

@@ -20,6 +20,10 @@ module OpenTox
       def training_dataset
         Dataset.find(training_dataset_id)
       end
+
+      def prediction_feature
+        Feature.find(prediction_feature_id)
+      end
     end
 
     class Lazar < Model
@@ -31,13 +35,10 @@ module OpenTox
       # Create a lazar model from a training_dataset and a feature_dataset
       # @param [OpenTox::Dataset] training_dataset
       # @return [OpenTox::Model::Lazar] Regression or classification model
-      def initialize training_dataset, params={}
+      def initialize prediction_feature, training_dataset, params={}
 
         super params
 
-        # TODO document convention
-        #p training_dataset.features
-        prediction_feature = training_dataset.features.first
         # set defaults for empty parameters
         self.prediction_feature_id ||= prediction_feature.id
         self.training_dataset_id ||= training_dataset.id
@@ -49,7 +50,6 @@ module OpenTox
       end
 
       def predict_compound compound
-        prediction_feature = Feature.find prediction_feature_id
         neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
         # remove neighbors without prediction_feature
         # check for database activities (neighbors may include query compound)
@@ -122,18 +122,13 @@ module OpenTox
         end
 
       end
-      
-      def training_activities
-        i = training_dataset.feature_ids.index prediction_feature_id
-        training_dataset.data_entries.collect{|de| de[i]}
-      end
 
     end
 
     class LazarClassification < Lazar
       
-      def self.create training_dataset, params={}
-        model = self.new training_dataset, params
+      def self.create prediction_feature, training_dataset, params={}
+        model = self.new prediction_feature, training_dataset, params
         model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
         model.neighbor_algorithm ||= "fingerprint_neighbors"
         model.neighbor_algorithm_parameters ||= {}
@@ -151,8 +146,8 @@ module OpenTox
 
     class LazarRegression < Lazar
 
-      def self.create training_dataset, params={}
-        model = self.new training_dataset, params
+      def self.create prediction_feature, training_dataset, params={}
+        model = self.new prediction_feature, training_dataset, params
         model.neighbor_algorithm ||= "fingerprint_neighbors"
         model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
         model.neighbor_algorithm_parameters ||= {}
@@ -173,13 +168,13 @@ module OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      # TODO field Validations
       field :endpoint, type: String
       field :species, type: String
       field :source, type: String
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
+      field :leave_one_out_validation_id, type: BSON::ObjectId
 
       def predict object
         Lazar.find(model_id).predict object
@@ -201,12 +196,16 @@ module OpenTox
         repeated_crossvalidation.crossvalidations
       end
 
+      def leave_one_out_validation
+        LeaveOneOutValidation.find leave_one_out_validation_id
+      end
+
       def regression?
-        training_dataset.features.first.numeric?
+        model.is_a? LazarRegression
       end
 
       def classification?
-        training_dataset.features.first.nominal?
+        model.is_a? LazarClassification
       end
 
       def self.from_csv_file file
@@ -214,14 +213,17 @@ module OpenTox
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
         prediction_model = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
+        prediction_feature = training_dataset.features.first
         model = nil
-        if training_dataset.features.first.nominal?
-          model = LazarClassification.create training_dataset
-        elsif training_dataset.features.first.numeric?
-          model = LazarRegression.create training_dataset
+        if prediction_feature.nominal?
+          model = LazarClassification.create prediction_feature, training_dataset
+        elsif prediction_feature.numeric?
+          model = LazarRegression.create prediction_feature, training_dataset
         end
         prediction_model[:model_id] = model.id
+        prediction_model[:prediction_feature_id] = prediction_feature.id
         prediction_model[:repeated_crossvalidation_id] = RepeatedCrossValidation.create(model).id
+        prediction_model[:leave_one_out_validation_id] = LeaveOneOutValidation.create(model).id
         prediction_model.save
         prediction_model
       end

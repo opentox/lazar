@@ -6,14 +6,14 @@ class ValidationTest < MiniTest::Test
   
   def test_default_classification_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarClassification.create dataset
+    model = Model::LazarClassification.create dataset.features.first, dataset
     cv = ClassificationCrossValidation.create model
     assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7, this may occur due to an unfavorable training/test set split"
   end
 
   def test_default_regression_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
-    model = Model::LazarRegression.create dataset
+    model = Model::LazarRegression.create dataset.features.first, dataset
     cv = RegressionCrossValidation.create model
     assert cv.rmse < 1.5, "RMSE #{cv.rmse} should be larger than 1.5, this may occur due to an unfavorable training/test set split"
     assert cv.mae < 1, "MAE #{cv.mae} should be larger than 1, this may occur due to an unfavorable training/test set split"
@@ -30,7 +30,7 @@ class ValidationTest < MiniTest::Test
         :type => "FP3"
       }
     }
-    model = Model::LazarClassification.create dataset, params
+    model = Model::LazarClassification.create dataset.features.first, dataset, params
     model.save
     cv = ClassificationCrossValidation.create model
     params = model.neighbor_algorithm_parameters
@@ -54,7 +54,7 @@ class ValidationTest < MiniTest::Test
         :min_sim => 0.7,
       }
     }
-    model = Model::LazarRegression.create dataset, params
+    model = Model::LazarRegression.create dataset.features.first, dataset, params
     cv = RegressionCrossValidation.create model
     cv.validation_ids.each do |vid|
       model = Model::Lazar.find(Validation.find(vid).model_id)
@@ -70,7 +70,7 @@ class ValidationTest < MiniTest::Test
   def test_physchem_regression_crossvalidation
 
     training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
-    model = Model::LazarRegression.create(training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
+    model = Model::LazarRegression.create(training_dataset.features.first, training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     cv = RegressionCrossValidation.create model
     refute_nil cv.rmse
     refute_nil cv.mae 
@@ -80,7 +80,7 @@ class ValidationTest < MiniTest::Test
 
   def test_classification_loo_validation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarClassification.create dataset
+    model = Model::LazarClassification.create dataset.features.first, dataset
     loo = ClassificationLeaveOneOutValidation.create model
     assert_equal 14, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
@@ -89,7 +89,7 @@ class ValidationTest < MiniTest::Test
 
   def test_regression_loo_validation
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
-    model = Model::LazarRegression.create dataset
+    model = Model::LazarRegression.create dataset.features.first, dataset
     loo = RegressionLeaveOneOutValidation.create model
     assert loo.r_squared > 0.34
   end
@@ -98,7 +98,7 @@ class ValidationTest < MiniTest::Test
 
   def test_repeated_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    model = Model::LazarClassification.create dataset
+    model = Model::LazarClassification.create dataset.features.first, dataset
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
       assert_operator cv.accuracy, :>, 0.7, "model accuracy < 0.7, this may happen by chance due to an unfavorable training/test set split"

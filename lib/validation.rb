@@ -27,14 +27,14 @@ module OpenTox
       atts = model.attributes.dup # do not modify attributes from original model
       atts["_id"] = BSON::ObjectId.new
       atts[:training_dataset_id] = training_set.id
-      validation_model = model.class.create training_set, atts
+      validation_model = model.class.create model.prediction_feature, training_set, atts
       validation_model.save
       predictions = validation_model.predict test_set.compounds
       predictions.each{|cid,p| p.delete(:neighbors)}
       nr_unpredicted = 0
       predictions.each do |cid,prediction|
         if prediction[:value]
-          prediction[:measured] = test_set.data_entries[cid][prediction[:prediction_feature_id].to_s]
+          prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
         else
           nr_unpredicted += 1
         end
@@ -42,7 +42,6 @@ module OpenTox
       end
       validation = self.new(
         :model_id => validation_model.id,
-        #:prediction_dataset_id => prediction_dataset.id,
         :test_dataset_id => test_set.id,
         :nr_instances => test_set.compounds.size,
         :nr_unpredicted => nr_unpredicted,

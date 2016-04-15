@@ -10,6 +10,8 @@ module OpenTox
     field :finished_at, type: Time 
 
     def self.create model
+      $logger.debug "#{model.name}: LOO validation started"
+      t = Time.now
       model.training_dataset.features.first.nominal? ? klass = ClassificationLeaveOneOutValidation : klass = RegressionLeaveOneOutValidation
       loo = klass.new :model_id => model.id, :dataset_id => model.training_dataset_id
       predictions = model.predict model.training_dataset.compounds
@@ -17,7 +19,7 @@ module OpenTox
       nr_unpredicted = 0
       predictions.each do |cid,prediction|
         if prediction[:value]
-          prediction[:measured] = model.training_dataset.data_entries[cid][prediction[:prediction_feature_id].to_s]
+          prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
         else
           nr_unpredicted += 1
         end
@@ -28,6 +30,7 @@ module OpenTox
       loo.predictions = predictions
       loo.statistics
       loo.save
+      $logger.debug "#{model.name}, LOO validation:  #{Time.now-t} seconds"
       loo
     end
 
@@ -84,15 +87,11 @@ module OpenTox
 
   class RegressionLeaveOneOutValidation < LeaveOneOutValidation
 
-
-    field :rmse, type: Float, default: 0.0
+    field :rmse, type: Float, default: 0
     field :mae, type: Float, default: 0
-    #field :weighted_rmse, type: Float, default: 0
-    #field :weighted_mae, type: Float, default: 0
     field :r_squared, type: Float
     field :correlation_plot_id, type: BSON::ObjectId
     field :confidence_plot_id, type: BSON::ObjectId
-
 
     def statistics
       stat = ValidationStatistics.regression predictions
