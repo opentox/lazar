@@ -6,7 +6,9 @@ module OpenTox
     field :numeric, type: Boolean
     field :measured, type: Boolean
     field :calculated, type: Boolean
+    field :category, type: String
     field :unit, type: String
+    field :conditions, type: Hash
   end
 
   # Feature for categorical variables
@@ -33,14 +35,6 @@ module OpenTox
     def self.from_smarts smarts
       self.find_or_create_by :smarts => smarts
     end
-  end
-
-  # Feature for categorical bioassay results
-  class NominalBioAssay < NominalFeature
-  end
-
-  # Feature for quantitative bioassay results
-  class NumericBioAssay < NumericFeature
   end
 
 end

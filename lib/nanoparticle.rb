@@ -12,43 +12,51 @@ module OpenTox
     end
 
     def add_feature feature, value
-      if feature.source.match /property\/P-CHEM/
+      case feature.category
+      when "P-CHEM"
         physchem_descriptors[feature.id.to_s] ||= []
         physchem_descriptors[feature.id.to_s] << value
-      elsif feature.source.match /property\/TOX/
+      when "TOX"
         toxicities[feature.id.to_s] ||= []
         toxicities[feature.id.to_s] << value
       else
-        warn "Unknown feature type '#{feature.source}'. Value '#{value}' not inserted."
+        warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
       end
+      save
     end
 
     def parse_ambit_value feature, v
-      # TODO: units, mmol/log10 conversion
-      if v.keys == ["loValue"]
-        #if v["loValue"].numeric?
-          add_feature feature, v["loValue"]
-        #else
-          #warn "'#{v["loValue"]}' is not a numeric value, entry ignored."
-        #end
+      v.delete "unit"
+      # TODO: mmol/log10 conversion
+      if v.keys == ["textValue"]
+        add_feature feature, v["textValue"]
+      elsif v.keys == ["loValue"]
+        add_feature feature, v["loValue"]
+      elsif v.keys.size == 2 and v["errorValue"]
+        add_feature feature, v["loValue"]
+        warn "Ignoring errorValue '#{v["errorValue"]}' for '#{feature.name}'."
       elsif v.keys.size == 2 and v["loQualifier"] == "mean"
-        #add_feature feature, {:mean => v["loValue"]}
         add_feature feature, v["loValue"]
         warn "'#{feature.name}' is a mean value. Original data is not available."
       elsif v.keys.size == 2 and v["loQualifier"] #== ">="
-        #add_feature feature, {:min => v["loValue"],:max => Float::INFINITY}
         warn "Only min value available for '#{feature.name}', entry ignored"
       elsif v.keys.size == 2 and v["upQualifier"] #== ">="
-        #add_feature feature, {:max => v["upValue"],:min => -Float::INFINITY}
         warn "Only max value available for '#{feature.name}', entry ignored"
-      elsif v.size == 4 and v["loQualifier"] and v["upQualifier"] 
-        #add_feature feature, {:min => v["loValue"],:max => v["upValue"]}
+      elsif v.keys.size == 3 and v["loValue"] and v["loQualifier"].nil? and v["upQualifier"].nil?
+        add_feature feature, v["loValue"]
+        warn "loQualifier and upQualifier are empty."
+      elsif v.keys.size == 3 and v["loValue"] and v["loQualifier"] == "" and v["upQualifier"] == ""
+        add_feature feature, v["loValue"]
+        warn "loQualifier and upQualifier are empty."
+      elsif v.size == 4 and v["loQualifier"] and v["upQualifier"] and v["loValue"] and v["upValue"]
         add_feature feature, [v["loValue"],v["upValue"]].mean
         warn "Using mean value of range #{v["loValue"]} - #{v["upValue"]} for '#{feature.name}'. Original data is not available."
+      elsif v.size == 4 and v["loQualifier"] == "mean" and v["errorValue"]
+        warn "'#{feature.name}' is a mean value. Original data is not available. Ignoring errorValue '#{v["errorValue"]}' for '#{feature.name}'."
+        add_feature feature, v["loValue"]
       elsif v == {} # do nothing
       else
-        $logger.warn "Cannot parse Ambit eNanoMapper value '#{v}' for feature '#{feature.name}'."
-        warnings << "Cannot parse Ambit eNanoMapper value '#{v}' for feature '#{feature.name}'."
+        warn "Cannot parse Ambit eNanoMapper value '#{v}' for feature '#{feature.name}'."
       end
     end
 

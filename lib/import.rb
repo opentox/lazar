@@ -19,43 +19,28 @@ module OpenTox
               :name => np["values"]["https://data.enanomapper.net/identifier/name"],
               :source => np["compound"]["URI"],
             )
-            dataset.data_entries[nanoparticle.id.to_s] ||= {}
-            nanoparticle.bundles << uri
-            nanoparticle.dataset_ids << dataset.id
-            np["composition"].each do |comp|
-              case comp["relation"]
-              when "HAS_CORE"
-                nanoparticle.core = comp["component"]["compound"]["URI"]
-              when "HAS_COATING"
-                nanoparticle.coating << comp["component"]["compound"]["URI"]
-              end
-            end if np["composition"]
-            np["values"].each do |u,v|
-              if u.match(/property/)
-                name, unit, source = nil
-                features.each do |uri,feat|
-                  if u.match(/#{uri}/)
-                    name = feat["title"]
-                    unit = feat["units"]
-                    source = uri
-                  end
-                end
-                feature = Feature.find_or_create_by(
-                  :name => name,
-                  :unit => unit,
-                  :source => source
+            dataset.substance_ids << nanoparticle.id
+            dataset.substance_ids.uniq!
+            studies = JSON.parse(RestClientWrapper.get(File.join(np["compound"]["URI"],"study")))["study"]
+            studies.each do |study|
+              study["effects"].each do |effect|
+                effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
+                # TODO parse core/coating
+                # TODO parse proteomics, they come as a large textValue
+                $logger.debug File.join(np["compound"]["URI"],"study")
+                effect["conditions"].delete_if { |k, v| v.nil? }
+                feature = klass.find_or_create_by(
+                  :source => File.join(np["compound"]["URI"],"study"),
+                  :name => "#{study["protocol"]["category"]["title"]} #{study["protocol"]["endpoint"]}",
+                  :unit => effect["result"]["unit"],
+                  :category => study["protocol"]["topcategory"],
+                  :conditions => effect["conditions"]
                 )
+                nanoparticle.parse_ambit_value feature, effect["result"]
+                dataset.feature_ids << feature.id 
+                dataset.feature_ids.uniq!
               end
-              v.each{|value| nanoparticle.parse_ambit_value feature, value} if v.is_a? Array
             end
-            nanoparticle.bundles.uniq!
-            nanoparticle.physchem_descriptors.each{|f,v| v.uniq!}
-            #nanoparticle.toxicities.each{|f,v| v.uniq!}
-            nanoparticle.toxicities.each do |f,v|
-              dataset.data_entries[nanoparticle.id.to_s][f.to_s] ||= []
-              dataset.data_entries[nanoparticle.id.to_s][f.to_s] += v
-            end
-            nanoparticle.save
           end
           dataset.save
           datasets << dataset

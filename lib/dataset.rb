@@ -88,22 +88,21 @@ module OpenTox
     # @return [String]
     def to_csv(inchi=false)
       CSV.generate() do |csv| 
-        compound = Substance.find(data_entries.first.first).is_a? Compound
+        compound = Substance.find(substance_ids.first).is_a? Compound
         if compound
           csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
         else
           csv << ["Name"] + features.collect{|f| f.name}
         end
-        data_entries.each do |sid,f|
-          substance = Substance.find sid
-          features.each do |feature|
-            f[feature.id.to_s].each do |v|
+        substances.each do |substance|
+          features.each do |f|
+            substance.toxicities[f.id.to_s].each do |v|
               if compound
                 csv << [inchi ? substance.inchi : substance.smiles , v]
               else
                 csv << [substance.name , v]
               end
-            end if f[feature.id.to_s]
+            end if substance.toxicities[f.id.to_s]
           end
         end
       end
