@@ -48,6 +48,9 @@ module OpenTox
       elsif v.keys.size == 3 and v["loValue"] and v["loQualifier"] == "" and v["upQualifier"] == ""
         add_feature feature, v["loValue"]
         warn "loQualifier and upQualifier are empty."
+      elsif v.keys.size == 4 and v["loValue"] and v["loQualifier"].nil? and v["upQualifier"].nil?
+        add_feature feature, v["loValue"]
+        warn "loQualifier and upQualifier are empty."
       elsif v.size == 4 and v["loQualifier"] and v["upQualifier"] and v["loValue"] and v["upValue"]
         add_feature feature, [v["loValue"],v["upValue"]].mean
         warn "Using mean value of range #{v["loValue"]} - #{v["upValue"]} for '#{feature.name}'. Original data is not available."

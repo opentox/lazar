@@ -8,6 +8,7 @@ module OpenTox
         weighted_sum = {}
         sim_sum = 0.0
         confidence = 0.0
+        # see ~/src/pubchem-read-across/application.rb:353
         neighbors.each do |row|
           sim = row["tanimoto"]
           row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
