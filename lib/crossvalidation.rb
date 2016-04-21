@@ -54,7 +54,7 @@ module OpenTox
       cv.update_attributes(
         nr_instances: nr_instances,
         nr_unpredicted: nr_unpredicted,
-        predictions: predictions#.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
+        predictions: predictions
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
       cv.statistics

@@ -15,21 +15,21 @@ module OpenTox
           if pred[:value] == m
             if pred[:value] == accept_values[0]
               confusion_matrix[0][0] += 1
-              weighted_confusion_matrix[0][0] += pred[:confidence]
+              weighted_confusion_matrix[0][0] += pred[:probabilities][pred[:value]]
               nr_instances += 1
             elsif pred[:value] == accept_values[1]
               confusion_matrix[1][1] += 1
-              weighted_confusion_matrix[1][1] += pred[:confidence]
+              weighted_confusion_matrix[1][1] += pred[:probabilities][pred[:value]]
               nr_instances += 1
             end
           elsif pred[:value] != m
             if pred[:value] == accept_values[0]
               confusion_matrix[0][1] += 1
-              weighted_confusion_matrix[0][1] += pred[:confidence]
+              weighted_confusion_matrix[0][1] += pred[:probabilities][pred[:value]]
               nr_instances += 1
             elsif pred[:value] == accept_values[1]
               confusion_matrix[1][0] += 1
-              weighted_confusion_matrix[1][0] += pred[:confidence]
+              weighted_confusion_matrix[1][0] += pred[:probabilities][pred[:value]]
               nr_instances += 1
             end
           end
@@ -47,14 +47,15 @@ module OpenTox
           confidence_sum += c
         end
       end
-      accuracy = (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f
+      accuracy = (confusion_matrix[0][0]+confusion_matrix[1][1])/nr_instances.to_f
+      weighted_accuracy = (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f
       $logger.debug "Accuracy #{accuracy}"
       {
         :accept_values => accept_values,
         :confusion_matrix => confusion_matrix,
         :weighted_confusion_matrix => weighted_confusion_matrix,
         :accuracy => accuracy,
-        :weighted_accuracy => (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
+        :weighted_accuracy => weighted_accuracy,
         :true_rate => true_rate,
         :predictivity => predictivity,
         :finished_at => Time.now
