@@ -51,18 +51,18 @@ module OpenTox
             if pred[:value] == db_act
               if pred[:value] == accept_values[0]
                 confusion_matrix[0][0] += 1
-                weighted_confusion_matrix[0][0] += pred[:confidence]
+                #weighted_confusion_matrix[0][0] += pred[:confidence]
               elsif pred[:value] == accept_values[1]
                 confusion_matrix[1][1] += 1
-                weighted_confusion_matrix[1][1] += pred[:confidence]
+                #weighted_confusion_matrix[1][1] += pred[:confidence]
               end
             else
               if pred[:value] == accept_values[0]
                 confusion_matrix[0][1] += 1
-                weighted_confusion_matrix[0][1] += pred[:confidence]
+                #weighted_confusion_matrix[0][1] += pred[:confidence]
               elsif pred[:value] == accept_values[1]
                 confusion_matrix[1][0] += 1
-                weighted_confusion_matrix[1][0] += pred[:confidence]
+                #weighted_confusion_matrix[1][0] += pred[:confidence]
               end
             end
           end
@@ -73,17 +73,17 @@ module OpenTox
         predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
       end
       confidence_sum = 0
-      weighted_confusion_matrix.each do |r|
-        r.each do |c|
-          confidence_sum += c
-        end
-      end
+#      weighted_confusion_matrix.each do |r|
+#        r.each do |c|
+#          confidence_sum += c
+#        end
+#      end
       update_attributes(
         accept_values: accept_values,
         confusion_matrix: confusion_matrix,
-        weighted_confusion_matrix: weighted_confusion_matrix,
+#        weighted_confusion_matrix: weighted_confusion_matrix,
         accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
-        weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
+#        weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
         true_rate: true_rate,
         predictivity: predictivity,
         finished_at: Time.now
