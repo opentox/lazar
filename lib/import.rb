@@ -30,7 +30,7 @@ module OpenTox
                 $logger.debug File.join(np["compound"]["URI"],"study")
                 effect["conditions"].delete_if { |k, v| v.nil? }
                 feature = klass.find_or_create_by(
-                  :source => File.join(np["compound"]["URI"],"study"),
+                  #:source => File.join(np["compound"]["URI"],"study"),
                   :name => "#{study["protocol"]["category"]["title"]} #{study["protocol"]["endpoint"]}",
                   :unit => effect["result"]["unit"],
                   :category => study["protocol"]["topcategory"],
@@ -47,6 +47,22 @@ module OpenTox
         end
         datasets.collect{|d| d.id}
       end
+
+=begin
+      def self.import_ld # defunct, AMBIT JSON_LD does not have substance entries
+        #get list of bundle URIs
+        bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
+        datasets = []
+        bundles.each do |bundle|
+          uri = bundle["URI"]
+          study = JSON.parse(`curl -H 'Accept:application/ld+json' '#{uri}/substance'`)
+          study["@graph"].each do |i|
+            puts i.to_yaml if i.keys.include? "sio:has-value"
+          end
+        end
+        datasets.collect{|d| d.id}
+      end
+=end
 
       def self.dump
         #get list of bundle URIs

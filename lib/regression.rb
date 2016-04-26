@@ -75,46 +75,62 @@ module OpenTox
       
       end
 
-      def self.local_physchem_regression  compound, params, method="plsr"#, method_params="ncomp = 4"
+      def self.local_physchem_regression  compound, params, method="pls"#, method_params="ncomp = 4"
 
-        neighbors = params[:neighbors]
+        neighbors = params[:neighbors].select{|n| n["toxicities"][params[:prediction_feature_id].to_s]} # use only neighbors with measured activities
+
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
         return {:value => neighbors.first["toxicities"][params[:prediction_feature_id]], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
 
         activities = []
         weights = []
-        physchem = {}
+        pc_ids = neighbors.collect{|n| n.physchem_descriptors.keys}.flatten.uniq
+        data_frame = []
+        data_frame[0] = []
         
         neighbors.each_with_index do |n,i|
-          if n["toxicities"][params[:prediction_feature_id].to_s]
-            n["toxicities"][params[:prediction_feature_id].to_s].each do |act|
-              # TODO fix!!!!
-              activities << -Math.log10(act)
-              #if act.numeric?
-              #activities << act
-              n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
-              neighbor = Substance.find(n["_id"])
-              neighbor.physchem_descriptors.each do |pid,v| # insert physchem only if there is an activity
-                physchem[pid] ||= []
-                physchem[pid] +=  v
-              end
+          neighbor = Substance.find(n["_id"])
+          n["toxicities"][params[:prediction_feature_id].to_s].each do |act|
+            data_frame[0][i] = act
+            n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
+            neighbor.physchem_descriptors.each do |pid,values| 
+              values.uniq!
+              warn "More than one value for #{Feature.find(pid).name}: #{values.join(', ')}" unless values.size == 1
+              j = pc_ids.index(pid)+1
+              data_frame[j] ||= []
+              data_frame[j][i] = values.for_R
             end
           end
+          (0..pc_ids.size+1).each do |j| # for R: fill empty values with NA
+            data_frame[j] ||= []
+            data_frame[j][i] ||= "NA"
+          end
+        end
+        remove_idx = []
+        data_frame.each_with_index do |r,i|
+          remove_idx << i if r.uniq.size == 1 # remove properties with a single value
+        end
+        remove_idx.reverse.each do |i|
+          data_frame.delete_at i
+          pc_ids.delete_at i
         end
 
-        # remove properties with a single value
-        physchem.each do |pid,v|
-          physchem.delete(pid) if v.uniq.size <= 1
-        end
-
-        if physchem.empty?
+        if pc_ids.empty?
           result = local_weighted_average(compound, params)
           result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
           return result
-
         else
-          data_frame = [activities] + physchem.keys.collect { |pid| physchem[pid].collect{|v| "\"#{v.sub('[','').sub(']','')}\"" if v.is_a? String }}
-          prediction = r_model_prediction method, data_frame, physchem.keys, weights, physchem.keys.collect{|pid| compound.physchem_descriptors[pid]}
+          query_descriptors = pc_ids.collect{|i| compound.physchem_descriptors[i].for_R}
+          remove_idx = []
+          query_descriptors.each_with_index do |v,i|
+            remove_idx << i if v == "NA"
+          end
+          remove_idx.reverse.each do |i|
+            data_frame.delete_at i
+            pc_ids.delete_at i
+            query_descriptors.delete_at i
+          end
+          prediction = r_model_prediction method, data_frame, pc_ids.collect{|i| "\"#{i}\""}, weights, query_descriptors
           if prediction.nil?
             prediction = local_weighted_average(compound, params)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
@@ -130,16 +146,39 @@ module OpenTox
       def self.r_model_prediction method, training_data, training_features, training_weights, query_feature_values
         R.assign "weights", training_weights
         r_data_frame = "data.frame(#{training_data.collect{|r| "c(#{r.join(',')})"}.join(', ')})"
-        #p r_data_frame
-        File.open("tmp.R","w+"){|f| f.puts "data <- #{r_data_frame}\n"}
+rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
+        File.open("tmp.R","w+"){|f|
+          f.puts "suppressPackageStartupMessages({
+  library(iterators,lib=\"#{rlib}\")
+  library(foreach,lib=\"#{rlib}\")
+  library(ggplot2,lib=\"#{rlib}\")
+  library(grid,lib=\"#{rlib}\")
+  library(gridExtra,lib=\"#{rlib}\")
+  library(pls,lib=\"#{rlib}\")
+  library(caret,lib=\"#{rlib}\")
+  library(doMC,lib=\"#{rlib}\")
+  registerDoMC(#{NR_CORES})
+})"
+
+          f.puts "data <- #{r_data_frame}\n"
+          f.puts "weights <- c(#{training_weights.join(', ')})"
+          f.puts "features <- c(#{training_features.join(', ')})"
+          f.puts "names(data) <- append(c('activities'),features)" #
+          f.puts "model <- train(activities ~ ., data = data, method = '#{method}')"
+          f.puts "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
+          f.puts "names(fingerprint) <- features" 
+          f.puts "prediction <- predict(model,fingerprint)"
+        }
+        
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
         R.eval "names(data) <- append(c('activities'),features)" #
-        begin
-          R.eval "model <- train(activities ~ ., data = data, method = '#{method}')"
-        rescue 
-          return nil
-        end
+        #begin
+          R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass)"
+        #rescue 
+          #return nil
+        #end
+        p query_feature_values
         R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
         R.eval "names(fingerprint) <- features" 
         R.eval "prediction <- predict(model,fingerprint)"

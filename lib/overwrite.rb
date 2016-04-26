@@ -114,6 +114,15 @@ class Array
     Math.sqrt(self.sample_variance)
   end
 
+  def for_R
+    if self.first.is_a?(String) 
+      #"\"#{self.collect{|v| v.sub('[','').sub(']','')}.join(" ")}\"" # quote and remove square brackets
+      "NA"
+    else
+      self.median
+    end
+  end
+
 end
 
 module URI

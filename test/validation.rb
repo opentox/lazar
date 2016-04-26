@@ -9,6 +9,7 @@ class ValidationTest < MiniTest::Test
     model = Model::LazarClassification.create dataset.features.first, dataset
     cv = ClassificationCrossValidation.create model
     assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7, this may occur due to an unfavorable training/test set split"
+    assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) should be larger than accuracy (#{cv.accuracy})."
   end
 
   def test_default_regression_crossvalidation
@@ -85,6 +86,7 @@ class ValidationTest < MiniTest::Test
     assert_equal 14, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
     assert loo.accuracy > 0.77
+    assert loo.weighted_accuracy > loo.accuracy, "Weighted accuracy (#{loo.weighted_accuracy}) should be larger than accuracy (#{loo.accuracy})."
   end
 
   def test_regression_loo_validation

@@ -16,9 +16,11 @@ module OpenTox
       when "P-CHEM"
         physchem_descriptors[feature.id.to_s] ||= []
         physchem_descriptors[feature.id.to_s] << value
+        physchem_descriptors[feature.id.to_s].uniq!
       when "TOX"
         toxicities[feature.id.to_s] ||= []
         toxicities[feature.id.to_s] << value
+        toxicities[feature.id.to_s].uniq!
       else
         warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
       end
