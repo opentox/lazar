@@ -44,7 +44,7 @@ module OpenTox
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
         #end
       end
-      Process.waitall
+      #Process.waitall
       cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
       cv.validations.each do |validation|
         nr_instances += validation.nr_instances

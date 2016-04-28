@@ -9,6 +9,7 @@ module OpenTox
         neighbors = params[:neighbors]
         neighbors.each do |row|
           sim = row["tanimoto"]
+          sim ||= 1 # TODO: sim f nanoparticles
           if row["toxicities"][params[:prediction_feature_id].to_s]
             row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
               weighted_sum += sim*Math.log10(act)
@@ -120,7 +121,7 @@ module OpenTox
           result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
           return result
         else
-          query_descriptors = pc_ids.collect{|i| compound.physchem_descriptors[i].for_R}
+          query_descriptors = pc_ids.collect{|i| compound.physchem_descriptors[i].for_R if compound.physchem_descriptors[i]}.compact
           remove_idx = []
           query_descriptors.each_with_index do |v,i|
             remove_idx << i if v == "NA"
@@ -172,13 +173,9 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
         
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
-        R.eval "names(data) <- append(c('activities'),features)" #
-        #begin
+        begin
+          R.eval "names(data) <- append(c('activities'),features)" #
           R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass)"
-        #rescue 
-          #return nil
-        #end
-        p query_feature_values
         R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
         R.eval "names(fingerprint) <- features" 
         R.eval "prediction <- predict(model,fingerprint)"
@@ -187,6 +184,9 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
           :rmse => R.eval("getTrainPerf(model)$TrainRMSE").to_f,
           :r_squared => R.eval("getTrainPerf(model)$TrainRsquared").to_f,
         }
+        rescue 
+          return nil
+        end
       end
 
     end

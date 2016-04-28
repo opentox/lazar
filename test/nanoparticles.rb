@@ -60,7 +60,15 @@ class NanoparticleTest  < MiniTest::Test
     prediction = model.predict nanoparticle
     p prediction
     #p prediction
-    #refute_nil prediction[:value]
+    refute_nil prediction[:value]
+  end
+
+  def test_validate_model
+    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+    feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    cv = RegressionCrossValidation.create model
+    p cv
   end
 
 end
