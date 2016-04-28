@@ -8,7 +8,7 @@ module OpenTox
     field :bundles, type: Array, default: []
 
     def nanoparticle_neighbors params
-      Dataset.find(params[:training_dataset_id]).nanoparticles
+      Dataset.find(params[:training_dataset_id]).nanoparticles.collect{|np| {"_id" => np.id, "tanimoto" => 1}}
     end
 
     def add_feature feature, value

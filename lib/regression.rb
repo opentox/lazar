@@ -85,7 +85,7 @@ module OpenTox
 
         activities = []
         weights = []
-        pc_ids = neighbors.collect{|n| n.physchem_descriptors.keys}.flatten.uniq
+        pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem_descriptors.keys}.flatten.uniq
         data_frame = []
         data_frame[0] = []
         

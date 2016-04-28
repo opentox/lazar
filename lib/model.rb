@@ -50,7 +50,6 @@ module OpenTox
       end
 
       def predict_compound compound
-        #p compound
         neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
         # remove neighbors without prediction_feature
         # check for database activities (neighbors may include query compound)
