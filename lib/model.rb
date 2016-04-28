@@ -64,7 +64,7 @@ module OpenTox
           prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
           neighbors.delete_if{|n| n["_id"] == compound.id}
         end
-        neighbors.delete_if{|n| n['toxicities'].empty? or n['toxicities'][prediction_feature.id.to_s] == [nil] }
+        #neighbors.delete_if{|n| n['toxicities'].empty? or n['toxicities'][prediction_feature.id.to_s] == [nil] }
         if neighbors.empty?
           prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
         else

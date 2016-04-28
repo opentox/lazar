@@ -335,7 +335,7 @@ module OpenTox
         {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
         {'$sort' => {'tanimoto' => -1}}
       ]
-      
+
       $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
         
     end

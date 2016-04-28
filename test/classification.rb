@@ -4,7 +4,7 @@ class LazarClassificationTest < MiniTest::Test
 
   def test_lazar_classification
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = Model::LazarClassification.create training_dataset
+    model = Model::LazarClassification.create training_dataset.features.first, training_dataset
 
     [ {
       :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
@@ -25,8 +25,8 @@ class LazarClassificationTest < MiniTest::Test
 
     compound = Compound.from_smiles "CCO"
     prediction = model.predict compound
-    assert_equal ["false"], prediction[:database_activities]
     assert_equal "true", prediction[:value]
+    assert_equal ["false"], prediction[:database_activities]
 
     # make a dataset prediction
     compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini.csv")
@@ -35,7 +35,10 @@ class LazarClassificationTest < MiniTest::Test
 
     cid = prediction_dataset.compounds[7].id.to_s
     assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warning]
-    cid = prediction_dataset.compounds[9].id.to_s
+    prediction_dataset.predictions.each do |cid,pred|
+      assert_equal "Could not find similar compounds with experimental data in the training dataset.", pred[:warning] if pred[:value].nil?
+    end
+    cid = Compound.from_smiles("CCOC(=O)N").id.to_s
     assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction_dataset.predictions[cid][:warning]
     # cleanup
     [training_dataset,model,compound_dataset,prediction_dataset].each{|o| o.delete}
