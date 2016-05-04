@@ -8,7 +8,7 @@ module OpenTox
     field :bundles, type: Array, default: []
 
     def nanoparticle_neighbors params
-      Dataset.find(params[:training_dataset_id]).nanoparticles.collect{|np| {"_id" => np.id, "tanimoto" => 1}}
+      Dataset.find(params[:training_dataset_id]).nanoparticles.collect{|np| np["tanimoto"] = 1; np}
     end
 
     def add_feature feature, value
@@ -19,7 +19,19 @@ module OpenTox
         physchem_descriptors[feature.id.to_s].uniq!
       when "TOX"
         toxicities[feature.id.to_s] ||= []
-        toxicities[feature.id.to_s] << value
+        # TODO generic way of parsing TOX values
+        if feature.name == "7.99 Toxicity (other) ICP-AES" and feature.unit == "mL/ug(Mg)" 
+          toxicities[feature.id.to_s] << -Math.log10(value)
+        #if value.numeric?
+          #begin
+          #rescue
+            #p feature
+            #p value
+            #exit
+          #end
+        else
+          toxicities[feature.id.to_s] << value
+        end
         toxicities[feature.id.to_s].uniq!
       else
         warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
@@ -29,7 +41,7 @@ module OpenTox
 
     def parse_ambit_value feature, v
       v.delete "unit"
-      # TODO: mmol/log10 conversion
+      # TODO: ppm instead of weights
       if v.keys == ["textValue"]
         add_feature feature, v["textValue"]
       elsif v.keys == ["loValue"]

@@ -1,8 +1,14 @@
 require_relative "setup.rb"
 
+
 class NanoparticleTest  < MiniTest::Test
 
+  def setup
+    `mongorestore --db=development #{File.join(File.dirname(__FILE__),"..","dump","production")}`
+  end
+
   def test_import
+    skip
     dataset_ids = Import::Enanomapper.import
     assert_operator Nanoparticle.count , :>, 570, "Only #{Nanoparticle.count} nanoparticles imported"
     assert_operator dataset_ids.size, :>, 8, "Only #{dataset_ids.size} bundles imported"
@@ -17,6 +23,7 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_summaries
+    skip
     features = Feature.all.to_a
     #p features.collect do |f|
       #f if f.category == "TOX"
@@ -51,6 +58,18 @@ class NanoparticleTest  < MiniTest::Test
     end
   end
 
+  def test_create_model_with_feature_selection
+    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+    feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    nanoparticle = training_dataset.nanoparticles[-34]
+    #p nanoparticle.neighbors
+    prediction = model.predict nanoparticle
+    p prediction
+    #p prediction
+    refute_nil prediction[:value]
+  end
+
   def test_create_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
@@ -66,7 +85,9 @@ class NanoparticleTest  < MiniTest::Test
   def test_validate_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    #model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors"})
+    p model
     cv = RegressionCrossValidation.create model
     p cv
   end

@@ -141,7 +141,7 @@ module OpenTox
             :measured => p[1],
             :predicted => p[2],
             #:relative_error => (Math.log10(p[1])-Math.log10(p[2])).abs/Math.log10(p[1]).to_f.abs,
-            :log_error => (Math.log10(p[1])-Math.log10(p[2])).abs,
+            :error => (p[1]-p[2]).abs,
             :relative_error => (p[1]-p[2]).abs/p[1],
             :confidence => p[3],
             :neighbors => neighbors
@@ -152,7 +152,7 @@ module OpenTox
 
     def confidence_plot
       tmpfile = "/tmp/#{id.to_s}_confidence.png"
-      sorted_predictions = predictions.collect{|p| [(Math.log10(p[1])-Math.log10(p[2])).abs,p[3]] if p[1] and p[2]}.compact
+      sorted_predictions = predictions.collect{|p| [(p[1]-p[2]).abs,p[3]] if p[1] and p[2]}.compact
       R.assign "error", sorted_predictions.collect{|p| p[0]}
       R.assign "confidence", sorted_predictions.collect{|p| p[1]}
       # TODO fix axis names

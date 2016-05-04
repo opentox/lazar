@@ -12,16 +12,15 @@ module OpenTox
           sim ||= 1 # TODO: sim f nanoparticles
           if row["toxicities"][params[:prediction_feature_id].to_s]
             row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
-              weighted_sum += sim*Math.log10(act)
+              weighted_sum += sim*act
               sim_sum += sim
             end
           end
         end
-        sim_sum == 0 ? prediction = nil : prediction = 10**(weighted_sum/sim_sum)
+        sim_sum == 0 ? prediction = nil : prediction = weighted_sum/sim_sum
         {:value => prediction}
       end
 
-      # TODO explicit neighbors, also for physchem
       def self.local_fingerprint_regression  compound, params, method='pls'#, method_params="sigma=0.05"
         neighbors = params[:neighbors]
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
@@ -35,7 +34,7 @@ module OpenTox
           fingerprint = neighbor.fingerprint
           if row["toxicities"][params[:prediction_feature_id].to_s]
             row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
-              activities << Math.log10(act)
+              activities << act
               weights << row["tanimoto"]
               fingerprint_ids.each_with_index do |id,j|
                 fingerprints[id] ||= []
@@ -67,9 +66,9 @@ module OpenTox
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
           else
-            prediction[:prediction_interval] = [10**(prediction[:value]-1.96*prediction[:rmse]), 10**(prediction[:value]+1.96*prediction[:rmse])]
-            prediction[:value] = 10**prediction[:value]
-            prediction[:rmse] = 10**prediction[:rmse]
+            prediction[:prediction_interval] = [prediction[:value]-1.96*prediction[:rmse], prediction[:value]+1.96*prediction[:rmse]]
+            prediction[:value] = prediction[:value]
+            prediction[:rmse] = prediction[:rmse]
             prediction
           end
         end
@@ -96,7 +95,7 @@ module OpenTox
             n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
             neighbor.physchem_descriptors.each do |pid,values| 
               values.uniq!
-              warn "More than one value for #{Feature.find(pid).name}: #{values.join(', ')}" unless values.size == 1
+              warn "More than one value for '#{Feature.find(pid).name}': #{values.join(', ')}. Using the median." unless values.size == 1
               j = pc_ids.index(pid)+1
               data_frame[j] ||= []
               data_frame[j][i] = values.for_R
@@ -121,7 +120,9 @@ module OpenTox
           result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
           return result
         else
-          query_descriptors = pc_ids.collect{|i| compound.physchem_descriptors[i].for_R if compound.physchem_descriptors[i]}.compact
+          query_descriptors = pc_ids.collect do |i|
+            compound.physchem_descriptors[i] ? compound.physchem_descriptors[i].for_R : "NA"
+          end
           remove_idx = []
           query_descriptors.each_with_index do |v,i|
             remove_idx << i if v == "NA"
@@ -137,7 +138,6 @@ module OpenTox
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
             return prediction
           else
-            prediction[:value] = 10**prediction[:value]
             prediction
           end
         end
@@ -148,6 +148,7 @@ module OpenTox
         R.assign "weights", training_weights
         r_data_frame = "data.frame(#{training_data.collect{|r| "c(#{r.join(',')})"}.join(', ')})"
 rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
+=begin
         File.open("tmp.R","w+"){|f|
           f.puts "suppressPackageStartupMessages({
   library(iterators,lib=\"#{rlib}\")
@@ -170,20 +171,21 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
           f.puts "names(fingerprint) <- features" 
           f.puts "prediction <- predict(model,fingerprint)"
         }
+=end
         
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
         begin
           R.eval "names(data) <- append(c('activities'),features)" #
           R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass)"
-        R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
-        R.eval "names(fingerprint) <- features" 
-        R.eval "prediction <- predict(model,fingerprint)"
-        {
-          :value => R.eval("prediction").to_f,
-          :rmse => R.eval("getTrainPerf(model)$TrainRMSE").to_f,
-          :r_squared => R.eval("getTrainPerf(model)$TrainRsquared").to_f,
-        }
+          R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
+          R.eval "names(fingerprint) <- features" 
+          R.eval "prediction <- predict(model,fingerprint)"
+          {
+            :value => R.eval("prediction").to_f,
+            :rmse => R.eval("getTrainPerf(model)$TrainRMSE").to_f,
+            :r_squared => R.eval("getTrainPerf(model)$TrainRsquared").to_f,
+          }
         rescue 
           return nil
         end

@@ -2,7 +2,7 @@ module OpenTox
 
   module Model
 
-    class Model
+    class Lazar 
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -10,27 +10,13 @@ module OpenTox
 
       field :name, type: String
       field :creator, type: String, default: __FILE__
-      # datasets
       field :training_dataset_id, type: BSON::ObjectId
-      # algorithms
       field :prediction_algorithm, type: String
-      # prediction feature
       field :prediction_feature_id, type: BSON::ObjectId
-
-      def training_dataset
-        Dataset.find(training_dataset_id)
-      end
-
-      def prediction_feature
-        Feature.find(prediction_feature_id)
-      end
-    end
-
-    class Lazar < Model
-
-      # algorithms
       field :neighbor_algorithm, type: String
       field :neighbor_algorithm_parameters, type: Hash, default: {}
+      field :feature_selection_algorithm, type: String
+      field :relevant_features, type: Hash
 
       # Create a lazar model from a training_dataset and a feature_dataset
       # @param [OpenTox::Dataset] training_dataset
@@ -45,8 +31,41 @@ module OpenTox
         self.name ||= "#{training_dataset.name} #{prediction_feature.name}" 
         self.neighbor_algorithm_parameters ||= {}
         self.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
+
+        Algorithm.run(feature_selection_algorithm, self) if feature_selection_algorithm
         save
         self
+      end
+
+      def correlation_filter
+        toxicities = []
+        substances = []
+        training_dataset.substances.each do |s|
+          s["toxicities"][prediction_feature_id].each do |act|
+            toxicities << act
+            substances << s
+          end
+        end
+        R.assign "tox", toxicities
+        feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
+        feature_ids.each do |feature_id|
+          feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id]}
+          R.assign "feature", feature_values
+          begin
+            #R.eval "cor <- cor.test(-log(tox),-log(feature),use='complete')"
+            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='complete')"
+            pvalue = R.eval("cor$p.value").to_ruby
+            if pvalue <= 0.05
+              r = R.eval("cor$estimate").to_ruby
+              relevant_features[feature] = {}
+              relevant_features[feature]["pvalue"] = pvalue
+              relevant_features[feature]["r"] = r
+            end
+          rescue
+            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{toxicities}) failed."
+          end
+        end
+        relevant_features.sort!{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
       end
 
       def predict_compound compound
@@ -63,7 +82,6 @@ module OpenTox
           prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
           neighbors.delete_if{|n| n["_id"] == compound.id}
         end
-        #neighbors.delete_if{|n| n['toxicities'].empty? or n['toxicities'][prediction_feature.id.to_s] == [nil] }
         if neighbors.empty?
           prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
         else
@@ -121,6 +139,14 @@ module OpenTox
           return prediction_dataset
         end
 
+      end
+
+      def training_dataset
+        Dataset.find(training_dataset_id)
+      end
+
+      def prediction_feature
+        Feature.find(prediction_feature_id)
       end
 
     end
@@ -227,45 +253,6 @@ module OpenTox
         prediction_model.save
         prediction_model
       end
-    end
-
-    class NanoLazar
-      include OpenTox
-      include Mongoid::Document
-      include Mongoid::Timestamps
-      store_in collection: "models"
-
-      field :name, type: String
-      field :creator, type: String, default: __FILE__
-      # datasets
-      field :training_dataset_id, type: BSON::ObjectId
-      # algorithms
-      field :prediction_algorithm, type: String
-      # prediction feature
-      field :prediction_feature_id, type: BSON::ObjectId
-      field :training_particle_ids, type: Array
-
-      def self.create_all
-        nanoparticles = Nanoparticle.all
-        toxfeatures = Nanoparticle.all.collect{|np| np.toxicities.keys}.flatten.uniq.collect{|id| Feature.find id}
-        tox = {}
-        toxfeatures.each do |t|
-          tox[t] = nanoparticles.select{|np| np.toxicities.keys.include? t.id.to_s}
-        end
-        tox.select!{|t,nps| nps.size > 50}
-        tox.collect do |t,nps|
-          find_or_create_by(:prediction_feature_id => t.id, :training_particle_ids => nps.collect{|np| np.id})
-        end
-      end
-
-      def predict nanoparticle
-        training = training_particle_ids.collect{|id| Nanoparticle.find id}
-        training_features = training.collect{|t| t.physchem_descriptors.keys}.flatten.uniq
-        query_features = nanoparticle.physchem_descriptors.keys
-        common_features = (training_features & query_features)
-        #p common_features
-      end
-
     end
 
   end

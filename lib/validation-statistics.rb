@@ -63,16 +63,15 @@ module OpenTox
     end
 
     def self.regression predictions
-      # TODO: prediction intervals
       rmse = 0
       mae = 0
       x = []
       y = []
       predictions.each do |cid,pred|
         if pred[:value] and pred[:measured] #and pred[:measured] != [nil]
-          x << -Math.log10(pred[:measured].median)
-          y << -Math.log10(pred[:value])
-          error = Math.log10(pred[:value])-Math.log10(pred[:measured].median)
+          x << pred[:measured].median
+          y << pred[:value]
+          error = pred[:value]-pred[:measured].median
           rmse += error**2
           mae += error.abs
         else
