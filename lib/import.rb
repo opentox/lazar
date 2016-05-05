@@ -5,47 +5,73 @@ module OpenTox
     class Enanomapper
       include OpenTox
 
-      def self.import
+      def self.mirror dir="."
         #get list of bundle URIs
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
+        File.open(File.join(dir,"bundles.json"),"w+"){|f| f.puts JSON.pretty_generate(bundles)}
         datasets = []
         bundles.each do |bundle|
-          uri = bundle["URI"]
-          dataset = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"])
           nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"]+"?media=application%2Fjson"))["dataEntry"]
-          features = JSON.parse(RestClientWrapper.get(bundle["property"]+"?media=application%2Fjson"))["feature"]
-          nanoparticles.each do |np|
-            nanoparticle = Nanoparticle.find_or_create_by(
-              :name => np["values"]["https://data.enanomapper.net/identifier/name"],
-              :source => np["compound"]["URI"],
-            )
-            dataset.substance_ids << nanoparticle.id
-            dataset.substance_ids.uniq!
-            studies = JSON.parse(RestClientWrapper.get(File.join(np["compound"]["URI"],"study")))["study"]
+          nanoparticles.each do |nanoparticle|
+            uuid = nanoparticle["values"]["https://data.enanomapper.net/identifier/uuid"]
+            $logger.debug uuid
+            File.open(File.join(dir,"nanoparticle-#{uuid}.json"),"w+"){|f| f.puts JSON.pretty_generate(nanoparticle)}
+            studies = JSON.parse(RestClientWrapper.get(File.join(nanoparticle["compound"]["URI"],"study")))["study"]
             studies.each do |study|
-              study["effects"].each do |effect|
-                effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
-                # TODO parse core/coating
-                # TODO parse proteomics, they come as a large textValue
-                $logger.debug File.join(np["compound"]["URI"],"study")
-                effect["conditions"].delete_if { |k, v| v.nil? }
-                feature = klass.find_or_create_by(
-                  #:source => File.join(np["compound"]["URI"],"study"),
-                  :name => "#{study["protocol"]["category"]["title"]} #{study["protocol"]["endpoint"]}",
-                  :unit => effect["result"]["unit"],
-                  :category => study["protocol"]["topcategory"],
-                  :conditions => effect["conditions"]
-                )
-                nanoparticle.parse_ambit_value feature, effect["result"]
-                dataset.feature_ids << feature.id 
-                dataset.feature_ids.uniq!
-              end
+              File.open(File.join(dir,"study-#{uuid}.json"),"w+"){|f| f.puts JSON.pretty_generate(study)}
             end
           end
-          dataset.save
-          datasets << dataset
         end
-        datasets.collect{|d| d.id}
+      end
+
+      def self.import dir="."
+        datasets = {}
+        JSON.parse(File.read(File.join(dir,"bundles.json"))).each do |bundle|
+          datasets[bundle["URI"]] = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"])
+        end
+        Dir[File.join(dir,"study*.json")].each do |s|
+          study = JSON.parse(File.read(s))
+          np = JSON.parse(File.read(File.join(dir,"nanoparticle-#{study['owner']['substance']['uuid']}.json")))
+          nanoparticle = Nanoparticle.find_or_create_by(
+            :name => np["values"]["https://data.enanomapper.net/identifier/name"],
+            :source => np["compound"]["URI"],
+          )
+          np["bundles"].keys.each do |bundle_uri|
+            datasets[bundle_uri].substance_ids << nanoparticle.id
+            nanoparticle["dataset_ids"] << datasets[bundle_uri].id
+          end
+          study["effects"].each do |effect|
+            effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
+            # TODO parse core/coating
+            # TODO parse proteomics, they come as a large textValue
+            #$logger.debug File.join(np["compound"]["URI"],"study")
+            effect["conditions"].delete_if { |k, v| v.nil? }
+            # parse proteomics data
+            if study["protocol"]["category"]["title"].match(/Proteomics/) and effect["result"]["textValue"] and effect["result"]["textValue"].length > 50
+              JSON.parse(effect["result"]["textValue"]).each do |identifier, value|
+                feature = klass.find_or_create_by(
+                  :name => identifier,
+                  :category => "Proteomics",
+                )
+                nanoparticle.parse_ambit_value feature, value
+              end
+            else
+              feature = klass.find_or_create_by(
+                :name => "#{study["protocol"]["category"]["title"]} #{study["protocol"]["endpoint"]}",
+                :unit => effect["result"]["unit"],
+                :category => study["protocol"]["topcategory"],
+                :conditions => effect["conditions"]
+              )
+              nanoparticle.parse_ambit_value feature, effect["result"]
+            end
+          end
+          nanoparticle.save
+        end
+        datasets.each do |u,d|
+          d.feature_ids.uniq!
+          d.substance_ids.uniq!
+          d.save
+        end
       end
 
 =begin
@@ -63,23 +89,6 @@ module OpenTox
         datasets.collect{|d| d.id}
       end
 =end
-
-      def self.dump
-        #get list of bundle URIs
-        `wget 'https://data.enanomapper.net/bundle?media=application%2Fjson' -O bundles.json`
-        json = JSON.parse File.read('./bundles.json')
-        json["dataset"].each do |dataset|
-          uri = dataset["URI"]
-          id = uri.split("/").last
-          `wget --header='accept:application/json' '#{uri}' -O 'bundle#{id}'`
-          `wget --header='accept:application/json' '#{dataset["summary"]}' -O 'summary#{id}.json'`
-          `wget --header='accept:application/json' '#{dataset["compound"]}' -O 'compound#{id}.json'`
-          `wget --header='accept:application/json' '#{dataset["substance"]}' -O 'substance#{id}.json'`
-          `wget --header='accept:application/json' '#{dataset["property"]}' -O 'property#{id}.json'`
-          `wget --header='accept:application/json' '#{dataset["dataset"]}' -O 'dataset#{id}.json'`
-          `wget --header='accept:application/json' '#{dataset["matrix"]}' -O 'matrix#{id}.json'`
-        end
-      end
 
     end
 

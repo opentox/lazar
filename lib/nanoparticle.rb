@@ -6,6 +6,7 @@ module OpenTox
     field :core, type: String
     field :coating, type: Array, default: []
     field :bundles, type: Array, default: []
+    field :proteomics, type: Hash, default: {}
 
     def nanoparticle_neighbors params
       Dataset.find(params[:training_dataset_id]).nanoparticles.collect{|np| np["tanimoto"] = 1; np}
@@ -14,21 +15,18 @@ module OpenTox
     def add_feature feature, value
       case feature.category
       when "P-CHEM"
-        physchem_descriptors[feature.id.to_s] ||= []
-        physchem_descriptors[feature.id.to_s] << value
-        physchem_descriptors[feature.id.to_s].uniq!
+        physchem[feature.id.to_s] ||= []
+        physchem[feature.id.to_s] << value
+        physchem[feature.id.to_s].uniq!
+      when "Proteomics"
+        proteomics[feature.id.to_s] ||= []
+        proteomics[feature.id.to_s] << value
+        proteomics[feature.id.to_s].uniq!
       when "TOX"
         toxicities[feature.id.to_s] ||= []
         # TODO generic way of parsing TOX values
         if feature.name == "7.99 Toxicity (other) ICP-AES" and feature.unit == "mL/ug(Mg)" 
           toxicities[feature.id.to_s] << -Math.log10(value)
-        #if value.numeric?
-          #begin
-          #rescue
-            #p feature
-            #p value
-            #exit
-          #end
         else
           toxicities[feature.id.to_s] << value
         end
@@ -36,7 +34,6 @@ module OpenTox
       else
         warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
       end
-      save
     end
 
     def parse_ambit_value feature, v
@@ -79,5 +76,3 @@ module OpenTox
 
   end
 end
-
-

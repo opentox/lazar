@@ -4,22 +4,27 @@ require_relative "setup.rb"
 class NanoparticleTest  < MiniTest::Test
 
   def setup
-    `mongorestore --db=development #{File.join(File.dirname(__FILE__),"..","dump","production")}`
+    #`mongorestore --db=development #{File.join(File.dirname(__FILE__),"..","dump","production")}`
+  end
+
+  def test_mirror
+    Import::Enanomapper.mirror File.join(File.dirname(__FILE__),"..","data")
   end
 
   def test_import
-    skip
-    dataset_ids = Import::Enanomapper.import
-    assert_operator Nanoparticle.count , :>, 570, "Only #{Nanoparticle.count} nanoparticles imported"
-    assert_operator dataset_ids.size, :>, 8, "Only #{dataset_ids.size} bundles imported"
-    assert dataset_ids.collect{|d| Dataset.find(d).name}.include? ("NanoWiki")
-    assert dataset_ids.collect{|d| Dataset.find(d).name}.include? ("Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
-    p dataset_ids.collect{|d| {d => Dataset.find(d).name}}
-    dataset_ids.collect do |d|
-      d = Dataset.find(d)
+    Import::Enanomapper.import File.join(File.dirname(__FILE__),"..","data")
+#    skip
+#    dataset_ids = Import::Enanomapper.import
+#    assert_operator Nanoparticle.count , :>, 570, "Only #{Nanoparticle.count} nanoparticles imported"
+#    assert_operator dataset_ids.size, :>, 8, "Only #{dataset_ids.size} bundles imported"
+#    assert dataset_ids.collect{|d| Dataset.find(d).name}.include? ("NanoWiki")
+#    assert dataset_ids.collect{|d| Dataset.find(d).name}.include? ("Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+#    p dataset_ids.collect{|d| {d => Dataset.find(d).name}}
+#    dataset_ids.collect do |d|
+#      d = Dataset.find(d)
       #p d.name
       #puts d.to_csv
-    end
+#    end
   end
 
   def test_summaries
@@ -35,7 +40,7 @@ class NanoparticleTest  < MiniTest::Test
         toxcounts[t] ||= 0
         toxcounts[t] += 1#v.uniq.size
       end
-      np.physchem_descriptors.each do |t,v|
+      np.physchem.each do |t,v|
         pccounts[t] ||= 0
         pccounts[t] += 1#v.uniq.size
       end

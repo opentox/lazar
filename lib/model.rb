@@ -47,9 +47,9 @@ module OpenTox
           end
         end
         R.assign "tox", toxicities
-        feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
+        feature_ids = training_dataset.substances.collect{ |s| s["physchem"].keys}.flatten.uniq
         feature_ids.each do |feature_id|
-          feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id]}
+          feature_values = substances.collect{|s| s["physchem"][feature_id]}
           R.assign "feature", feature_values
           begin
             #R.eval "cor <- cor.test(-log(tox),-log(feature),use='complete')"
