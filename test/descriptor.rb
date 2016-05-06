@@ -26,11 +26,14 @@ class DescriptorTest < MiniTest::Test
 
   def test_compound_openbabel_single
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
+    PhysChem.openbabel_descriptors # required for descriptor initialisation, TODO: move into libs
+    PhysChem.find_or_create_by(:name => "Openbabel.logP")
     result = c.physchem [PhysChem.find_or_create_by(:name => "Openbabel.logP")]
     assert_equal 1.12518, result.first.last.round(5)
   end
 
   def test_compound_cdk_single
+    PhysChem.cdk_descriptors # required for descriptor initialisation, TODO: move into libs
     c = OpenTox::Compound.from_smiles "c1ccccc1"
     result = c.physchem [PhysChem.find_or_create_by(:name => "Cdk.AtomCount.nAtom")]
     assert_equal 12, result.first.last
@@ -44,6 +47,7 @@ class DescriptorTest < MiniTest::Test
   end
 
   def test_compound_joelib_single
+    PhysChem.joelib_descriptors # required for descriptor initialisation, TODO: move into libs
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = c.physchem [PhysChem.find_or_create_by(:name => "Joelib.LogP")]
     assert_equal 2.65908, result.first.last

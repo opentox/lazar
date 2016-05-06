@@ -76,7 +76,7 @@ class LazarExtendedTest < MiniTest::Test
     dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
     p "Dataset upload: #{Time.now-t}"
     t = Time.now
-    model = Model::LazarClassification.create(dataset)
+    model = Model::LazarClassification.create(dataset.features.first,dataset)
     p "Feature mining: #{Time.now-t}"
     t = Time.now
     2.times do

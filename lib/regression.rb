@@ -84,7 +84,7 @@ module OpenTox
 
         activities = []
         weights = []
-        pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem.keys}.flatten.uniq
+        pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem_descriptors.keys}.flatten.uniq
         data_frame = []
         data_frame[0] = []
         
@@ -93,7 +93,7 @@ module OpenTox
           n["toxicities"][params[:prediction_feature_id].to_s].each do |act|
             data_frame[0][i] = act
             n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
-            neighbor.physchem.each do |pid,values| 
+            neighbor.physchem_descriptors.each do |pid,values| 
               values.uniq!
               warn "More than one value for '#{Feature.find(pid).name}': #{values.join(', ')}. Using the median." unless values.size == 1
               j = pc_ids.index(pid)+1
@@ -121,7 +121,7 @@ module OpenTox
           return result
         else
           query_descriptors = pc_ids.collect do |i|
-            compound.physchem[i] ? compound.physchem_descriptors[i].for_R : "NA"
+            compound.physchem_descriptors[i] ? compound.physchem_descriptors[i].for_R : "NA"
           end
           remove_idx = []
           query_descriptors.each_with_index do |v,i|

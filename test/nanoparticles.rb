@@ -40,7 +40,7 @@ class NanoparticleTest  < MiniTest::Test
         toxcounts[t] ||= 0
         toxcounts[t] += 1#v.uniq.size
       end
-      np.physchem.each do |t,v|
+      np.physchem_descriptors.each do |t,v|
         pccounts[t] ||= 0
         pccounts[t] += 1#v.uniq.size
       end

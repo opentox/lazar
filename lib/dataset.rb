@@ -30,19 +30,11 @@ module OpenTox
       @features
     end
 
-    # Find data entry values for a given compound and feature
-    # @param compound [OpenTox::Compound] OpenTox Compound object
-    # @param feature [OpenTox::Feature] OpenTox Feature object
-    # @return [Array] Data entry values
-    #def values(compound, feature)
-      #data_entries[compound.id.to_s][feature.id.to_s]
-    #end
-
     # Writers
 
     # Set compounds
     def compounds=(compounds)
-      self.substance_ids = compounds.collect{|c| c.id}
+      self.substance_ids = compounds.collect{|c| c.id}.uniq
     end
 
     # Set features
@@ -95,14 +87,27 @@ module OpenTox
           csv << ["Name"] + features.collect{|f| f.name}
         end
         substances.each do |substance|
-          features.each do |f|
-            substance.toxicities[f.id.to_s].each do |v|
-              if compound
-                csv << [inchi ? substance.inchi : substance.smiles , v]
-              else
-                csv << [substance.name , v]
+          if compound
+            name = (inchi ? substance.inchi : substance.smiles)
+          else
+            name = substance.name
+          end
+          nr_measurements = features.collect{|f| substance.toxicities[f.id.to_s].size if substance.toxicities[f.id.to_s]}.compact.uniq
+
+          if nr_measurements.size > 1
+            warn "Unequal number of measurements (#{nr_measurements}) for '#{name}'. Skipping entries."
+          else
+            (0..nr_measurements.first-1).each do |i|
+              row = [name]
+              features.each do |f|
+                if substance.toxicities[f.id.to_s]
+                  row << substance.toxicities[f.id.to_s][i]
+                else
+                  row << ""
+                end
               end
-            end if substance.toxicities[f.id.to_s]
+              csv << row
+            end
           end
         end
       end
@@ -224,6 +229,8 @@ module OpenTox
         compounds.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == compound.inchi}
         warn "Duplicate compound #{compound.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
       end
+      substance_ids.uniq!
+      feature_ids.uniq!
       
       $logger.debug "Value parsing: #{Time.now-time} (Compound creation: #{compound_time})"
       time = Time.now

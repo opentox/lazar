@@ -15,9 +15,9 @@ module OpenTox
     def add_feature feature, value
       case feature.category
       when "P-CHEM"
-        physchem[feature.id.to_s] ||= []
-        physchem[feature.id.to_s] << value
-        physchem[feature.id.to_s].uniq!
+        physchem_descriptors[feature.id.to_s] ||= []
+        physchem_descriptors[feature.id.to_s] << value
+        physchem_descriptors[feature.id.to_s].uniq!
       when "Proteomics"
         proteomics[feature.id.to_s] ||= []
         proteomics[feature.id.to_s] << value

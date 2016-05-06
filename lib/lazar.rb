@@ -86,4 +86,3 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","Cross
   "experiment.rb",
   "import.rb",
 ].each{ |f| require_relative f }
-OpenTox::PhysChem.descriptors # load descriptor features
