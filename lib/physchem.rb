@@ -131,3 +131,4 @@ module OpenTox
   end
 
 end
+OpenTox::PhysChem.descriptors # load descriptor features

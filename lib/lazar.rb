@@ -61,7 +61,6 @@ suppressPackageStartupMessages({
 "
 
 # OpenTox classes and includes
-#CLASSES = ["Feature","Substance::Compound","Substance::Nanoparticle","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites

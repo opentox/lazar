@@ -5,7 +5,7 @@ class ExperimentTest < MiniTest::Test
   def test_regression_experiment
     skip
     datasets = [
-      "EPAFHM.medi.csv",
+      "EPAFHM.medi_log10.csv",
       #"EPAFHM.csv",
       #"FDA_v3b_Maximum_Recommended_Daily_Dose_mmol.csv",
       "LOAEL_mmol_corrected_smiles.csv"
@@ -68,7 +68,7 @@ class ExperimentTest < MiniTest::Test
     skip
 #=begin
     datasets = [
-      "EPAFHM.medi.csv",
+      "EPAFHM.medi_log10.csv",
       #"LOAEL_mmol_corrected_smiles.csv"
     ]
     min_sims = [0.3,0.7]
@@ -118,7 +118,7 @@ class ExperimentTest < MiniTest::Test
   def test_mpd_fingerprints
     skip
     datasets = [
-      "EPAFHM.medi.csv",
+      "EPAFHM.medi_log10.csv",
     ]
     types = ["FP2","MP2D"]
     experiment = Experiment.create(
@@ -147,7 +147,7 @@ class ExperimentTest < MiniTest::Test
   def test_multiple_datasets
     skip
     datasets = [
-      "EPAFHM.medi.csv",
+      "EPAFHM.medi_log10.csv",
       "LOAEL_mmol_corrected_smiles.csv"
     ]
     min_sims = [0.3]

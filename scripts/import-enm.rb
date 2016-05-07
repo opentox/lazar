@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require_relative '../lib/lazar'
 include OpenTox
 $mongo.database.drop

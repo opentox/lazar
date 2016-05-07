@@ -13,7 +13,7 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_default_regression_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
     model = Model::LazarRegression.create dataset.features.first, dataset
     cv = RegressionCrossValidation.create model
     assert cv.rmse < 1.5, "RMSE #{cv.rmse} should be larger than 1.5, this may occur due to an unfavorable training/test set split"
@@ -46,7 +46,7 @@ class ValidationTest < MiniTest::Test
   end
   
   def test_regression_crossvalidation_params
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi.csv"
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
     params = {
       :prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average",
       :neighbor_algorithm => "fingerprint_neighbors",
@@ -70,7 +70,7 @@ class ValidationTest < MiniTest::Test
 
   def test_physchem_regression_crossvalidation
 
-    training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
+    training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::LazarRegression.create(training_dataset.features.first, training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     cv = RegressionCrossValidation.create model
     refute_nil cv.rmse
@@ -90,10 +90,10 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_regression_loo_validation
-    dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi.csv")
+    dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::LazarRegression.create dataset.features.first, dataset
     loo = RegressionLeaveOneOutValidation.create model
-    assert loo.r_squared > 0.34
+    assert loo.r_squared > 0.34, "R^2 (#{loo.r_squared}) should be larger than 0.034"
   end
 
   # repeated CV

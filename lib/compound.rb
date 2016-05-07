@@ -22,7 +22,6 @@ module OpenTox
 
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
-      #PhysChem.descriptors # load descriptor features
       compound = self.find_or_initialize_by params
       compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT).size
       compound.save

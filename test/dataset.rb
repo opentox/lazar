@@ -32,7 +32,7 @@ class DatasetTest < MiniTest::Test
     csv.shift
     csv.each do |row|
       c = Compound.from_smiles row.shift
-      assert_equal c.toxicities[d.feature_ids.first.to_s], row
+      assert_equal row, c.toxicities[d.feature_ids.first.to_s]
     end
     d.delete 
   end
@@ -88,14 +88,14 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_upload_epafhm
-    f = File.join DATA_DIR, "EPAFHM.csv"
+    f = File.join DATA_DIR, "EPAFHM_log10.csv"
     d = OpenTox::Dataset.from_csv_file f
     assert_equal Dataset, d.class
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
-    assert_match "EPAFHM.csv",  d.source
-    assert_equal "EPAFHM",  d.name
+    assert_match "EPAFHM_log10.csv",  d.source
+    assert_equal "EPAFHM_log10",  d.name
     refute_nil d.warnings
     assert_equal 74, d.warnings.size
     feature = d.features.first
@@ -209,7 +209,7 @@ class DatasetTest < MiniTest::Test
       csv.shift
       csv.each do |row|
         c = Compound.from_smiles row.shift
-        assert_equal c.toxicities[d.feature_ids.first.to_s], row
+        assert_equal row, c.toxicities[d.feature_ids.first.to_s]
       end
       d.delete 
     end

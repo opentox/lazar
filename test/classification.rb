@@ -9,18 +9,12 @@ class LazarClassificationTest < MiniTest::Test
     [ {
       :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
       :prediction => "false",
-      :confidence => 0.25281385281385277,
-      :nr_neighbors => 11
     },{
       :compound => OpenTox::Compound.from_smiles("c1ccccc1NN"),
       :prediction => "false",
-      :confidence => 0.3639589577089577,
-      :nr_neighbors => 14
     } ].each do |example|
       prediction = model.predict example[:compound]
       assert_equal example[:prediction], prediction[:value]
-      #assert_equal example[:confidence], prediction[:confidence]
-      #assert_equal example[:nr_neighbors], prediction[:neighbors].size
     end
 
     compound = Compound.from_smiles "CCO"
@@ -29,7 +23,7 @@ class LazarClassificationTest < MiniTest::Test
     assert_equal ["false"], prediction[:database_activities]
 
     # make a dataset prediction
-    compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini.csv")
+    compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
     prediction_dataset = model.predict compound_dataset
     assert_equal compound_dataset.compounds, prediction_dataset.compounds
 
@@ -42,5 +36,20 @@ class LazarClassificationTest < MiniTest::Test
     assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction_dataset.predictions[cid][:warning]
     # cleanup
     [training_dataset,model,compound_dataset,prediction_dataset].each{|o| o.delete}
+  end
+
+  def test_lazar_kazius
+    t = Time.now
+    dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    t = Time.now
+    model = Model::LazarClassification.create(dataset.features.first,dataset)
+    t = Time.now
+    2.times do
+      compound = Compound.from_smiles("Clc1ccccc1NN")
+      prediction = model.predict compound
+      assert_equal "1", prediction[:value]
+      #assert_in_delta 0.019858401199860445, prediction[:confidence], 0.001
+    end
+    dataset.delete
   end
 end

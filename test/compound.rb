@@ -80,7 +80,7 @@ print c.sdf
   end
 
   def test_neighbors
-    d = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    d = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     d.compounds.each do |c|
       refute_nil c.fingerprint("MP2D")
     end
@@ -110,7 +110,7 @@ print c.sdf
   def test_fingerprint_neighbors
     types = ["FP2", "FP3", "FP4", "MACCS"]
     min_sim = 0.7
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     [
       "CC(=O)CC(C)C#N",
       "CC(=O)CC(C)C",
@@ -141,7 +141,7 @@ print c.sdf
   def test_fingerprint_count_neighbors
     types = ["MP2D", "MNA"]
     min_sim = 0.0
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     [
       "CC(=O)CC(C)C#N",
       "CC(=O)CC(C)C",
@@ -162,7 +162,7 @@ print c.sdf
 
   def test_fingerprint_db_neighbors
     #skip
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     [
       "CC(=O)CC(C)C#N",
       "CC(=O)CC(C)C",
