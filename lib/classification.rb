@@ -6,13 +6,14 @@ module OpenTox
       def self.weighted_majority_vote compound, params
         neighbors = params[:neighbors]
         feature_id = params[:prediction_feature_id].to_s
+        dataset_id = params[:training_dataset_id].to_s
         sims = {}
         neighbors.each do |n|
           sim = n["tanimoto"]
-          n["toxicities"][feature_id].each do |act|
+          n["toxicities"][feature_id][dataset_id].each do |act|
             sims[act] ||= []
             sims[act] << sim
-          end
+          end if n["toxicities"][feature_id][dataset_id]
         end
         sim_all = sims.collect{|a,s| s}.flatten
         sim_sum = sim_all.sum

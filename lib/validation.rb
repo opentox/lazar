@@ -34,7 +34,9 @@ module OpenTox
       nr_unpredicted = 0
       predictions.each do |cid,prediction|
         if prediction[:value]
-          prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
+          tox = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
+          #prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s][test_set.id.to_s]
+          prediction[:measured] = tox[test_set.id.to_s] if tox
         else
           nr_unpredicted += 1
         end

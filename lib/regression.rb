@@ -11,7 +11,7 @@ module OpenTox
           sim = row["tanimoto"]
           sim ||= 1 # TODO: sim f nanoparticles
           if row["toxicities"][params[:prediction_feature_id].to_s]
-            row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
+            row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
               weighted_sum += sim*act
               sim_sum += sim
             end
@@ -33,7 +33,7 @@ module OpenTox
           neighbor = Compound.find row["_id"]
           fingerprint = neighbor.fingerprint
           if row["toxicities"][params[:prediction_feature_id].to_s]
-            row["toxicities"][params[:prediction_feature_id].to_s].each do |act|
+            row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
               activities << act
               weights << row["tanimoto"]
               fingerprint_ids.each_with_index do |id,j|
@@ -77,10 +77,10 @@ module OpenTox
 
       def self.local_physchem_regression  compound, params, method="pls"#, method_params="ncomp = 4"
 
-        neighbors = params[:neighbors].select{|n| n["toxicities"][params[:prediction_feature_id].to_s]} # use only neighbors with measured activities
+        neighbors = params[:neighbors].select{|n| n["toxicities"][params[:prediction_feature_id].to_s] and n["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s]} # use only neighbors with measured activities
 
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
-        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id]], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
+        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
 
         activities = []
         weights = []
@@ -90,7 +90,7 @@ module OpenTox
         
         neighbors.each_with_index do |n,i|
           neighbor = Substance.find(n["_id"])
-          n["toxicities"][params[:prediction_feature_id].to_s].each do |act|
+          n["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
             data_frame[0][i] = act
             n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
             neighbor.physchem_descriptors.each do |pid,values| 

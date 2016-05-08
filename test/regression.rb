@@ -7,7 +7,7 @@ class LazarRegressionTest < MiniTest::Test
     model = Model::LazarRegression.create training_dataset.features.first, training_dataset, {:neighbor_algorithm_parameters => {:min_sim => 0}, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average"}
     compound = Compound.from_smiles "CC(C)(C)CN"
     prediction = model.predict compound
-    assert_equal 7.2, prediction[:value].round(1)
+    assert_equal -0.86, prediction[:value].round(2)
     assert_equal 88, prediction[:neighbors].size
   end
 
@@ -17,7 +17,7 @@ class LazarRegressionTest < MiniTest::Test
     model.neighbor_algorithm_parameters[:type] = "MP2D"
     compound = Compound.from_smiles "CCCSCCSCC"
     prediction = model.predict compound
-    assert_equal 0.04, prediction[:value].round(2)
+    assert_equal 1.37, prediction[:value].round(2)
     assert_equal 3, prediction[:neighbors].size
   end
 

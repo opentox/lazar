@@ -64,6 +64,9 @@ module OpenTox
           dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
           dataset.compounds.each do |compound|
             compound.dataset_ids << dataset.id
+            compound.toxicities.each do |feature_id,data|
+              data[dataset.id.to_s] = data[self.id.to_s] # copy data entries
+            end
             compound.save
           end
           dataset
@@ -92,7 +95,7 @@ module OpenTox
           else
             name = substance.name
           end
-          nr_measurements = features.collect{|f| substance.toxicities[f.id.to_s].size if substance.toxicities[f.id.to_s]}.compact.uniq
+          nr_measurements = features.collect{|f| substance.toxicities[f.id.to_s][self.id.to_s].size if substance.toxicities[f.id.to_s]}.compact.uniq
 
           if nr_measurements.size > 1
             warn "Unequal number of measurements (#{nr_measurements}) for '#{name}'. Skipping entries."
@@ -100,8 +103,8 @@ module OpenTox
             (0..nr_measurements.first-1).each do |i|
               row = [name]
               features.each do |f|
-                if substance.toxicities[f.id.to_s]
-                  row << substance.toxicities[f.id.to_s][i]
+                if substance.toxicities[f.id.to_s] and substance.toxicities[f.id.to_s][self.id.to_s] 
+                  row << substance.toxicities[f.id.to_s][self.id.to_s][i]
                 else
                   row << ""
                 end
@@ -149,7 +152,6 @@ module OpenTox
       feature_names = table.shift.collect{|f| f.strip}
       warnings << "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
       compound_format = feature_names.shift.strip
-      # TODO nanoparticles
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
       numeric = []
       # guess feature types
@@ -219,8 +221,9 @@ module OpenTox
           else
             v = v.strip
           end
-          compound.toxicities[feature_ids[j].to_s] ||= []
-          compound.toxicities[feature_ids[j].to_s] << v
+          compound.toxicities[feature_ids[j].to_s] ||= {}
+          compound.toxicities[feature_ids[j].to_s][self.id.to_s] ||= []
+          compound.toxicities[feature_ids[j].to_s][self.id.to_s] << v
           compound.save
         end
       end

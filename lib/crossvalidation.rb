@@ -133,14 +133,12 @@ module OpenTox
           neighbors = compound.send(model.neighbor_algorithm,model.neighbor_algorithm_parameters)
           neighbors.collect! do |n|
             neighbor = Compound.find(n[0])
-            { :smiles => neighbor.smiles, :similarity => n[1], :measurements => neighbor.toxicities[prediction_feature.id.to_s]}
+            { :smiles => neighbor.smiles, :similarity => n[1], :measurements => neighbor.toxicities[prediction_feature.id.to_s][training_dataset.id.to_s]}
           end
           {
             :smiles => compound.smiles, 
-            #:fingerprint => compound.fp4.collect{|id|  Smarts.find(id).name},
             :measured => p[1],
             :predicted => p[2],
-            #:relative_error => (Math.log10(p[1])-Math.log10(p[2])).abs/Math.log10(p[1]).to_f.abs,
             :error => (p[1]-p[2]).abs,
             :relative_error => (p[1]-p[2]).abs/p[1],
             :confidence => p[3],
