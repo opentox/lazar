@@ -288,7 +288,10 @@ module OpenTox
         training_dataset.compounds.each do |compound|
           candidate_fingerprint = compound.fingerprint params[:type]
           sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-          neighbors << {"_id" => compound.id, "toxicities" => {prediction_feature.id.to_s => {training_dataset_id.to_s => compound.toxicities[prediction_feature.id.to_s][training_dataset_id.to_s]}}, "tanimoto" => sim} if sim >= params[:min_sim]
+          fid = prediction_feature.id.to_s
+          did = params[:training_dataset_id].to_s
+          v = compound.toxicities[prediction_feature.id.to_s]
+          neighbors << {"_id" => compound.id, "toxicities" => {fid => {did => v[params[:training_dataset_id].to_s]}}, "tanimoto" => sim} if sim >= params[:min_sim] and v
         end
         neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
       end

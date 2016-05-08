@@ -25,7 +25,6 @@ class ValidationTest < MiniTest::Test
   def test_classification_crossvalidation_parameters
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     params = {
-        :training_dataset_id => dataset.id,
       :neighbor_algorithm_parameters => {
         :min_sim => 0.3,
         :type => "FP3"
@@ -56,6 +55,7 @@ class ValidationTest < MiniTest::Test
       }
     }
     model = Model::LazarRegression.create dataset.features.first, dataset, params
+    p model
     cv = RegressionCrossValidation.create model
     cv.validation_ids.each do |vid|
       model = Model::Lazar.find(Validation.find(vid).model_id)

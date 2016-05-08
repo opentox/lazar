@@ -3,7 +3,6 @@ module OpenTox
   class LeaveOneOutValidation
 
     field :model_id, type: BSON::ObjectId
-    field :dataset_id, type: BSON::ObjectId
     field :nr_instances, type: Integer
     field :nr_unpredicted, type: Integer
     field :predictions, type: Hash
@@ -13,13 +12,14 @@ module OpenTox
       $logger.debug "#{model.name}: LOO validation started"
       t = Time.now
       model.training_dataset.features.first.nominal? ? klass = ClassificationLeaveOneOutValidation : klass = RegressionLeaveOneOutValidation
-      loo = klass.new :model_id => model.id, :dataset_id => model.training_dataset_id
+      loo = klass.new :model_id => model.id
       predictions = model.predict model.training_dataset.compounds
       predictions.each{|cid,p| p.delete(:neighbors)}
       nr_unpredicted = 0
       predictions.each do |cid,prediction|
         if prediction[:value]
-          prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s][dataset_id.to_s]
+          tox = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
+          prediction[:measured] = tox[model.training_dataset_id.to_s] if tox
         else
           nr_unpredicted += 1
         end
