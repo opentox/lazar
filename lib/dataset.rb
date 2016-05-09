@@ -62,12 +62,12 @@ module OpenTox
         training_cids = training_idxs.collect{|i| substance_ids[i]}
         chunk = [training_cids,test_cids].collect do |cids|
           dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
-          dataset.compounds.each do |compound|
-            compound.dataset_ids << dataset.id
-            compound.toxicities.each do |feature_id,data|
+          dataset.substances.each do |substance|
+            substance.dataset_ids << dataset.id
+            substance.toxicities.each do |feature_id,data|
               data[dataset.id.to_s] = data[self.id.to_s] # copy data entries
             end
-            compound.save
+            substance.save
           end
           dataset
         end

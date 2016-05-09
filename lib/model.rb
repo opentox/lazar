@@ -76,6 +76,7 @@ module OpenTox
         prediction = {}
         if neighbors.collect{|n| n["_id"]}.include? compound.id
 
+          me = neighbors.select{|n| n["_id"] == compound.id}.first
           database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["toxicities"][prediction_feature.id.to_s][training_dataset_id.to_s].uniq
           prediction[:database_activities] = database_activities
           prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."

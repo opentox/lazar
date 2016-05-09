@@ -40,10 +40,10 @@ module OpenTox
             datasets[bundle_uri].substance_ids << nanoparticle.id
             nanoparticle["dataset_ids"] << datasets[bundle_uri].id
           end
+          bundle = datasets[np["bundles"].keys.first].id if np["bundles"].size == 1
           study["effects"].each do |effect|
             effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
             # TODO parse core/coating
-            # TODO parse proteomics, they come as a large textValue
             #$logger.debug File.join(np["compound"]["URI"],"study")
             effect["conditions"].delete_if { |k, v| v.nil? }
             # parse proteomics data
@@ -53,7 +53,7 @@ module OpenTox
                   :name => identifier,
                   :category => "Proteomics",
                 )
-                nanoparticle.parse_ambit_value feature, value
+                nanoparticle.parse_ambit_value feature, value, bundle
               end
             else
               feature = klass.find_or_create_by(
@@ -62,7 +62,7 @@ module OpenTox
                 :category => study["protocol"]["topcategory"],
                 :conditions => effect["conditions"]
               )
-              nanoparticle.parse_ambit_value feature, effect["result"]
+              nanoparticle.parse_ambit_value feature, effect["result"], bundle
             end
           end
           nanoparticle.save

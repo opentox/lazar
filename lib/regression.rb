@@ -10,7 +10,7 @@ module OpenTox
         neighbors.each do |row|
           sim = row["tanimoto"]
           sim ||= 1 # TODO: sim f nanoparticles
-          if row["toxicities"][params[:prediction_feature_id].to_s]
+          if row["toxicities"][params[:prediction_feature_id].to_s] and row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s]
             row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
               weighted_sum += sim*act
               sim_sum += sim
