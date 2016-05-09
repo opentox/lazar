@@ -63,10 +63,21 @@ class DescriptorTest < MiniTest::Test
   end
 
   def test_compound_descriptor_parameters
+    PhysChem.descriptors
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     result = c.physchem [ "Openbabel.logP", "Cdk.AtomCount.nAtom", "Joelib.LogP" ].collect{|d| PhysChem.find_or_create_by(:name => d)}
     assert_equal 3, result.size
-    assert_equal [1.12518, 17.0, 2.65908], result.values.collect{|v| v.round 5}
+    result.each do |fid,v|
+      feature = Feature.find(fid)
+      case feature.name
+      when "Openbabel.logP"
+        assert_equal 1.12518, v.round(5)
+      when "Cdk.AtomCount.nAtom"
+        assert_equal 17.0, v.round(5)
+      when "Joelib.LogP"
+        assert_equal 2.65908, v.round(5)
+      end
+    end
   end
 
 end

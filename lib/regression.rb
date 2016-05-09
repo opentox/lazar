@@ -94,7 +94,7 @@ module OpenTox
             data_frame[0][i] = act
             n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
             neighbor.physchem_descriptors.each do |pid,values| 
-              values = [values] if values.is_a? Float
+              values = [values] unless values.is_a? Array
               values.uniq!
               warn "More than one value for '#{Feature.find(pid).name}': #{values.join(', ')}. Using the median." unless values.size == 1
               j = pc_ids.index(pid)+1

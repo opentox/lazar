@@ -17,7 +17,7 @@ class ValidationTest < MiniTest::Test
     model = Model::LazarRegression.create dataset.features.first, dataset
     cv = RegressionCrossValidation.create model
     assert cv.rmse < 1.5, "RMSE #{cv.rmse} should be larger than 1.5, this may occur due to an unfavorable training/test set split"
-    assert cv.mae < 1, "MAE #{cv.mae} should be larger than 1, this may occur due to an unfavorable training/test set split"
+    assert cv.mae < 1, "MAE #{cv.mae} should be smaller than 1, this may occur due to an unfavorable training/test set split"
   end
 
   # parameters
