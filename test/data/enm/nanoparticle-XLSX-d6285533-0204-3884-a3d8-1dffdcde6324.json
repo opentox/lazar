@@ -1,0 +1,206 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-d6285533-0204-3884-a3d8-1dffdcde6324",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Fe3O4",
+    "https://data.enanomapper.net/identifier/tradename": "Fe3O4_nm_0.1_Bath",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-d6285533-0204-3884-a3d8-1dffdcde6324",
+    "https://data.enanomapper.net/owner/name": "MODENA",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+1ST+DIMENSION/26464C672F0A8D164126CFFA9662E126B8A86E73/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 25.08
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+2ND+DIMENSION/E8C1BD6E7D9A578C990C9A87AEB080B53A88F910/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 25.08
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ASPECT_RATIO_SHAPE_SECTION/ASPECT+RATIO/A08143E687AE868E5E17E04E431DFE5581377E61/E/880c1273-b27d-37cf-8820-04c3a4b205c9": [
+      {
+        "loValue": 1
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC25/8753BCACCF4AD84B143766F39A844240A2A55139/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 45.546
+      },
+      {
+        "loValue": 117.272
+      },
+      {
+        "loValue": 90.3
+      },
+      {
+        "loValue": 48.037
+      },
+      {
+        "loValue": 52.673
+      },
+      {
+        "loValue": 30.547
+      },
+      {
+        "loValue": 68.308
+      },
+      {
+        "loValue": 42.557
+      },
+      {
+        "loValue": 114.194
+      },
+      {
+        "loValue": 49.303
+      },
+      {
+        "loValue": 53.613
+      },
+      {
+        "loValue": 106.577
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC50/4562F9A62EC3ACF65EFA7DCB4115B7147593C7A4/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 145.33
+      },
+      {
+        "loValue": 305.852
+      },
+      {
+        "loValue": 295.564
+      },
+      {
+        "loValue": 145.919
+      },
+      {
+        "loValue": 157.987
+      },
+      {
+        "loValue": 95.681
+      },
+      {
+        "loValue": 232.231
+      },
+      {
+        "loValue": 117.994
+      },
+      {
+        "loValue": 367.101
+      },
+      {
+        "loValue": 139.828
+      },
+      {
+        "loValue": 175.758
+      },
+      {
+        "loValue": 444.732
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/SLOPE+EC50/54B8512116BD666F4D8D3237F1FA46769FF2EC17/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 3.991
+      },
+      {
+        "loValue": 7.543
+      },
+      {
+        "loValue": 8.211
+      },
+      {
+        "loValue": 3.915
+      },
+      {
+        "loValue": 4.213
+      },
+      {
+        "loValue": 2.605
+      },
+      {
+        "loValue": 6.557
+      },
+      {
+        "loValue": 3.017
+      },
+      {
+        "loValue": 10.116
+      },
+      {
+        "loValue": 3.621
+      },
+      {
+        "loValue": 4.886
+      },
+      {
+        "loValue": 13.526
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-d6285533-0204-3884-a3d8-1dffdcde6324"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/86",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Fe3O4",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-61-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-20ebb048-71e5-35fa-86e7-2ad48990eeca",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/12": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

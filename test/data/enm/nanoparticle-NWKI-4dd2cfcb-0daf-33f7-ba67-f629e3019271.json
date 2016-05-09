@@ -1,0 +1,88 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-4dd2cfcb-0daf-33f7-ba67-f629e3019271",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "ASP30F",
+    "https://data.enanomapper.net/identifier/tradename": "Docter2014 M4",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-4dd2cfcb-0daf-33f7-ba67-f629e3019271",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/365F005E4508D8CB7C49064CE5F2D77980CF9ECC/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -56
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 30.6
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-4dd2cfcb-0daf-33f7-ba67-f629e3019271"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/75",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "SiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7631-86-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-4dd2cfcb-0daf-33f7-ba67-f629e3019271",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

@@ -1,0 +1,118 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-d8f70c6c-3496-3ad3-8ab3-e4f08a178d30",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Batch 3",
+    "https://data.enanomapper.net/identifier/tradename": "Field2011 Batch3",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-d8f70c6c-3496-3ad3-8ab3-e4f08a178d30",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/365F005E4508D8CB7C49064CE5F2D77980CF9ECC/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 66
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/c546be27-8ba0-386b-9ca9-6701b4152e47": [
+      {
+        "loValue": 150
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/4E9B8BFBEAC91C0A6B5AB2DB01051C79C4BA82F5/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 93
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/CD82FCC74B254D4BD9B34A4A1E465B36425C7749/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 93
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/CC4225110E9B96E52E476BB303902374440DD121/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 91
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/AD07A22499A47E4B4159D4CEECB7E21AB33ADA0B/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 98
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/EC817812942E14F791F07433CE09827E5F11A6DB/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 95
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/7B59D3B7C8DA3FC812C22A31BE02802273825C83/NOTSPECIFIED/55979af0-3414-37f0-8bdc-42a5b25b1ff8": [
+      {
+        "loValue": 90
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-d8f70c6c-3496-3ad3-8ab3-e4f08a178d30"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/117",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-5f91ea49-3982-3442-bc2f-26e278042eff",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-5f91ea49-3982-3442-bc2f-26e278042eff",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "HfO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "12055-23-1"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-d8f70c6c-3496-3ad3-8ab3-e4f08a178d30",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-80f9ab46-f8fe-36de-9335-17c9d1dbdba5",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Glass wool",
+    "https://data.enanomapper.net/identifier/tradename": "Nymark2015-M3",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-80f9ab46-f8fe-36de-9335-17c9d1dbdba5",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/8": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

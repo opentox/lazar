@@ -1,0 +1,131 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-6fac9681-a5c7-337c-9e35-87c04579f0e6",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "U-Fe3O4",
+    "https://data.enanomapper.net/identifier/tradename": "U-Fe3O4_5743nm_0_Stirring",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-6fac9681-a5c7-337c-9e35-87c04579f0e6",
+    "https://data.enanomapper.net/owner/name": "MODENA",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+1ST+DIMENSION/26464C672F0A8D164126CFFA9662E126B8A86E73/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 5
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+2ND+DIMENSION/E8C1BD6E7D9A578C990C9A87AEB080B53A88F910/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 13
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/SIZE+IN+SITU/842F712FCE78F9CDCAC2E4F2F5FF17F5E42461D6/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 5743
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/EC25/8753BCACCF4AD84B143766F39A844240A2A55139/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 434.784
+      },
+      {
+        "loValue": 603.245
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/EC50/4562F9A62EC3ACF65EFA7DCB4115B7147593C7A4/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 1152.185
+      },
+      {
+        "loValue": 3500.754
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/SLOPE+EC50/54B8512116BD666F4D8D3237F1FA46769FF2EC17/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 28.696
+      },
+      {
+        "loValue": 115.9
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/A597EBC063D7A5A605B9535656E09149A72F0C23/E/19841e1a-78f5-3519-ba94-90ec20e32772": [
+      {
+        "loValue": -30
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ASPECT_RATIO_SHAPE_SECTION/ASPECT+RATIO/A08143E687AE868E5E17E04E431DFE5581377E61/E/880c1273-b27d-37cf-8820-04c3a4b205c9": [
+      {
+        "loValue": 2.4
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/78B6BA624E03C2D95F8DD9F7E8E43344B4378038/E/bcf9b4e5-6f14-3a3a-857c-c45945d32308": [
+      {
+        "loValue": 92
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-6fac9681-a5c7-337c-9e35-87c04579f0e6"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/86",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Fe3O4",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-61-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-f62143d3-865a-309a-ae44-c101141b745c",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/12": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

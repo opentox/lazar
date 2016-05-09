@@ -1,0 +1,84 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-175ce512-1cbd-3a84-b216-dd0f47170dc8",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "WO3",
+    "https://data.enanomapper.net/identifier/tradename": "Zhang2013 M20",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-175ce512-1cbd-3a84-b216-dd0f47170dc8",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 16.6
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-175ce512-1cbd-3a84-b216-dd0f47170dc8"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/131",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-e3986e91-2f88-3bd4-a40c-a570dd302afa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-e3986e91-2f88-3bd4-a40c-a570dd302afa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "WO3",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1314-35-8",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23EINECSDefault": "215-231-4"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-175ce512-1cbd-3a84-b216-dd0f47170dc8",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

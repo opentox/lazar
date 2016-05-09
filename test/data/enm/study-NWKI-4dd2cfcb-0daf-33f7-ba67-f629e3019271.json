@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-e140d5a5-9f7f-455e-a1c9-82ae07a4ba3e",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-4dd2cfcb-0daf-33f7-ba67-f629e3019271"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.3762/bjnano.5.151",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "Primary Particle Size",
+    "guideline": [
+      "TEM"
+    ]
+  },
+  "parameters": {
+    "DISTRIBUTION_TYPE": null,
+    "Method type": "TEM",
+    "TESTMAT_FORM": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "PARTICLE SIZE",
+      "conditions": {
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 30.6,
+        "errorValue": 6.8
+      }
+    }
+  ]
+}

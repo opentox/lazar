@@ -1,0 +1,59 @@
+{
+  "uuid": "FCSV-fad29dbf-bf5c-3bbf-b7ec-88a2adb1b3df",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-ccd3915e-0b1d-38f4-98b3-02b1a16aace7"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "UNKNOWN_TOXICITY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "7.99 Toxicity (other)"
+    },
+    "endpoint": "Bicinchoninic Acid (BCA) Assay",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "Type of method": "Serum.density",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Total protein (BCA assay)",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "ug",
+        "loQualifier": "mean",
+        "loValue": 3.55,
+        "errQualifier": "sd",
+        "errorValue": 0.44
+      }
+    }
+  ]
+}

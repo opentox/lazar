@@ -1,0 +1,78 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-0b663f5f-1386-3cc5-ba6b-9ff2bb39d4ff",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "AU-NP oligonucleotide",
+    "https://data.enanomapper.net/identifier/tradename": "E-GEOD-20677-M1",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-0b663f5f-1386-3cc5-ba6b-9ff2bb39d4ff",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-0b663f5f-1386-3cc5-ba6b-9ff2bb39d4ff"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/7",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-515322af-1eb9-34f2-a4ce-e609d1f39bfa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-515322af-1eb9-34f2-a4ce-e609d1f39bfa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Au",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": " 7440-57-5"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/8": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "NWKI-0b663f5f-1386-3cc5-ba6b-9ff2bb39d4ff",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/8": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

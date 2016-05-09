@@ -1,0 +1,36 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-83a75181-9103-3ef9-aec7-fa38074580f6",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "CdSe MUA",
+    "https://data.enanomapper.net/identifier/tradename": "Nagy2012 QD1",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-83a75181-9103-3ef9-aec7-fa38074580f6",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 3.37
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/365F005E4508D8CB7C49064CE5F2D77980CF9ECC/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -71.8
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

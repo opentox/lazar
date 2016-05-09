@@ -1,0 +1,128 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-de03994b-9d74-3e39-aa41-e7df34384442",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "SiO2",
+    "https://data.enanomapper.net/identifier/tradename": "Liu2011 07",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-de03994b-9d74-3e39-aa41-e7df34384442",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 19
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/175EB348C27E46FC75739E1C1B044B54602607C2/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/A57C70ACB5FC6F7CC438F998514139D99CC0E873/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/D496C66784F9BA764A915520057A620B02AAF8AF/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/FCE6227044058FFE581D722AB66AB7D45A6362A9/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/743BA7C854BE5434312AAF8250ACE5163C21831A/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/83C467ED75DF0083484F2C9BB4C3717CC704E39C/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/0B0F620EA404BD99B0A7319FA8EE33E36ACE1B29/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/06523CEECED235D5ED041617E8087AC57ED845E2/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Toxicity+Classifier/DA118381D81A65532358A43C97D0ADFA4CF484F0/NOTSPECIFIED/f8daa1d4-6a0f-323a-94a8-67272f2a67d1": [
+      {
+        "loValue": "Non-toxic"
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-de03994b-9d74-3e39-aa41-e7df34384442"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/75",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "SiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7631-86-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-de03994b-9d74-3e39-aa41-e7df34384442",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

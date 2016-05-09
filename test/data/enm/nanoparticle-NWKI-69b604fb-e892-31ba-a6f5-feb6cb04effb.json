@@ -1,0 +1,201 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "CLIO-AF750 no. 3",
+    "https://data.enanomapper.net/identifier/tradename": "Shaw51 06",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 29
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/6F329893E3E7E48B645396FA27B8A2DCA31ED8EE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "Cross-2Dlinked_dextran"
+      },
+      {
+        "loValue": "AlexaFluor750"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/34B336573C015AF89068B6685256FD68F1DF39B4/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "Fe3O4"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/F8DBAC907D2F4C828B3190179059ACFF4C5A93A7/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 1.95
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/86",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Fe3O4",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-61-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/96",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-7f052082-3f5e-3b9d-86cd-a3d52a14a1de",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-7f052082-3f5e-3b9d-86cd-a3d52a14a1de",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Cross-2Dlinked_dextran",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23TradeNameDefault": "CLIO-2DFITC-2DRCOOH"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/142",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-d41ce93b-74c5-3ae3-bf5c-e9787c99eb55",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-d41ce93b-74c5-3ae3-bf5c-e9787c99eb55",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "AlexaFluor750",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23TradeNameDefault": "CLIO-2DAF750"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

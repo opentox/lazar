@@ -1,0 +1,61 @@
+{
+  "uuid": "NWKI-f7d03856-5343-4baa-ad7a-c1c3722a2e5a",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-c0927a67-d21d-37e8-932d-fb1607e58aee"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.3109/17435390903276933",
+    "year": "2009",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0002167_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0002167",
+      "title": "BAO_0002167 Genotoxicity Assay"
+    },
+    "endpoint": "DNA in Tail",
+    "guideline": [
+      "Fpg-2Dmodified Comet Assay"
+    ]
+  },
+  "parameters": {
+    "Cell line": "Caco-2 cell",
+    "Method type": "Fpg-2Dmodified Comet Assay"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "DNA_in_Tail",
+      "conditions": {
+        "Doses/concentrations": {
+          "loValue": 20,
+          "unit": "ug/cm^2"
+        },
+        "FPG Content": {
+          "loValue": 100
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 8
+      }
+    }
+  ]
+}

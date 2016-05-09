@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-6b21bb47-9ae8-3fb5-9811-b7dbeecbed8e",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "NM-101",
+    "https://data.enanomapper.net/identifier/tradename": "JRCNM01001a",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-6b21bb47-9ae8-3fb5-9811-b7dbeecbed8e",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/6": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

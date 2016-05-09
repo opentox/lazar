@@ -1,0 +1,247 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "G60.PVA",
+    "https://data.enanomapper.net/identifier/tradename": "G60.PVA",
+    "https://data.enanomapper.net/identifier/uuid": "FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0",
+    "https://data.enanomapper.net/owner/name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "https://data.enanomapper.net/property/P-CHEM/CRYSTALLITE_AND_GRAIN_SIZE_SECTION/Polydispersity+index/3502F924548105D27B60D6E55373AAE4EB8802DE/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 0.057
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/CRYSTALLITE_AND_GRAIN_SIZE_SECTION/Polydispersity+index/9D35A889AFDA68DE234F2EE9A61A06CC91BF7437/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 0.07
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Core+size/1918C28E0E397464AA8E0C414DA2C75DAE2BA64B/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 59.3
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Density/15665B7D041A4D573178F909094A9D067E79EE81/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 19.1
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/MW/48C41DC3AC6E2D7E62C400216AA4E17DFC9AF68D/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 197
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Mol%2FNP/F9215F417F7AF3E303D6AF553AD6D74973E04971/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 0
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/SA%2FNP/2E757CE81FE8CBFBE30226CE6632BCAE1374D648/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 0
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/UNKNOWN_TOXICITY_SECTION/Total+protein+%28BCA+assay%29/ABCD8CB85D6B72FE1971A0CB4335FEA90B49E9D3/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 1.387
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/7F8B3FB82019B1CCF8A8C3FD2B5A2DACBDDDB832/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": -7.62
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/AD2880DCCB16852FB869B7E10223708801EB1B02/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": -8.07
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/UNKNOWN_TOXICITY_SECTION/Net+cell+association/62B12F0B14D8BE218BBF59144FC69360A0A8AAB4/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 0.024
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/UNKNOWN_TOXICITY_SECTION/Log2+transformed/94D664CFE4929A0F400A5AD8CA733B52E049A688/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": -5.401
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/0E7B80855A61F7707CE4C63130D36545AAB3BDB3/E/b5a7adde-1af5-387d-bfd7-97b6245c2a39": [
+      {
+        "loValue": "[Au]"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/FUNCTIONAL+GROUP/A903D83AB9E68CDEE9FF07ECBC93A9706FC57B00/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "Poly(vinyl alcohol)"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Z-Average+Hydrodynamic+Diameter/F7B5F07837E2FF6DD27CDF349D540A16D2A7BE9E/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 95.37
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Z-Average+Hydrodynamic+Diameter/A067F21C559D11E37602CF589A85C47B9ADD9856/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loQualifier": "mean",
+        "loValue": 106.12
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Volume+Mean+Hydrodynamic+Diameter/6B44D900D54D25C491D76E688707B7D5E058B41F/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 94.5
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Volume+Mean+Hydrodynamic+Diameter/BD30AEEFBD2B78F217EAD6A4C73285AC0D7F6DAB/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 102.13
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Number+Mean+Hydrodynamic+Diameter/5A02367AC425FEA430842EF6BF7BAF50AFC76244/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 98.7
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Number+Mean+Hydrodynamic+Diameter/50A96DEF85933018E851647505DE5200DCCCDB5E/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 91.66
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Intensity+Mean+Hydrodynamic+Diameter/0FA67B744CDAE9CCDD9B18950B631B3EA5C1C272/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 98.7
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/Intensity+Mean+Hydrodynamic+Diameter/0ED4E5C01F5966F73DC05BDF5751C8ACC92503FE/E/3ed642f9-1b42-387a-9966-dea5b91e5f8a": [
+      {
+        "loValue": 108.76
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/7",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "FCSV-50cca421-d821-396d-b4a5-e2702f0859c6",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-515322af-1eb9-34f2-a4ce-e609d1f39bfa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Au",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": " 7440-57-5"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/3": {
+            "count": 1,
+            "tag": "source",
+            "remarks": "HAS_CORE"
+          }
+        }
+      },
+      "compositionUUID": "FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/53",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "FCSV-2286ae34-0277-312b-b2b8-270b62f70b4b",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "FCSV-2286ae34-0277-312b-b2b8-270b62f70b4b",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Poly(vinyl alcohol)"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/3": {
+            "count": 1,
+            "tag": "source",
+            "remarks": "HAS_COATING"
+          }
+        }
+      },
+      "compositionUUID": "FCSV-ee07f574-0b80-31db-b1f2-535f6d6626b0",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/3": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

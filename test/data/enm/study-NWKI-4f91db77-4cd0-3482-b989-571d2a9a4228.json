@@ -1,0 +1,93 @@
+{
+  "uuid": "NWKI-9ae54803-8808-4fe9-8036-2539cf8d2e0e",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-4f91db77-4cd0-3482-b989-571d2a9a4228"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": null,
+        "DESCRIPTION": null,
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "Ag"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "CORE"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Ag"
+      }
+    },
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "MESCoating"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "MES"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "SCCS(=O)(=O)[O-].[Na+]"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "MES"
+      }
+    }
+  ]
+}

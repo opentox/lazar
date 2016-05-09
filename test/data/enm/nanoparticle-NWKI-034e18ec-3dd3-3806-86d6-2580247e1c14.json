@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-034e18ec-3dd3-3806-86d6-2580247e1c14",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "NM-330 DIS",
+    "https://data.enanomapper.net/identifier/tradename": "JRCNM03301a",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-034e18ec-3dd3-3806-86d6-2580247e1c14",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/6": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-895a506b-c331-3576-bf9e-cbcde5822c11",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "40 nm PS-COOH",
+    "https://data.enanomapper.net/identifier/tradename": "Lesniak2013 NM1",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-895a506b-c331-3576-bf9e-cbcde5822c11",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/0793E121AB33A52874FA3C647539D4706853A2C4/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -21
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/1A5D007E08F4A47C7E59DD9C60A59437FC6EBFA1/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -20
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/A62818F52F87529E41E5F5DDBF8CBC6B988A83CE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -36
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/MASS+MEDIAN+AERODYNAMIC+DIAMETER/8DD4CBB0DE99551148BC3C2DB41A9BA38C17D839/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 63
+      },
+      {
+        "loValue": 73
+      },
+      {
+        "loValue": 81
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-895a506b-c331-3576-bf9e-cbcde5822c11"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/76",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-2f3c2135-878b-3527-857b-0af92c1477e6",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-2f3c2135-878b-3527-857b-0af92c1477e6",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "C8H8"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-895a506b-c331-3576-bf9e-cbcde5822c11",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

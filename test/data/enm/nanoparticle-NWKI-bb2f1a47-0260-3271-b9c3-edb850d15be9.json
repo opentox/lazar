@@ -1,0 +1,91 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-bb2f1a47-0260-3271-b9c3-edb850d15be9",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "COD1517077",
+    "https://data.enanomapper.net/identifier/tradename": "COD 1517077",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-bb2f1a47-0260-3271-b9c3-edb850d15be9",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/43B390FCAA78C0553C95666E74B954BD3D58D378/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loQualifier": ">=",
+        "loValue": 25,
+        "upQualifier": "<=",
+        "upValue": 30
+      },
+      {
+        "loQualifier": ">=",
+        "loValue": 25,
+        "upQualifier": "<=",
+        "upValue": 30
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-bb2f1a47-0260-3271-b9c3-edb850d15be9"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/1301",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-6b3b5c92-9b6e-3144-b9c7-fac1925ab60c",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-6b3b5c92-9b6e-3144-b9c7-fac1925ab60c",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "C270.75H371Cd18Cl8N18O105.917Tb6"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/7": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "NWKI-bb2f1a47-0260-3271-b9c3-edb850d15be9",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/7": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

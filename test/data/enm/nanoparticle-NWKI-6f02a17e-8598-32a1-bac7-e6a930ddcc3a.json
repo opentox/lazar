@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-6f02a17e-8598-32a1-bac7-e6a930ddcc3a",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "NM-203",
+    "https://data.enanomapper.net/identifier/tradename": "JRCNM02003a",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-6f02a17e-8598-32a1-bac7-e6a930ddcc3a",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/6": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

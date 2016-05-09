@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-c5b69d5d-7850-3ccb-9632-981dd8fb10e5",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Asbestos",
+    "https://data.enanomapper.net/identifier/tradename": "E-GEOD-63559-M2",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-c5b69d5d-7850-3ccb-9632-981dd8fb10e5",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/8": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

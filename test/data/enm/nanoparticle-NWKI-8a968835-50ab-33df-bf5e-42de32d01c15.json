@@ -1,0 +1,123 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-8a968835-50ab-33df-bf5e-42de32d01c15",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "ASP30 with corona",
+    "https://data.enanomapper.net/identifier/tradename": "Docter2014 M2 withPC",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-8a968835-50ab-33df-bf5e-42de32d01c15",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/50C40B71718849138148AA80E20FC5AE8CF3ECFB/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 95
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/1918881EAE86C21F47D0283140BB16CEEB997530/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 98
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/F9D25F6551FE9BB8E933CF8A63D3429B99F97906/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 95
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/D5766076B1EE353AC21FA85EB583EF6AB19855B1/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 90
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/D51F5E4B92FC1AAC2B589494422295F747897132/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/0CF003881C042A3A478E507810669381C5AAAAA2/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/D6515E489DE3DFCF7CBD55D6FE0C73C9ACF85EF7/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 90
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/E4A409B8B9B968936348C48F5E5009857EC966DB/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 102
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Percentage_Viable_Cells/2DE443907F42C7C083733D12EF7AA6CC1955F344/NOTSPECIFIED/688f02ab-b381-3048-a56c-e432893623b2": [
+      {
+        "loValue": 102
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-8a968835-50ab-33df-bf5e-42de32d01c15"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/75",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "SiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7631-86-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-8a968835-50ab-33df-bf5e-42de32d01c15",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

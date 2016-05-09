@@ -1,0 +1,696 @@
+{
+  "uuid": "XLSX-f9dc91ff-8f1d-4f73-962d-30cc1fe31699",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-aacdfad8-f3d3-39f2-b662-0d8084e283ef"
+    },
+    "company": {
+      "uuid": "XLSX-4bb81f08-059d-32ad-b5fd-71c6bcc6e0db",
+      "name": "FP7 MARINA"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1371/journal.pone.0127174",
+    "year": "2015",
+    "owner": "P32 - KI"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0002993_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0002993",
+      "title": "BAO_0002993 Cytotoxicity Assay"
+    },
+    "endpoint": "",
+    "guideline": [
+      "ELISA / TNF-α release in culture medium"
+    ]
+  },
+  "parameters": {
+    "CHMO:0002774": "Y",
+    "CLO_0000031": "HMDM (primary cells)",
+    "CLO_0000031 EFO_0004443": "ATCC",
+    "Cell culture conditions - Serum": "FBS (Gibco/413105K) ",
+    "Cell culture conditions - Serum concentration in growth medium": 0.1,
+    "Cell culture conditions - Serum concentration in treatment medium": 0.1,
+    "Cell line/Type - Full name": "human monocyte-derived macrophages (HMDM)",
+    "Dispersion agent": "water with 0,05% BSA",
+    "NPO_1952": "N",
+    "NPO_1961": "N",
+    "NPO_1969 OBI_0000272": "NANOGENOTOX Dispersion protocol (http://www.nanogenotox.eu/files/PDF/web%20nanogenotox%20dispersion%20protocol.pdf) ",
+    "OBI_0001911 BAO_0000114": "RPMI (Sigma, RNBB2729 "
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 3.092
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 28.881
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 16.978
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 6.298
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 1.61
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 1.562
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 1.905
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 10.723
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 0.874
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 2.347
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 3.396
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 4.599
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 9.392
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 13.846
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 15.77
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 13.103
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 9.147
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 19.641
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 21.956
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 31.124
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 24.944
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 18.364
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 16.807
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 10.86
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 21.04
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 18.135
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 22.527
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 29.266
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 29.534
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 25.48
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 22.79
+      }
+    },
+    {
+      "endpoint": "TNF-α (ng/ml)",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 4",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "ng/ml",
+        "loValue": 21.142
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-95bb8173-3aad-3441-a50e-97e62401eadb",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "COD1518679",
+    "https://data.enanomapper.net/identifier/tradename": "COD 1518679",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-95bb8173-3aad-3441-a50e-97e62401eadb",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/43B390FCAA78C0553C95666E74B954BD3D58D378/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loQualifier": ">=",
+        "loValue": 25,
+        "upQualifier": "<=",
+        "upValue": 30
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-95bb8173-3aad-3441-a50e-97e62401eadb"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/1300",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-914dea3f-f1b7-333c-9964-6c6b32c4ee60",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-914dea3f-f1b7-333c-9964-6c6b32c4ee60",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "C254H317Cd18Cl8N18O92Tb6"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/7": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "NWKI-95bb8173-3aad-3441-a50e-97e62401eadb",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/7": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

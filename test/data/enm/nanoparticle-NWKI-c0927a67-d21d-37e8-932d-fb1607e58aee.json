@@ -1,0 +1,111 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-c0927a67-d21d-37e8-932d-fb1607e58aee",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "TiO2",
+    "https://data.enanomapper.net/identifier/tradename": "Gerloff2009 NM2",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-c0927a67-d21d-37e8-932d-fb1607e58aee",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loQualifier": ">=",
+        "loValue": 20,
+        "upQualifier": "<=",
+        "upValue": 80
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/CB2C470CE72633F6112D75138FF457C6B62247D2/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 50
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/LDH_Release/061537DB25585280BD97EA400128DCC72E1345FD/NOTSPECIFIED/d0812d3e-46fc-316c-acab-92699289d6c4": [
+      {
+        "loValue": 15
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/LDH_Release/3FB7C8A0D320C1F75094885DB64B9584F33CEBB3/NOTSPECIFIED/d0812d3e-46fc-316c-acab-92699289d6c4": [
+      {
+        "loValue": 42
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Metabolic_Activity/AFAE1F3265795972BEBD6C016DDCDE11C4D8EF73/NOTSPECIFIED/b782b8ee-125e-3cba-b276-3ffe3ae0aef2": [
+      {
+        "loValue": 60
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/Metabolic_Activity/C9018163767264B37ED26DFACDC3CC52D9435FE0/NOTSPECIFIED/b782b8ee-125e-3cba-b276-3ffe3ae0aef2": [
+      {
+        "loValue": 90
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-c0927a67-d21d-37e8-932d-fb1607e58aee"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/85",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-80b69a12-be6a-3789-ac03-d86d2dad3f57",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-80b69a12-be6a-3789-ac03-d86d2dad3f57",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "TiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-70-0"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-c0927a67-d21d-37e8-932d-fb1607e58aee",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

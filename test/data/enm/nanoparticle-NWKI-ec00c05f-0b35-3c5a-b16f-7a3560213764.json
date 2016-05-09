@@ -1,0 +1,256 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "CLIO-SIA-FITC",
+    "https://data.enanomapper.net/identifier/tradename": "Shaw51 20",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+    "https://data.enanomapper.net/owner/name": "NanoWiki",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE/1BA3811ABDEA06BCCDBE29D2BBF8289121658065/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 38
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/6F329893E3E7E48B645396FA27B8A2DCA31ED8EE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "FITC"
+      },
+      {
+        "loValue": "Cross-2Dlinked_dextran"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/34B336573C015AF89068B6685256FD68F1DF39B4/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "Fe3O4"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/F8DBAC907D2F4C828B3190179059ACFF4C5A93A7/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": -9.34
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/941BB563DEDE883E58D61DFD3B8EE11D3BDE4CEE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "Succinimidyl_Iodoacatate"
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/86",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Fe3O4",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-61-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/96",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-7f052082-3f5e-3b9d-86cd-a3d52a14a1de",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-7f052082-3f5e-3b9d-86cd-a3d52a14a1de",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Cross-2Dlinked_dextran",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23TradeNameDefault": "CLIO-2DFITC-2DRCOOH"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/107",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-5e2be15b-2692-3563-bcbd-cdd212d1f859",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-5e2be15b-2692-3563-bcbd-cdd212d1f859",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "FITC",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23TradeNameDefault": "CLIO-2DFITC-2DRCOOH"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/108",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "NWKI-cfcd1e99-f75d-312c-acbc-5b243c4ae8c5",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-cfcd1e99-f75d-312c-acbc-5b243c4ae8c5",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Succinimidyl_Iodoacatate",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23TradeNameDefault": "CLIO-2DFTIC-2DSI"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/1": {
+            "count": 1,
+            "tag": null,
+            "remarks": "NanoWiki"
+          }
+        }
+      },
+      "compositionUUID": "NWKI-ec00c05f-0b35-3c5a-b16f-7a3560213764",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/1": {
+      "count": 1,
+      "tag": null,
+      "remarks": "NanoWiki"
+    }
+  }
+}

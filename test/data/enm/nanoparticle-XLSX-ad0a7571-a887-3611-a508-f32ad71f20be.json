@@ -1,0 +1,173 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-ad0a7571-a887-3611-a508-f32ad71f20be",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Fe3O4@APTES-DAAO",
+    "https://data.enanomapper.net/identifier/tradename": "Fe3O4@APTES-DAAO_nm_0.1_Bath",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-ad0a7571-a887-3611-a508-f32ad71f20be",
+    "https://data.enanomapper.net/owner/name": "MODENA",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+1ST+DIMENSION/26464C672F0A8D164126CFFA9662E126B8A86E73/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 25.08
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+2ND+DIMENSION/E8C1BD6E7D9A578C990C9A87AEB080B53A88F910/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 25.08
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ASPECT_RATIO_SHAPE_SECTION/ASPECT+RATIO/A08143E687AE868E5E17E04E431DFE5581377E61/E/880c1273-b27d-37cf-8820-04c3a4b205c9": [
+      {
+        "loValue": 1
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC25/8753BCACCF4AD84B143766F39A844240A2A55139/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 1.732
+      },
+      {
+        "loValue": 6.156
+      },
+      {
+        "loValue": 14.867
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC50/4562F9A62EC3ACF65EFA7DCB4115B7147593C7A4/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 4.308
+      },
+      {
+        "loValue": 16.615
+      },
+      {
+        "loValue": 43.786
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/SLOPE+EC50/54B8512116BD666F4D8D3237F1FA46769FF2EC17/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 0.103
+      },
+      {
+        "loValue": 0.418
+      },
+      {
+        "loValue": 1.157
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-ad0a7571-a887-3611-a508-f32ad71f20be"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/86",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-577aeec9-44f3-3d49-9251-e6b6e3c26854",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Fe3O4",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "1317-61-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-9b3fea44-ed3c-3d40-90f7-9cba39aae7ef",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-ad0a7571-a887-3611-a508-f32ad71f20be"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/1313",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "3-aminopropyltriethoxysilane",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "919-30-2"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-9b3fea44-ed3c-3d40-90f7-9cba39aae7ef",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/12": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

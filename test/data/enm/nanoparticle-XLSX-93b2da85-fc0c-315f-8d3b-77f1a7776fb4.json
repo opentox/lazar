@@ -1,0 +1,478 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-93b2da85-fc0c-315f-8d3b-77f1a7776fb4",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Silica Dioxide",
+    "https://data.enanomapper.net/identifier/tradename": "NM-200 (SiO2)",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-93b2da85-fc0c-315f-8d3b-77f1a7776fb4",
+    "https://data.enanomapper.net/owner/name": "FP7 MARINA",
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/12BAA72196F2F0CE88742A6DA2F61B4E7EA4B9CA/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 3.092
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/03E66D23780B033DD16F2E0E2170FF2093AB603D/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 9.627
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/C92FC21333B497A0697BDF14E5D4D334533650E6/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 3.7
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/EC0A1B954ED976DEC1CA8AD015EBADFDAC4922E8/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 12.022
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/5595207FBAEF2DD104B65DC508DC73341ACB525A/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 13.495
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/88966C6E27582152705D43C3C7AC642FDBA34446/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 11.939
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/08D0FCA6199F5F10680C8419A50F1A12666AE1A8/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 9.904
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/0A3401C2A0530D3A4F230D71C3CBF7FDF1219346/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 9.839
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/3C096ECB081D83D5F3367F092A1BBBD693C83433/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 0.874
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/783A19477AF933A50BB5B7097D3F97C723B3EBCA/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 2.035
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/45E32BDF5F3E67DDE8FD7B0D3E66634DD19CD6A2/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 2.071
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/0E15DBF98A0E7FD2DA16142D2AD7ED42481BC971/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 2.04
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/9FDBB4030EECA243BB9A89CC5C79B81D03C05556/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 2.536
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/F7F4FF197E0F427344CE5B108F5D6C99DB0F3A6C/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 2.801
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/FD303A32166A9944BE36B55FC33650B673DD17B4/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 6.024
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/68A8F85A139588F4D233DD9726E7D60044C45E22/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 3.218
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/04181B262D59E718CB08ABD7BFC244BC6A7F4EF9/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 9.147
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/6D4CC56DBD7E78F639A2097A2142F3F146125236/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 13.019
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/E10EF307B7C6B72BC756044518382F01C865538F/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 12.83
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/375058E5ADDE5BBAC619EC2C7B3F81EEE1C4D9C1/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 12.336
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/9D790A61D2C4438F5E64332ED0BB4BA3F043BCFE/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 18.473
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/750EAB16D853ECD386904EEF0BBD818885A400F3/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 25.681
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/359CCEA6980FC4C76DBAF1AC69019418A78804DD/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 22.385
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/D8989C9945716BAE38308B2FDA1E0B2BA61375BE/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 18.916
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/7937FF632B21EF4C122AFB6EBDF6DB68081FF096/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 21.04
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/3799DC43ACEF627D36F1C6A26F0433E00F870C2E/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 29.97
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/BF7F99DEBD38BCA36FADA67AC36769C0A38A5D40/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 26.508
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/6910A4B418B1AFEEE91C5FE45E0B95A43B7F51CF/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 30.14
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/A1FEFFDDDC69EB7C3804D31DCB21509ED2C846CB/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 43.317
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/8F08E38A60C0A8ED7DBB8A2D45FF72E51634CE0A/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 44.152
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/B95A234355A6615D4B2CE72C758CA68569EB7FEF/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 51.261
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0002993_SECTION/TNF-%CE%B1+%28ng%2Fml%29/6CF71C092EBF34EB1607FB3F8ABB8A661A44BDC4/E/836b4441-2a86-33ac-b639-e216b779735d": [
+      {
+        "loValue": 63.261
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/7B7AF2BEB683E425339629D62EC457CCBA8F2D75/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/185355A9B0D3EA6FF91D35B1DAD735CEFA6DCF38/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 99.413
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/4951D3E98FF7757D99D2BB426E5455AB55B696CE/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 99.916
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/40C0ECBE247955A038528668B30A360858AB330E/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 99.495
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/ED934B82B7B271B2E373781C254C14A693330A86/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 98.373
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/2167834ECE3839B8349E2C80F48E7D206E0355A7/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 97.147
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/F787E415E14ACCFC4876B8ECEFD1308B63AC5C08/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 93.705
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/F177CC3BCD40A07A43024644AE44F637CC45601A/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 82.427
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/2CDD3CF3795DE34A7CC387E895E6ABEF0E9B9310/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/24833C6F4269FFDA8B248E2FF8485AA389A0F50D/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 99.36
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/9205F7DB11244D6BC4C95B1CCD0667B162AA6E72/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 99.216
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/C72D10659A9C3E3E4BA6731E7067AC7D5747EB1F/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 96.477
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/10F53D270DAC9F198DB9C6D029C1888354E4B804/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 96.174
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/AB00D2A52F1F893B20CDB23C23C17F4E5F5A65D2/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 94.889
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/D7681307890A89F4D51D2DCA3D93164C24BCA508/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 93.054
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/1574AA711E2E5685CD47880CF6119E5E1C789683/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 77.011
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/CA299DC4B7714A2CC591707ACE7A272AC53B8FEF/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/62479F3EB06C36987B8BEB18553F62ADF68C70CC/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 93.623
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/F473EDF078F6D1E443ED5A69CE12CA87E6DA64D4/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 97.956
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/18B04924E8932D6AB08DAF3A578D810BA4B8D17A/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 96.911
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/284E7C99106D0E9D957BA706DA8BE2B9EC7870A9/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 75.319
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/329D39477F5334688E3CCCB4138128F0CCAAA874/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 66.08
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/DA53BD4C1A55743541763CECEDD33887DB2D830B/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 41.821
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/F48FF2A6837DAF4DB153919B02E2BB6AA7DD140F/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 39.382
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/3CD452ECE3D4DC21A4AD913FD6C367E06840902F/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/182FD53F760D937288342563D7C4FAEAD0FFAAE4/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 89.377
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/92B8B420DC0727C5B20471604D94573D47E9F329/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 86.56
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/6D02C068B000211CB7BB877231888E72161C17A7/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 89.038
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/103BF50194324AC49E5CD3CD92DE054A23527650/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 82.868
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/E260C19F69B11C24880E08286CFB9D045C32BD9B/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 70.673
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/78D594D09FB8A6E03116DCF395BA65775F1CDC3F/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 55.286
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/AAED9F244BA23CD7E4421A0816A50DADE264BDC1/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 36.018
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/1CD372E336013732BDDFBC6A416B5CFB4E97BF2F/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/AEC4EEE133B16A7626BF0F52B5D28ADC39A81EE1/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 92.006
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/436F490C90BDD49910E179D33B94EF4B7D466B51/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 86.708
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/5D7F588150A427CA47B773209DD5AF8D0237F510/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 87.863
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/F1D10927F9A118E84510FCEB3E1B8CE009D93E9B/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 90.631
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/EFBDDDAC5F52D09BACA5744C6E4ADE66807A8DF5/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 81.019
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/3C56765EAA28FA8B5F7A47CFADC0CE03E38C25AC/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 70.953
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/1BE98527E25E6AD22852E2EE924E11B461B1129D/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 54.229
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/BA04349202DF55D85BCE0ABAFA97E74CCB1FEE1A/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/B2F6E7F2BD393C04EA5288016FB2F2E5C7D4A606/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 116.133
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/90CA68887AFF2A2EEB9D0109A28B79D0279D143D/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 127.122
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/49CCAEA84618E775D10798A486D58402D41EE632/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 105.346
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/15F3B0744F10EEF1D8C9FB9440A507CAD589507E/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 97.885
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/DD12F9184EB1783F5D3EAC8B3338EBB0F2E92A3C/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 93.242
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/076E5B084C401F67AEA0A818B3D8DECA1D52BE07/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 81.871
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/NPO_1709_SECTION/%25+cell+viability/0B720C9AA449F6FA63853548CD0BA40099F0ABE8/E/8384c49c-ddd5-3111-8a2a-fea1055c3da2": [
+      {
+        "loValue": 57.012
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-93b2da85-fc0c-315f-8d3b-77f1a7776fb4"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/75",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/identifier/uuid": "XLSX-0a05544c-7b2a-3908-bff7-527ed69b5054",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "SiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7631-86-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/4": {
+            "count": 1,
+            "tag": null,
+            "remarks": "FP7 MARINA"
+          }
+        }
+      },
+      "compositionUUID": "XLSX-80539079-5968-4e5c-8dcb-755e011e1358",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 100.0,
+          "unit": " µg/ml"
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/4": {
+      "count": 1,
+      "tag": null,
+      "remarks": "FP7 MARINA"
+    }
+  }
+}

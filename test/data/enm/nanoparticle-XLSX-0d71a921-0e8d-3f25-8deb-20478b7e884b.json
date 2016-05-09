@@ -1,0 +1,192 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-0d71a921-0e8d-3f25-8deb-20478b7e884b",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "SiO2_200nm",
+    "https://data.enanomapper.net/identifier/tradename": "SiO2_200nm_124nm_0_Stirring",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-0d71a921-0e8d-3f25-8deb-20478b7e884b",
+    "https://data.enanomapper.net/owner/name": "MODENA",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+1ST+DIMENSION/26464C672F0A8D164126CFFA9662E126B8A86E73/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+2ND+DIMENSION/E8C1BD6E7D9A578C990C9A87AEB080B53A88F910/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 100
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/SIZE+IN+SITU/842F712FCE78F9CDCAC2E4F2F5FF17F5E42461D6/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 124
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/EC25/8753BCACCF4AD84B143766F39A844240A2A55139/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 90.903
+      },
+      {
+        "loValue": 772.279
+      },
+      {
+        "loValue": 113.814
+      },
+      {
+        "loValue": 76.347
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/EC50/4562F9A62EC3ACF65EFA7DCB4115B7147593C7A4/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 145.402
+      },
+      {
+        "loValue": 3005.732
+      },
+      {
+        "loValue": 1244.237
+      },
+      {
+        "loValue": 126.343
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0003009_SECTION/SLOPE+EC50/54B8512116BD666F4D8D3237F1FA46769FF2EC17/E/8a7a43f8-9731-33eb-b4f1-a341c9268183": [
+      {
+        "loValue": 2.18
+      },
+      {
+        "loValue": 89.338
+      },
+      {
+        "loValue": 45.217
+      },
+      {
+        "loValue": 2
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/A597EBC063D7A5A605B9535656E09149A72F0C23/E/19841e1a-78f5-3519-ba94-90ec20e32772": [
+      {
+        "loValue": -32
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ASPECT_RATIO_SHAPE_SECTION/ASPECT+RATIO/A08143E687AE868E5E17E04E431DFE5581377E61/E/880c1273-b27d-37cf-8820-04c3a4b205c9": [
+      {
+        "loValue": 1
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-0d71a921-0e8d-3f25-8deb-20478b7e884b"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/75",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-214f4d13-3158-3210-af4f-bd2c40ce3153",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "SiO2",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7631-86-9"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-2549d04f-76c6-3110-b2f8-6f4b43dd1def",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-0d71a921-0e8d-3f25-8deb-20478b7e884b"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/1317",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "[Si]",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "7440-21-3"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-2549d04f-76c6-3110-b2f8-6f4b43dd1def",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/12": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-ce0dc642-4b41-36fa-80c0-db986a2d3b70",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "MN-330",
+    "https://data.enanomapper.net/identifier/tradename": "JRCNM03300a",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-ce0dc642-4b41-36fa-80c0-db986a2d3b70",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/6": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

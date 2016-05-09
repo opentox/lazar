@@ -1,0 +1,170 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/XLSX-251091e3-55d1-36b3-854c-d1933ec46461",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Au40",
+    "https://data.enanomapper.net/identifier/tradename": "Au40_144nm_0.1_Vortexing",
+    "https://data.enanomapper.net/identifier/uuid": "XLSX-251091e3-55d1-36b3-854c-d1933ec46461",
+    "https://data.enanomapper.net/owner/name": "MODENA",
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+1ST+DIMENSION/26464C672F0A8D164126CFFA9662E126B8A86E73/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 38.1
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PRIMARY+SIZE+2ND+DIMENSION/E8C1BD6E7D9A578C990C9A87AEB080B53A88F910/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 38.1
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/SIZE+IN+SITU/842F712FCE78F9CDCAC2E4F2F5FF17F5E42461D6/E/97ff97cf-505a-3f58-b339-cf87b22a4512": [
+      {
+        "loValue": 144
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/A597EBC063D7A5A605B9535656E09149A72F0C23/E/19841e1a-78f5-3519-ba94-90ec20e32772": [
+      {
+        "loValue": -50.5
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ASPECT_RATIO_SHAPE_SECTION/ASPECT+RATIO/A08143E687AE868E5E17E04E431DFE5581377E61/E/880c1273-b27d-37cf-8820-04c3a4b205c9": [
+      {
+        "loValue": 1
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC25/8753BCACCF4AD84B143766F39A844240A2A55139/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 15.721
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/0262B2734BF0199B10940BA2EB877A045733CF74/E/bcf9b4e5-6f14-3a3a-857c-c45945d32308": [
+      {
+        "loValue": 8
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/EC50/4562F9A62EC3ACF65EFA7DCB4115B7147593C7A4/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 131.872
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/BAO_0010001_SECTION/SLOPE+EC50/54B8512116BD666F4D8D3237F1FA46769FF2EC17/E/40ef544c-7843-3cf9-b666-c505f100b6bc": [
+      {
+        "loValue": 4.646
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "composition": [
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-251091e3-55d1-36b3-854c-d1933ec46461"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/7",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUCLID5_UUIDDefault": "NWKI-515322af-1eb9-34f2-a4ce-e609d1f39bfa",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Au",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": " 7440-57-5"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-70e85f2b-82ab-3f88-9d72-81457030de3a",
+      "compositionName": null,
+      "relation": "HAS_CORE",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    },
+    {
+      "substance": {
+        "URI": "https://data.enanomapper.net/substance/XLSX-251091e3-55d1-36b3-854c-d1933ec46461"
+      },
+      "component": {
+        "compound": {
+          "URI": "https://data.enanomapper.net/compound/1306",
+          "structype": "NA",
+          "metric": null,
+          "name": "",
+          "cas": "",
+          "einecs": ""
+        },
+        "values": {
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault": "Citrate",
+          "https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23CASRNDefault": "6132-04-3"
+        },
+        "facets": [
+
+        ],
+        "bundles": {
+          "https://data.enanomapper.net/bundle/12": {
+            "count": 1,
+            "tag": null,
+            "remarks": null
+          }
+        }
+      },
+      "compositionUUID": "XLSX-70e85f2b-82ab-3f88-9d72-81457030de3a",
+      "compositionName": null,
+      "relation": "HAS_COATING",
+      "proportion": {
+        "typical": {
+          "precision": null,
+          "value": 0.0,
+          "unit": null
+        },
+        "real": {
+          "lowerPrecision": null,
+          "lowerValue": 0.0,
+          "upperPrecision": null,
+          "upperValue": 0.0,
+          "unit": null
+        },
+        "function_as_additive": null
+      },
+      "hidden": false
+    }
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/12": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

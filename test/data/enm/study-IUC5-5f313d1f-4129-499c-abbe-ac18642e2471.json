@@ -1,0 +1,54 @@
+{
+  "uuid": "IUC5-f6eb018b-2dc5-462b-be29-a6ffce0fd4d4",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": "Muller, J. et al.",
+    "year": "2009",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "TO_CARCINOGENICITY_SECTION",
+      "term": "http://purl.enanomapper.org/onto/ENM_0000029",
+      "title": "7.7 Carcinogenicity"
+    },
+    "endpoint": "Carcinogenicity.001",
+    "guideline": [
+      null
+    ]
+  },
+  "parameters": {
+    "Doses/concentrations": "MWCNT+: 2 or 20 mg/animal;MWCNT-: 20 mg/animal;Crocidolite: 2 mg/animal",
+    "Route of administration": "intraperitoneal",
+    "Species": "rat"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": "2 (reliable with restrictions)"
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "",
+      "conditions": {
+      },
+      "result": {
+      }
+    }
+  ]
+}

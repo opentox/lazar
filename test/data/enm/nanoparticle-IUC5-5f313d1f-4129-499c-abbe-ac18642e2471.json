@@ -1,0 +1,101 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/IUC5-5f313d1f-4129-499c-abbe-ac18642e2471",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "Multi-Walled Carbon Nanotubes (MWCNT), synthetic graphite in tubular shape",
+    "https://data.enanomapper.net/identifier/tradename": "Multi-Walled Carbon Nanotubes (MWCNT), synthetic graphite in tubular shape",
+    "https://data.enanomapper.net/identifier/uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471",
+    "https://data.enanomapper.net/owner/name": "Ideaconsult Ltd. / Sofia / Bulgaria",
+    "https://data.enanomapper.net/property/TOX/TO_ACUTE_ORAL_SECTION/LDLo/67B3D7562304DE726D4E37755025ECA57FD6B466/E/283fd0ec-7e88-3761-ab1e-81ef6a9a2a31": [
+      {
+        "loQualifier": ">=",
+        "loValue": 2000
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/TO_ACUTE_ORAL_SECTION/LD50+cut-off+/4825AF8D0E3D9E4BEFC2A999235AC2533BE5A47C/E/283fd0ec-7e88-3761-ab1e-81ef6a9a2a31": [
+      {
+        "loQualifier": ">=",
+        "loValue": 5000
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/MASS+MEDIAN+DIAMETER/790DAC1B5D626C0B2A9DE7274BDFAAED274C439D/E/45f3ca97-5fc7-3d17-bfda-5738d16bdcc5": [
+      {
+        "loQualifier": ">=",
+        "loValue": 3,
+        "upQualifier": "<",
+        "upValue": 20
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/MASS+MEDIAN+AERODYNAMIC+DIAMETER/BBC637158EDDF113E66813CA813CB371EEF24AE1/E/45f3ca97-5fc7-3d17-bfda-5738d16bdcc5": [
+      {
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/PC_GRANULOMETRY_SECTION/PARTICLE+SIZE.D90/BC94CF26121688BDABC5D7FCECD0549D55418623/E/45f3ca97-5fc7-3d17-bfda-5738d16bdcc5": [
+      {
+        "loValue": 12.7
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/65D7BC20B7E0D8822F283108A381A85C1D103669/E/196278a2-a7f6-3c13-b3af-4629b70a09c7": [
+      {
+        "loValue": 253
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/TO_GENETIC_IN_VITRO_SECTION/GENOTOXICITY/07A99F18266E1D27A928F6AB49F8C905FB00F5F5/E/d4cd0dab-cf4c-3a22-ad92-fab40844c786": [
+      {
+        "loValue": "negative"
+      },
+      {
+        "loValue": "negative"
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/323D053B74D916760048CCFDEB014AD4147560C9/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 41.4
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/A8F4F94D45AF15D89AA7779FC7EFCAE980FAC38A/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 39.3
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/DA7CBA5C3B3E55822F2B80EEC0C36FE13B666A90/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 21.4
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/ZETA_POTENTIAL_SECTION/ZETA+POTENTIAL/1A706D8058773F55BD0C3EFB1E1AA90EFC8C0A87/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": 34.5
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/DUSTINESS_SECTION/DUSTINESS+INDEX/D5D1EE8872F183F950C66D71BBB610BFFE7D663A/E/56157cef-137d-3569-a65e-3736f245845c": [
+      {
+      }
+    ],
+    "https://data.enanomapper.net/property/P-CHEM/GI_GENERAL_INFORM_SECTION/solid/5447E171C6AAC17A56CA4BC6C67FC8392F786F05/E/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+      {
+        "loValue": "inorganic"
+      }
+    ],
+    "https://data.enanomapper.net/property/TOX/TO_CARCINOGENICITY_SECTION/interpretation_result/DE57FC30E942668EB956E51E0C5B38908CFBAFE3/E/d4cd0dab-cf4c-3a22-ad92-fab40844c786": [
+      {
+      }
+    ]
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/2": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}

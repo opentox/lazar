@@ -1,0 +1,26 @@
+{
+  "compound": {
+    "URI": "https://data.enanomapper.net/substance/NWKI-78f103d7-ca6c-3515-acdf-c504d48c96f9",
+    "structype": "NA",
+    "metric": null,
+    "name": "",
+    "cas": "",
+    "einecs": ""
+  },
+  "values": {
+    "https://data.enanomapper.net/identifier/name": "NM-400",
+    "https://data.enanomapper.net/identifier/tradename": "JRCNM04000a",
+    "https://data.enanomapper.net/identifier/uuid": "NWKI-78f103d7-ca6c-3515-acdf-c504d48c96f9",
+    "https://data.enanomapper.net/owner/name": "NanoWiki"
+  },
+  "facets": [
+
+  ],
+  "bundles": {
+    "https://data.enanomapper.net/bundle/6": {
+      "count": 1,
+      "tag": null,
+      "remarks": null
+    }
+  }
+}
