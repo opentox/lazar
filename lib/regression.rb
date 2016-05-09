@@ -80,7 +80,7 @@ module OpenTox
         neighbors = params[:neighbors].select{|n| n["toxicities"][params[:prediction_feature_id].to_s] and n["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s]} # use only neighbors with measured activities
 
         return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
-        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s], :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
+        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].median, :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
 
         activities = []
         weights = []
@@ -94,6 +94,7 @@ module OpenTox
             data_frame[0][i] = act
             n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
             neighbor.physchem_descriptors.each do |pid,values| 
+              values = [values] if values.is_a? Float
               values.uniq!
               warn "More than one value for '#{Feature.find(pid).name}': #{values.join(', ')}. Using the median." unless values.size == 1
               j = pc_ids.index(pid)+1

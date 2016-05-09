@@ -68,7 +68,7 @@ module OpenTox
       x = []
       y = []
       predictions.each do |cid,pred|
-        if pred[:value] and pred[:measured] #and pred[:measured] != [nil]
+        if pred[:value] and pred[:measured] 
           x << pred[:measured].median
           y << pred[:value]
           error = pred[:value]-pred[:measured].median
