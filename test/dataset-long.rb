@@ -86,6 +86,7 @@ class DatasetLongTest < MiniTest::Test
   end
 
   def test_upload_feature_dataset
+    skip
     t = Time.now
     f = File.join DATA_DIR, "rat_feature_dataset.csv"
     d = Dataset.from_csv_file f

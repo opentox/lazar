@@ -8,7 +8,7 @@ class DatasetTest < MiniTest::Test
     d1 = Dataset.new 
     d1.save
     datasets = Dataset.all 
-    assert_equal Dataset, datasets.first.class
+    assert datasets.first.is_a?(Dataset), "#{datasets.first} is not a Dataset."
     d1.delete
   end
 
@@ -69,7 +69,7 @@ class DatasetTest < MiniTest::Test
     assert_equal 3, d.compounds.size
     assert_equal 2, d.features.size
     assert_equal [[1,2],[4,5],[6,7]], d.data_entries
-    d.save_all
+    d.save
     # check if dataset has been saved correctly
     new_dataset = Dataset.find d.id
     assert_equal 3, new_dataset.compounds.size
@@ -127,7 +127,7 @@ class DatasetTest < MiniTest::Test
     original_csv.shift
     csv.each_with_index do |row,i|
       compound = Compound.from_smiles row.shift
-      original_compound = Compound.from_smiles original_csv[i].shift
+      original_compound = Compound.from_smiles original_csv[i].shift.strip
       assert_equal original_compound.inchi, compound.inchi
       row.each_with_index do |v,j|
         if v.numeric?
@@ -142,7 +142,6 @@ class DatasetTest < MiniTest::Test
 
   def test_from_csv
     d = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    p d
     assert_equal Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size
@@ -170,8 +169,7 @@ class DatasetTest < MiniTest::Test
   def test_from_csv2
     File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
     dataset = Dataset.from_csv_file "#{DATA_DIR}/temp_test.csv"
-    p dataset.warnings
-    assert_equal "Cannot parse SMILES compound ' ' at position 3, all entries are ignored.",  dataset.warnings.join
+    assert_equal "Cannot parse SMILES compound '' at position 3, all entries are ignored.",  dataset.warnings.join
     File.delete "#{DATA_DIR}/temp_test.csv"
     dataset.features.each{|f| feature = Feature.find f.id; feature.delete}
     dataset.delete
@@ -205,14 +203,16 @@ class DatasetTest < MiniTest::Test
     assert_equal 0.00323, d2.data_entries[5][0]
   end
 
-  def test_scaled_dataset
-    original_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini.csv")
-    scaled_dataset = original_dataset.scale
-    scaled_dataset.data_entries.each_with_index do |row,i|
-      row.each_with_index do |value,j|
-        assert_equal original_dataset.data_entries[i][j].round(4), scaled_dataset.original_value(value,j).round(4) if value # ignore nils
+  def test_folds
+    dataset = Dataset.from_csv_file File.join(DATA_DIR,"loael.csv")
+    dataset.folds(10).each do |fold|
+      fold.each do |d|
+        assert_equal d.data_entries.size, d.compound_ids.size
+        assert_operator d.compound_ids.size, :>=, d.compound_ids.uniq.size
       end
+      assert_operator fold[0].compound_ids.uniq.size, :>=, fold[1].compound_ids.uniq.size
     end
+    #puts dataset.folds 10
   end
 
 end

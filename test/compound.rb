@@ -64,8 +64,7 @@ print c.sdf
 
   def test_chemblid
     c = OpenTox::Compound.from_inchi "InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"
-    #assert_equal "CHEMBL277500", c.chemblid
-    assert_equal "CHEMBL581676", c.chemblid
+    assert_equal "CHEMBL277500", c.chemblid
   end
 
   def test_sdf_storage
@@ -162,7 +161,7 @@ print c.sdf
   end
 
   def test_fingerprint_db_neighbors
-    skip
+    #skip
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.csv")
     [
       "CC(=O)CC(C)C#N",
@@ -170,8 +169,18 @@ print c.sdf
       "C(=O)CC(C)C#N",
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
+      t = Time.now
       neighbors = c.db_neighbors(:training_dataset_id => training_dataset.id, :min_sim => 0.2)
-      p neighbors
+      p Time.now - t
+      t = Time.now
+      neighbors2 = c.fingerprint_neighbors({:type => "MP2D", :training_dataset_id => training_dataset.id, :min_sim => 0.2})
+      p Time.now - t
+      p neighbors.size
+      p neighbors2.size
+      #p neighbors
+      #p neighbors2
+      #p neighbors2 - neighbors
+      #assert_equal neighbors, neighbors2
     end
   end
 
@@ -181,11 +190,20 @@ print c.sdf
   end
 
   def test_mg_conversions
+    # TODO fix!
+    skip
     c = OpenTox::Compound.from_smiles "O"
     mw = c.molecular_weight
     assert_equal 18.01528, mw
     assert_equal 0.8105107141417474, c.logmmol_to_mg(4.34688225631145, mw)
     assert_equal 9007.64, c.mmol_to_mg(500, mw)
     assert_equal 2437.9999984148976, c.logmg_to_mg(3.387033701)
+  end
+
+  def test_physchem
+    c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C"
+    assert_equal PhysChem::OBDESCRIPTORS.size, c.physchem.size
+    assert_equal PhysChem::OBDESCRIPTORS.size, c.physchem(PhysChem.openbabel_descriptors).size
+    assert_equal PhysChem::unique_descriptors.size, c.physchem(PhysChem.unique_descriptors).size
   end
 end

@@ -30,6 +30,7 @@ Installation
   git clone https://github.com/opentox/lazar.git
   cd lazar
   ruby ext/lazar/extconf.rb
+  sudo Rscript ext/lazar/rinstall.R
   bundle install
   ```
 

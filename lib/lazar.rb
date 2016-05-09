@@ -8,6 +8,7 @@ require 'mongoid'
 require 'rserve'
 require "nokogiri"
 require "base64"
+require 'openbabel'
 
 # Environment setup
 ENV["LAZAR_ENV"] ||= "production"
@@ -24,7 +25,6 @@ Mongoid.load_configuration({
   }
 })
 Mongoid.raise_not_found_error = false # return nil if no document is found
-#$mongo = Mongoid.default_client
 $mongo = Mongo::Client.new("mongodb://127.0.0.1:27017/#{ENV['LAZAR_ENV']}")
 $gridfs = $mongo.database.fs
 
@@ -41,26 +41,27 @@ when "development"
 end
 
 # R setup
+rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
+# should work on POSIX including os x
+# http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
+NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
-R.eval "library(ggplot2)"
-R.eval "library(grid)"
-R.eval "library(gridExtra)"
-
-# Require sub-Repositories
-require_relative '../libfminer/libbbrc/bbrc' # include before openbabel
-require_relative '../libfminer/liblast/last' # 
-require_relative '../last-utils/lu.rb'
-require_relative '../openbabel/lib/openbabel'
-
-# Fminer environment variables
-ENV['FMINER_SMARTS'] = 'true'
-ENV['FMINER_NO_AROMATIC'] = 'true'
-ENV['FMINER_PVALUES'] = 'true'
-ENV['FMINER_SILENT'] = 'true'
-ENV['FMINER_NR_HITS'] = 'true'
+R.eval "
+suppressPackageStartupMessages({
+  library(iterators,lib=\"#{rlib}\")
+  library(foreach,lib=\"#{rlib}\")
+  library(ggplot2,lib=\"#{rlib}\")
+  library(grid,lib=\"#{rlib}\")
+  library(gridExtra,lib=\"#{rlib}\")
+  library(pls,lib=\"#{rlib}\")
+  library(caret,lib=\"#{rlib}\")
+  library(doMC,lib=\"#{rlib}\")
+  registerDoMC(#{NR_CORES})
+})
+"
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -68,18 +69,16 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","Repeat
   "error.rb",
   "opentox.rb",
   "feature.rb",
+  "physchem.rb",
   "compound.rb",
   "dataset.rb",
-  "descriptor.rb",
   "algorithm.rb",
-  "descriptor.rb",
-  "bbrc.rb",
   "model.rb",
-  "similarity.rb",
   "classification.rb",
   "regression.rb",
   "validation.rb",
   "crossvalidation.rb",
+  "leave-one-out-validation.rb",
   "experiment.rb",
 ].each{ |f| require_relative f }
-
+OpenTox::PhysChem.descriptors # load descriptor features

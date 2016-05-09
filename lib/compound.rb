@@ -1,12 +1,9 @@
-# TODO: check
-# *** Open Babel Error  in ParseFile
-#    Could not find contribution data file.
-
 CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
 
   class Compound
+    require_relative "unique_descriptors.rb"
     include OpenTox
 
     DEFAULT_FINGERPRINT = "MP2D"
@@ -15,34 +12,35 @@ module OpenTox
     field :smiles, type: String
     field :inchikey, type: String
     field :names, type: Array
-    field :warning, type: String
     field :cid, type: String
     field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
-    field :molecular_weight, type: Float
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
+    field :physchem_descriptors, type: Hash, default: {}
+    field :dataset_ids, type: Array, default: []
+    field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
 
     # Overwrites standard Mongoid method to create fingerprints before database insertion
     def self.find_or_create_by params
       compound = self.find_or_initialize_by params
-      compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT)
+      compound.default_fingerprint_size = compound.fingerprint(DEFAULT_FINGERPRINT).size
       compound.save
       compound
     end
 
-    def fingerprint type="MP2D"
+    def fingerprint type=DEFAULT_FINGERPRINT
       unless fingerprints[type]
         return [] unless self.smiles
         #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
         if type == "MP2D"
           fp = obconversion(smiles,"smi","mpd").strip.split("\t")
           name = fp.shift # remove Title
-          fingerprints[type] = fp
+          fingerprints[type] = fp.uniq # no fingerprint counts
         #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
         elsif type== "MNA"
           level = 2 # TODO: level as parameter, evaluate level 1, see paper
@@ -82,19 +80,60 @@ module OpenTox
       fingerprints[type]
     end
 
+    def physchem descriptors=PhysChem.openbabel_descriptors
+      # TODO: speedup java descriptors
+      calculated_ids = physchem_descriptors.keys
+      # BSON::ObjectId instances are not allowed as keys in a BSON document.
+      new_ids = descriptors.collect{|d| d.id.to_s} - calculated_ids
+      descs = {}
+      algos = {}
+      new_ids.each do |id|
+        descriptor = PhysChem.find id
+        descs[[descriptor.library, descriptor.descriptor]]  = descriptor
+        algos[descriptor.name] = descriptor
+      end
+      # avoid recalculating Cdk features with multiple values
+      descs.keys.uniq.each do |k|
+        descs[k].send(k[0].downcase,k[1],self).each do |n,v|
+          physchem_descriptors[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
+        end
+      end
+      save
+      physchem_descriptors.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
+    end
+
+    def smarts_match smarts, count=false
+      obconversion = OpenBabel::OBConversion.new
+      obmol = OpenBabel::OBMol.new
+      obconversion.set_in_format('smi')
+      obconversion.read_string(obmol,self.smiles)
+      smarts_pattern = OpenBabel::OBSmartsPattern.new
+      smarts.collect do |sma|
+        smarts_pattern.init(sma.smarts)
+        if smarts_pattern.match(obmol)
+          count ? value = smarts_pattern.get_map_list.to_a.size : value = 1
+        else
+          value = 0 
+        end
+        value
+      end
+    end
+
     # Create a compound from smiles string
     # @example
     #   compound = OpenTox::Compound.from_smiles("c1ccccc1")
     # @param [String] smiles Smiles string
     # @return [OpenTox::Compound] Compound
     def self.from_smiles smiles
-      return nil if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
+      if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
+        $logger.warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
+        return nil
+      end
       smiles = obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
       if smiles.empty?
+        $logger.warn "SMILES parsing failed for '#{smiles}'', this may be caused by an incorrect SMILES string."
         return nil
-        #Compound.find_or_create_by(:warning => "SMILES parsing failed for '#{smiles}', this may be caused by an incorrect SMILES string.")
       else
-        #Compound.find_or_create_by :smiles => obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
         Compound.find_or_create_by :smiles => smiles 
       end
     end
@@ -109,7 +148,7 @@ module OpenTox
       #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?
-        Compound.find_or_create_by(:warning => "InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries.")
+        Compound.find_or_create_by(:warnings => ["InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries."])
       else
         Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
       end
@@ -245,34 +284,19 @@ module OpenTox
     def fingerprint_neighbors params
       bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
       neighbors = []
-      #if params[:type] == DEFAULT_FINGERPRINT
-        #neighbors = db_neighbors params
-        #p neighbors
-      #else
+      if params[:type] == DEFAULT_FINGERPRINT
+        neighbors = db_neighbors params
+      else 
         query_fingerprint = self.fingerprint params[:type]
-        training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
-          unless self == compound
-            candidate_fingerprint = compound.fingerprint params[:type]
-            sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-            neighbors << [compound.id, sim] if sim >= params[:min_sim]
-          end
+        training_dataset = Dataset.find(params[:training_dataset_id])
+        prediction_feature = training_dataset.features.first
+        training_dataset.compounds.each do |compound|
+          candidate_fingerprint = compound.fingerprint params[:type]
+          sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
+          feature_values = training_dataset.values(compound,prediction_feature)
+          neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
         end
-      #end
-      neighbors.sort{|a,b| b.last <=> a.last}
-    end
-
-    def fminer_neighbors params
-      bad_request_error "Incorrect parameters for Compound#fminer_neighbors. Please provide :feature_dataset_id, :min_sim." unless params[:feature_dataset_id] and params[:min_sim]
-      feature_dataset = Dataset.find params[:feature_dataset_id]
-      query_fingerprint = Algorithm::Descriptor.smarts_match(self, feature_dataset.features)
-      neighbors = []
-
-      # find neighbors
-      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
-        sim = Algorithm::Similarity.tanimoto candidate_fingerprint, query_fingerprint
-        if sim >= params[:min_sim]
-          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
-        end
+        neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
       end
       neighbors
     end
@@ -285,13 +309,7 @@ module OpenTox
         # TODO implement pearson and cosine similarity separatly
         R.assign "x", query_fingerprint
         R.assign "y", candidate_fingerprint
-        # pearson r
-        #sim = R.eval("cor(x,y,use='complete.obs',method='pearson')").to_ruby
-        #p "pearson"
-        #p sim
-        #p "cosine"
         sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
-        #p sim
         if sim >= params[:min_sim]
           neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
         end
@@ -300,52 +318,52 @@ module OpenTox
     end
 
     def db_neighbors params
-      p "DB NEIGHBORS"
-      p params
-      # TODO restrict to dataset
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
-      qn = fingerprint(params[:type]).size
+
+      #qn = default_fingerprint_size
       #qmin = qn * threshold
       #qmax = qn / threshold
       #not sure if it is worth the effort of keeping feature counts up to date (compound deletions, additions, ...)
       #reqbits = [count['_id'] for count in db.mfp_counts.find({'_id': {'$in': qfp}}).sort('count', 1).limit(qn - qmin + 1)]
       aggregate = [
         #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
-        {'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
+        #{'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
         {'$project' => {
           'tanimoto' => {'$let' => {
-            'vars' => {'common' => {'$size' => {'$setIntersection' => ["'$#{DEFAULT_FINGERPRINT}'", DEFAULT_FINGERPRINT]}}},
-            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [qn, '$default_fingerprint_size']}, '$$common']}]}
+            'vars' => {'common' => {'$size' => {'$setIntersection' => ["$fingerprints.#{DEFAULT_FINGERPRINT}", fingerprints[DEFAULT_FINGERPRINT]]}}},
+            #'vars' => {'common' => {'$size' => {'$setIntersection' => ["$default_fingerprint", default_fingerprint]}}},
+            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
-          '_id' => 1
+          '_id' => 1,
+          'features' => 1,
+          'dataset_ids' => 1
         }},
         {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
         {'$sort' => {'tanimoto' => -1}}
       ]
       
-      $mongo["compounds"].aggregate(aggregate).collect{ |r| [r["_id"], r["tanimoto"]] }
+      $mongo["compounds"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
         
     end
     
-   # Get mg from mmol
-   # @return [Float] value in mg
-   def mmol_to_mg mmol
-     mmol.to_f*molecular_weight
+    # Convert mmol to mg
+    # @return [Float] value in mg
+    def mmol_to_mg mmol
+      mmol.to_f*molecular_weight
     end
 
-   def mg_to_mmol mg
-     mg.to_f/molecular_weight
+    # Convert mg to mmol
+    # @return [Float] value in mg
+    def mg_to_mmol mg
+      mg.to_f/molecular_weight
     end
     
     # Calculate molecular weight of Compound with OB and store it in object
     # @return [Float] molecular weight
     def molecular_weight
-      if self["molecular_weight"]==0.0 || self["molecular_weight"].nil?
-        update(:molecular_weight => OpenTox::Algorithm::Descriptor.physchem(self, ["Openbabel.MW"]).first)
-      end
-      self["molecular_weight"]
+      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
+      physchem([mw_feature])[mw_feature.id.to_s]
     end
-
 
     private
 

@@ -22,6 +22,14 @@ class Numeric
   end
 end
 
+class Float
+  # round to n significant digits
+  # http://stackoverflow.com/questions/8382619/how-to-round-a-float-to-a-specified-number-of-significant-digits-in-ruby
+  def signif(n)
+    Float("%.#{n}g" % self)
+  end
+end
+
 module Enumerable
   # @return [Array] only the duplicates of an enumerable
   def duplicates

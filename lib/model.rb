@@ -34,7 +34,6 @@ module OpenTox
       def initialize training_dataset, params={}
 
         super params
-        bad_request_error "More than one prediction feature found in training_dataset #{training_dataset.id}" unless training_dataset.features.size == 1
 
         # TODO document convention
         prediction_feature = training_dataset.features.first
@@ -48,13 +47,34 @@ module OpenTox
         self
       end
 
-      def predict object, use_database_values=true
+      def predict_compound compound
+        prediction_feature = Feature.find prediction_feature_id
+        neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
+        # remove neighbors without prediction_feature
+        # check for database activities (neighbors may include query compound)
+        database_activities = nil
+        prediction = {}
+        if neighbors.collect{|n| n["_id"]}.include? compound.id
 
-        t = Time.now
-        at = Time.now
+          database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s].uniq
+          prediction[:database_activities] = database_activities
+          prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
+          neighbors.delete_if{|n| n["_id"] == compound.id}
+        end
+        neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
+        if neighbors.empty?
+          prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
+        else
+          prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset_id,:prediction_feature_id => prediction_feature.id}))
+          prediction[:neighbors] = neighbors
+          prediction[:neighbors] ||= []
+        end
+        prediction
+      end
+
+      def predict object
 
         training_dataset = Dataset.find training_dataset_id
-        prediction_feature = Feature.find prediction_feature_id
 
         # parse data
         compounds = []
@@ -71,63 +91,33 @@ module OpenTox
 
         # make predictions
         predictions = []
-        neighbors = []
-        compounds.each_with_index do |compound,c|
-          t = Time.new
-
-          neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
-          # add activities
-          # TODO: improve efficiency, takes 3 times longer than previous version
-          neighbors.collect! do |n|
-            rows = training_dataset.compound_ids.each_index.select{|i| training_dataset.compound_ids[i] == n.first}
-            acts = rows.collect{|row| training_dataset.data_entries[row][0]}.compact
-            acts.empty? ? nil : n << acts
-          end
-          neighbors.compact! # remove neighbors without training activities
-
-          database_activities = training_dataset.values(compound,prediction_feature)
-          if use_database_values and database_activities and !database_activities.empty?
-            database_activities = database_activities.first if database_activities.size == 1
-            predictions << {:compound => compound, :value => database_activities, :confidence => "measured", :warning => "Compound #{compound.smiles} occurs in training dataset with activity '#{database_activities}'."}
-            next
-          end
-          predictions << Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_size => training_dataset.data_entries.size})
-=begin
-# TODO scaled dataset for physchem
-          p neighbor_algorithm_parameters
-          p (neighbor_algorithm_parameters["feature_dataset_id"])
-          d = Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"])
-          p d
-          p d.class
-          if neighbor_algorithm_parameters["feature_dataset_id"] and Dataset.find(neighbor_algorithm_parameters["feature_dataset_id"]).kind_of? ScaledDataset
-            p "SCALED"
-          end
-=end
-        end 
+        predictions = compounds.collect{|c| predict_compound c}
 
         # serialize result
         case object.class.to_s
         when "OpenTox::Compound"
           prediction = predictions.first
-          prediction[:neighbors] = neighbors.sort{|a,b| b[1] <=> a[1]} # sort according to similarity
+          prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
           return prediction
         when "Array"
           return predictions
         when "OpenTox::Dataset"
           # prepare prediction dataset
+          measurement_feature = Feature.find prediction_feature_id
+
+          prediction_feature = OpenTox::NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
           prediction_dataset = LazarPrediction.new(
             :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
             :prediction_feature_id => prediction_feature.id
 
           )
-          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Prediction confidence" )
-          # TODO move into warnings field
+          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Model RMSE" )
           warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
-          prediction_dataset.features = [ prediction_feature, confidence_feature, warning_feature ]
+          prediction_dataset.features = [ prediction_feature, confidence_feature, measurement_feature, warning_feature ]
           prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:confidence], p[:warning]]}
-          prediction_dataset.save_all
+          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:rmse] , p[:dataset_activities].to_s, p[:warning]]}
+          prediction_dataset.save
           return prediction_dataset
         end
 
@@ -164,37 +154,15 @@ module OpenTox
       def self.create training_dataset, params={}
         model = self.new training_dataset, params
         model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.weighted_average" 
+        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "MP2D",
           :training_dataset_id => training_dataset.id,
           :min_sim => 0.1
-          #:type => "FP4",
-          #:training_dataset_id => training_dataset.id,
-          #:min_sim => 0.7
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end
-        model.save
-        model
-      end
-    end
-
-    class LazarFminerClassification < LazarClassification
-      field :feature_calculation_parameters, type: Hash
-
-      def self.create training_dataset, fminer_params={}
-        model = super(training_dataset)
-        model.update "_type" => self.to_s # adjust class
-        model = self.find model.id # adjust class
-        model.neighbor_algorithm = "fminer_neighbors"
-        model.neighbor_algorithm_parameters = {
-          :feature_calculation_algorithm => "OpenTox::Algorithm::Descriptor.smarts_match",
-          :feature_dataset_id => Algorithm::Fminer.bbrc(training_dataset,fminer_params).id,
-          :min_sim => 0.3
-        }
-        model.feature_calculation_parameters = fminer_params
         model.save
         model
       end
@@ -205,7 +173,6 @@ module OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      # TODO cv -> repeated cv
       # TODO field Validations
       field :endpoint, type: String
       field :species, type: String
@@ -249,7 +216,6 @@ module OpenTox
         training_dataset = Dataset.from_csv_file file
         model = nil
         if training_dataset.features.first.nominal?
-          #model = LazarFminerClassification.create training_dataset
           model = LazarClassification.create training_dataset
         elsif training_dataset.features.first.numeric?
           model = LazarRegression.create training_dataset

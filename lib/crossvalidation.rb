@@ -35,14 +35,14 @@ module OpenTox
       predictions = []
       training_dataset = Dataset.find model.training_dataset_id
       training_dataset.folds(n).each_with_index do |fold,fold_nr|
-        fork do # parallel execution of validations
+        #fork do # parallel execution of validations
           $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
           t = Time.now
           validation = Validation.create(model, fold[0], fold[1],cv)
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
-        end
+        #end
       end
-      Process.waitall
+      #Process.waitall
       cv.validation_ids = Validation.where(:crossvalidation_id => cv.id).distinct(:_id)
       cv.validations.each do |validation|
         nr_instances += validation.nr_instances
@@ -52,7 +52,7 @@ module OpenTox
       cv.update_attributes(
         nr_instances: nr_instances,
         nr_unpredicted: nr_unpredicted,
-        predictions: predictions.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
+        predictions: predictions#.sort{|a,b| b[3] <=> a[3]} # sort according to confidence
       )
       $logger.debug "Nr unpredicted: #{nr_unpredicted}"
       cv.statistics
@@ -79,23 +79,26 @@ module OpenTox
       true_rate = {}
       predictivity = {}
       predictions.each do |pred|
-        compound_id,activity,prediction,confidence = pred
-        if activity and prediction and confidence.numeric? 
-          if prediction == activity
-            if prediction == accept_values[0]
-              confusion_matrix[0][0] += 1
-              weighted_confusion_matrix[0][0] += confidence
-            elsif prediction == accept_values[1]
-              confusion_matrix[1][1] += 1
-              weighted_confusion_matrix[1][1] += confidence
-            end
-          elsif prediction != activity
-            if prediction == accept_values[0]
-              confusion_matrix[0][1] += 1
-              weighted_confusion_matrix[0][1] += confidence
-            elsif prediction == accept_values[1]
-              confusion_matrix[1][0] += 1
-              weighted_confusion_matrix[1][0] += confidence
+        compound_id,activities,prediction,confidence = pred
+        if activities and prediction #and confidence.numeric? 
+          if activities.uniq.size == 1
+            activity = activities.uniq.first
+            if prediction == activity
+              if prediction == accept_values[0]
+                confusion_matrix[0][0] += 1
+                #weighted_confusion_matrix[0][0] += confidence
+              elsif prediction == accept_values[1]
+                confusion_matrix[1][1] += 1
+                #weighted_confusion_matrix[1][1] += confidence
+              end
+            elsif prediction != activity
+              if prediction == accept_values[0]
+                confusion_matrix[0][1] += 1
+                #weighted_confusion_matrix[0][1] += confidence
+              elsif prediction == accept_values[1]
+                confusion_matrix[1][0] += 1
+                #weighted_confusion_matrix[1][0] += confidence
+              end
             end
           end
         else
@@ -109,17 +112,17 @@ module OpenTox
         predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
       end
       confidence_sum = 0
-      weighted_confusion_matrix.each do |r|
-        r.each do |c|
-          confidence_sum += c
-        end
-      end
+      #weighted_confusion_matrix.each do |r|
+        #r.each do |c|
+          #confidence_sum += c
+        #end
+      #end
       update_attributes(
         accept_values: accept_values,
         confusion_matrix: confusion_matrix,
-        weighted_confusion_matrix: weighted_confusion_matrix,
+        #weighted_confusion_matrix: weighted_confusion_matrix,
         accuracy: (confusion_matrix[0][0]+confusion_matrix[1][1])/(nr_instances-nr_unpredicted).to_f,
-        weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
+        #weighted_accuracy: (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f,
         true_rate: true_rate,
         predictivity: predictivity,
         finished_at: Time.now
@@ -129,14 +132,14 @@ module OpenTox
 
     def confidence_plot
       unless confidence_plot_id
-        tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+        tmpfile = "/tmp/#{id.to_s}_confidence.png"
         accuracies = []
         confidences = []
         correct_predictions = 0
         incorrect_predictions = 0
         predictions.each do |p|
           if p[1] and p[2]
-            p[1] == p [2] ? correct_predictions += 1 : incorrect_predictions += 1
+            p[1] == p[2] ? correct_predictions += 1 : incorrect_predictions += 1
             accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
             confidences << p[3]
 
@@ -146,7 +149,7 @@ module OpenTox
         R.assign "confidence", confidences
         R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
         R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.png")
         plot_id = $gridfs.insert_one(file)
         update(:confidence_plot_id => plot_id)
       end
@@ -162,52 +165,46 @@ module OpenTox
 
     field :rmse, type: Float
     field :mae, type: Float
-    field :weighted_rmse, type: Float
-    field :weighted_mae, type: Float
     field :r_squared, type: Float
     field :correlation_plot_id, type: BSON::ObjectId
-    field :confidence_plot_id, type: BSON::ObjectId
 
     def statistics
       rmse = 0
-      weighted_rmse = 0
-      rse = 0
-      weighted_rse = 0
       mae = 0
-      weighted_mae = 0
-      rae = 0
-      weighted_rae = 0
-      confidence_sum = 0
+      x = []
+      y = []
       predictions.each do |pred|
         compound_id,activity,prediction,confidence = pred
-        if activity and prediction
-          error = Math.log10(prediction)-Math.log10(activity)
-          rmse += error**2
-          weighted_rmse += confidence*error**2
-          mae += error.abs
-          weighted_mae += confidence*error.abs
-          confidence_sum += confidence
+        if activity and prediction 
+          unless activity == [nil]
+            x << -Math.log10(activity.median)
+            y << -Math.log10(prediction)
+            error = Math.log10(prediction)-Math.log10(activity.median)
+            rmse += error**2
+            #weighted_rmse += confidence*error**2
+            mae += error.abs
+            #weighted_mae += confidence*error.abs
+            #confidence_sum += confidence
+          end
         else
           warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
           $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
         end
       end
-      x = predictions.collect{|p| p[1]}
-      y = predictions.collect{|p| p[2]}
       R.assign "measurement", x
       R.assign "prediction", y
-      R.eval "r <- cor(-log(measurement),-log(prediction),use='complete')"
+      R.eval "r <- cor(measurement,prediction,use='complete')"
       r = R.eval("r").to_ruby
 
       mae = mae/predictions.size
-      weighted_mae = weighted_mae/confidence_sum
+      #weighted_mae = weighted_mae/confidence_sum
       rmse = Math.sqrt(rmse/predictions.size)
-      weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
+      #weighted_rmse = Math.sqrt(weighted_rmse/confidence_sum)
       update_attributes(
         mae: mae,
         rmse: rmse,
-        weighted_mae: weighted_mae,
-        weighted_rmse: weighted_rmse,
+        #weighted_mae: weighted_mae,
+        #weighted_rmse: weighted_rmse,
         r_squared: r**2,
         finished_at: Time.now
       )
@@ -243,11 +240,11 @@ module OpenTox
             :neighbors => neighbors
           }
         end
-      end.compact.sort{|a,b| p a; b[:relative_error] <=> a[:relative_error]}[0..n-1]
+      end.compact.sort{|a,b| b[:relative_error] <=> a[:relative_error]}[0..n-1]
     end
 
     def confidence_plot
-      tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+      tmpfile = "/tmp/#{id.to_s}_confidence.png"
       sorted_predictions = predictions.collect{|p| [(Math.log10(p[1])-Math.log10(p[2])).abs,p[3]] if p[1] and p[2]}.compact
       R.assign "error", sorted_predictions.collect{|p| p[0]}
       R.assign "confidence", sorted_predictions.collect{|p| p[1]}
@@ -255,7 +252,7 @@ module OpenTox
       R.eval "image = qplot(confidence,error)"
       R.eval "image = image + stat_smooth(method='lm', se=FALSE)"
       R.eval "ggsave(file='#{tmpfile}', plot=image)"
-      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.png")
       plot_id = $gridfs.insert_one(file)
       update(:confidence_plot_id => plot_id)
       $gridfs.find_one(_id: confidence_plot_id).data
@@ -263,7 +260,7 @@ module OpenTox
 
     def correlation_plot
       unless correlation_plot_id
-        tmpfile = "/tmp/#{id.to_s}_correlation.svg"
+        tmpfile = "/tmp/#{id.to_s}_correlation.png"
         x = predictions.collect{|p| p[1]}
         y = predictions.collect{|p| p[2]}
         attributes = Model::Lazar.find(self.model_id).attributes
@@ -276,7 +273,7 @@ module OpenTox
         R.eval "image = qplot(-log(prediction),-log(measurement),main='#{self.name}',asp=1,xlim=range, ylim=range)"
         R.eval "image = image + geom_abline(intercept=0, slope=1)"
         R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.svg")
+        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.png")
         plot_id = $gridfs.insert_one(file)
         update(:correlation_plot_id => plot_id)
       end

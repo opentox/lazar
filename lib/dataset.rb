@@ -5,24 +5,11 @@ module OpenTox
 
   class Dataset
 
-    #attr_writer :data_entries
-
     # associations like has_many, belongs_to deteriorate performance
     field :feature_ids, type: Array, default: []
     field :compound_ids, type: Array, default: []
-    #field :data_entries_id, type: BSON::ObjectId
     field :data_entries, type: Array, default: []
     field :source, type: String
-
-    # Save all data including data_entries
-    # Should be used instead of save
-    def save_all
-      save
-      #dump = Marshal.dump(@data_entries)
-      #file = Mongo::Grid::File.new(dump, :filename => "#{self.id.to_s}.data_entries")
-      #entries_id = $gridfs.insert_one(file)
-      #update(:data_entries_id => entries_id)
-    end
 
     # Readers
 
@@ -37,33 +24,6 @@ module OpenTox
       @features ||= self.feature_ids.collect{|id| OpenTox::Feature.find(id)}
       @features
     end
-
-=begin
-    # Get all data_entries
-    def data_entries
-      unless @data_entries
-        t = Time.now
-        data_entry_file = $gridfs.find_one(_id: data_entries_id)
-        if data_entry_file.nil?
-          @data_entries = []
-        else
-          @data_entries = Marshal.load(data_entry_file.data)
-          bad_request_error "Data entries (#{data_entries_id}) are not a 2D-Array" unless @data_entries.is_a? Array and @data_entries.first.is_a? Array
-          unless @data_entries.first.size == feature_ids.size
-            # TODO: fix (unknown) source of empty data_entries
-            sleep 1
-            data_entry_file = $gridfs.find_one(_id: data_entries_id)
-            @data_entries = Marshal.load(data_entry_file.data)
-          end
-          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.size} rows, but dataset (#{id}) has #{compound_ids.size} compounds" unless @data_entries.size == compound_ids.size
-          # TODO: data_entries can be empty, poorly reproducible, mongo problem?
-          bad_request_error "Data entries (#{data_entries_id}) have #{@data_entries.first.size} columns, but dataset (#{id}) has #{feature_ids.size} features" unless @data_entries.first.size == feature_ids.size
-          #$logger.debug "Retrieving data: #{Time.now-t}"
-        end
-      end
-      @data_entries
-    end
-=end
 
     # Find data entry values for a given compound and feature
     # @param compound [OpenTox::Compound] OpenTox Compound object
@@ -93,7 +53,13 @@ module OpenTox
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
-      len = self.compound_ids.size
+      unique_compound_data = {}
+      compound_ids.each_with_index do |cid,i|
+        unique_compound_data[cid] ||= []
+        unique_compound_data[cid] << data_entries[i]
+      end
+      unique_compound_ids = unique_compound_data.keys
+      len = unique_compound_ids.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
       chunks = []
@@ -102,22 +68,44 @@ module OpenTox
         last = start+mid
         last = last-1 unless len%n >= i
         test_idxs = indices[start..last] || []
-        test_cids = test_idxs.collect{|i| self.compound_ids[i]}
-        test_data_entries = test_idxs.collect{|i| self.data_entries[i]}
-        test_dataset = self.class.new(:compound_ids => test_cids, :feature_ids => self.feature_ids, :data_entries => test_data_entries)
+        test_cids = test_idxs.collect{|i| unique_compound_ids[i]}
         training_idxs = indices-test_idxs
-        training_cids = training_idxs.collect{|i| self.compound_ids[i]}
-        training_data_entries = training_idxs.collect{|i| self.data_entries[i]}
-        training_dataset = self.class.new(:compound_ids => training_cids, :feature_ids => self.feature_ids, :data_entries => training_data_entries)
-        test_dataset.save_all
-        training_dataset.save_all
-        chunks << [training_dataset,test_dataset]
+        training_cids = training_idxs.collect{|i| unique_compound_ids[i]}
+        chunk = [training_cids,test_cids].collect do |unique_cids|
+          cids = []
+          data_entries = []
+          unique_cids.each do |cid| 
+            unique_compound_data[cid].each do |de|
+              cids << cid
+              data_entries << de
+            end
+          end
+          dataset = self.class.new(:compound_ids => cids, :feature_ids => self.feature_ids, :data_entries => data_entries, :source => self.id )
+          dataset.compounds.each do |compound|
+            compound.dataset_ids << dataset.id
+            compound.save
+          end
+          dataset.save
+          dataset
+        end
         start = last+1
+        chunks << chunk
       end
       chunks
     end
 
     # Diagnostics
+    
+    def duplicates feature=self.features.first
+      col = feature_ids.index feature.id
+      dups = {}
+      compound_ids.each_with_index do |cid,i|
+        rows = compound_ids.each_index.select{|r| compound_ids[r] == cid }
+        values = rows.collect{|row| data_entries[row][col]}
+        dups[cid] = values if values.size > 1
+      end
+      dups
+    end
 
     def correlation_plot training_dataset
       # TODO: create/store svg
@@ -145,7 +133,6 @@ module OpenTox
       end
     end
 
-
     # Parsers
 
     # Create a dataset from file (csv,sdf,...)
@@ -154,10 +141,10 @@ module OpenTox
     # TODO
     #def self.from_sdf_file
     #end
-
+    
     # Create a dataset from CSV file
     # TODO: document structure
-    def self.from_csv_file file, source=nil, bioassay=true
+    def self.from_csv_file file, source=nil, bioassay=true#, layout={}
       source ||= file
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
@@ -167,7 +154,7 @@ module OpenTox
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
         dataset = self.new(:source => source, :name => name)
-        dataset.parse_table table, bioassay
+        dataset.parse_table table, bioassay#, layout
       end
       dataset
     end
@@ -224,12 +211,11 @@ module OpenTox
       value_time = 0
 
       # compounds and values
-      #@data_entries = [] #Array.new(table.size){Array.new(table.first.size-1)}
       self.data_entries = []
 
       table.each_with_index do |vals,i|
         ct = Time.now
-        identifier = vals.shift
+        identifier = vals.shift.strip
         warnings << "No feature values for compound at position #{i+2}." if vals.compact.empty?
         begin
           case compound_format
@@ -246,7 +232,7 @@ module OpenTox
           warnings << "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
-        # TODO insert empty compounds to keep positions?
+        compound.dataset_ids << self.id unless compound.dataset_ids.include? self.id
         compound_time += Time.now-ct
           
         r += 1
@@ -263,10 +249,15 @@ module OpenTox
             warnings << "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
             next
           elsif numeric[j]
-            self.data_entries.last[j] = v.to_f
+            v = v.to_f
           else
-            self.data_entries.last[j] = v.strip
+            v = v.strip
           end
+          self.data_entries.last[j] = v
+          #i = compound.feature_ids.index feature_ids[j]
+          compound.features[feature_ids[j].to_s] ||= []
+          compound.features[feature_ids[j].to_s] << v
+          compound.save
         end
       end
       compounds.duplicates.each do |compound|
@@ -293,28 +284,6 @@ module OpenTox
       end
     end
 
-    def scale
-      scaled_data_entries = Array.new(data_entries.size){Array.new(data_entries.first.size)}
-      centers = []
-      scales = []
-      feature_ids.each_with_index do |feature_id,col| 
-        R.assign "x", data_entries.collect{|de| de[col]}
-        R.eval "scaled = scale(x,center=T,scale=T)"
-        centers[col] = R.eval("attr(scaled, 'scaled:center')").to_ruby
-        scales[col] = R.eval("attr(scaled, 'scaled:scale')").to_ruby
-        R.eval("scaled").to_ruby.each_with_index do |value,row|
-          scaled_data_entries[row][col] = value
-        end
-      end
-      scaled_dataset = ScaledDataset.new(attributes)
-      scaled_dataset["_id"] = BSON::ObjectId.new
-      scaled_dataset["_type"] = "OpenTox::ScaledDataset"
-      scaled_dataset.centers = centers
-      scaled_dataset.scales = scales
-      scaled_dataset.data_entries = scaled_data_entries
-      scaled_dataset.save_all
-      scaled_dataset
-    end
   end
 
   # Dataset for lazar predictions
