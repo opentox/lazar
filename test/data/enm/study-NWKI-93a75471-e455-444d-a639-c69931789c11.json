@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-93a75471-e455-444d-a639-c69931789c11",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-18aebb90-aacb-3e15-b516-4d3683e9c27b"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.3109/17435390903276933",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SPECIFIC_SURFACE_AREA_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1235",
+      "title": "4.28 Nanomaterial specific surface area"
+    },
+    "endpoint": "BET",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "TESTMAT_FORM": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "SPECIFIC_SURFACE_AREA",
+      "conditions": {
+        "Remark": null
+      },
+      "result": {
+        "unit": "m^2/g",
+        "loValue": 10
+      }
+    }
+  ]
+}

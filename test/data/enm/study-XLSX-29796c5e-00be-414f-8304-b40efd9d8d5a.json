@@ -1,0 +1,1016 @@
+{
+  "uuid": "XLSX-29796c5e-00be-414f-8304-b40efd9d8d5a",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-fa48e134-54cf-3417-a63a-6f744191cec2"
+    },
+    "company": {
+      "uuid": "XLSX-4bb81f08-059d-32ad-b5fd-71c6bcc6e0db",
+      "name": "FP7 MARINA"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1371/journal.pone.0127174",
+    "year": "2015",
+    "owner": "P32 - KI"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "NPO_1709_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_1709",
+      "title": "NPO_1709 LDH Release Assay"
+    },
+    "endpoint": "Cell viability - cell membrane damage: Lactate dehydrogenase assay (LDH)  (CytoTox 96® Non-radioactive cytotoxicity assay - Promega, G1780) ",
+    "guideline": [
+      "Cytotoxicity using human monocyte-derived macrophages (HMDM)"
+    ]
+  },
+  "parameters": {
+    "CHMO:0002774": "N",
+    "CLO_0000031": "HMDM",
+    "CLO_0000031 EFO_0004443": "Karolinska University Hospital, Stockholm, Sweden - buffy coats from healthy adult blood donors ",
+    "Cell culture conditions - Serum": "FBS (Gibco, 10500) ",
+    "Cell culture conditions - Serum concentration in growth medium": 0.1,
+    "Cell culture conditions - Serum concentration in treatment medium": "0,05%",
+    "Cell line/Type - Full name": "Primary human monocyte-derived macrophages (HMDM)",
+    "Dispersion agent": "water with 0,05% BSA",
+    "NPO_1952": "Y",
+    "NPO_1961": "Y",
+    "NPO_1969 OBI_0000272": "NANOGENOTOX Dispersion protocol (http://www.nanogenotox.eu/files/PDF/web%20nanogenotox%20dispersion%20protocol.pdf) ",
+    "OBI_0001911 BAO_0000114": "RPMI (Sigma, R0833)"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 96.244
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 97.04
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 92.331
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 92.2
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 94.548
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 91.351
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 88.663
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100.657
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 102.033
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 102.058
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 101.331
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 103.58
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 103.111
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 102.116
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 106.119
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 99.162
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 101.619
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 93.146
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 91.801
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 98.457
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 6,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 78.147
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 85.847
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 84.564
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 68.466
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 69.795
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 71.551
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 42.512
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 1",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 58.861
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 95.042
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 99.02
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 77.547
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 73.485
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 64.706
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 72.679
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 2",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 56.168
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 0,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 1,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 109.581
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 5,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 116.075
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 10,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 95.767
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 25,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 90.067
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 50,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 100.967
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 75,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 96.509
+      }
+    },
+    {
+      "endpoint": "% cell viability",
+      "conditions": {
+        "Concentration": {
+          "loQualifier": "=",
+          "loValue": 100,
+          "unit": "µg/ml"
+        },
+        "Replicate": "Replicate 3",
+        "Time point": {
+          "loQualifier": "=",
+          "loValue": 24,
+          "unit": "h"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 96.421
+      }
+    }
+  ]
+}

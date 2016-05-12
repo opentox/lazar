@@ -1,0 +1,54 @@
+{
+  "uuid": "NWKI-8d2443b8-7a23-4c59-988b-fd99323e4e37",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-ea48c37d-840a-30d2-9740-1198a7e2c3b6"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_BOILING_SECTION",
+      "term": "http://semanticscience.org/resource/CHEMINF_000257",
+      "title": "4.3 Boiling point"
+    },
+    "endpoint": "Boiling Point",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Boiling point",
+      "conditions": {
+        "Atm. Pressure": null,
+        "Decomposition": null
+      },
+      "result": {
+        "unit": "Celsius",
+        "loValue": 2230
+      }
+    }
+  ]
+}

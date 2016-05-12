@@ -254,67 +254,69 @@ module OpenTox
       self["chemblid"]
     end
 
-    def fingerprint_count_neighbors params
-      # TODO fix
-      neighbors = []
-      query_fingerprint = self.fingerprint params[:type]
-      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
-        unless self == compound
-          candidate_fingerprint = compound.fingerprint params[:type]
-          features = (query_fingerprint + candidate_fingerprint).uniq
-          min_sum = 0
-          max_sum = 0
-          features.each do |f|
-            min,max = [query_fingerprint.count(f),candidate_fingerprint.count(f)].minmax
-            min_sum += min
-            max_sum += max
-          end
-          max_sum == 0 ? sim = 0 : sim = min_sum/max_sum.to_f
-          neighbors << [compound.id, sim] if sim and sim >= params[:min_sim]
-        end
-      end
-      neighbors.sort{|a,b| b.last <=> a.last}
-    end
+#    def fingerprint_count_neighbors params
+#      # TODO fix
+#      neighbors = []
+#      query_fingerprint = self.fingerprint params[:type]
+#      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
+#        unless self == compound
+#          candidate_fingerprint = compound.fingerprint params[:type]
+#          features = (query_fingerprint + candidate_fingerprint).uniq
+#          min_sum = 0
+#          max_sum = 0
+#          features.each do |f|
+#            min,max = [query_fingerprint.count(f),candidate_fingerprint.count(f)].minmax
+#            min_sum += min
+#            max_sum += max
+#          end
+#          max_sum == 0 ? sim = 0 : sim = min_sum/max_sum.to_f
+#          neighbors << [compound.id, sim] if sim and sim >= params[:min_sim]
+#        end
+#      end
+#      neighbors.sort{|a,b| b.last <=> a.last}
+#    end
 
-    def fingerprint_neighbors params
-      bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
+    def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
       neighbors = []
-      if params[:type] == DEFAULT_FINGERPRINT
-        neighbors = db_neighbors params
+      dataset = Dataset.find(dataset_id)
+      if type == DEFAULT_FINGERPRINT
+        neighbors = db_neighbors(min_sim: min_sim, dataset_id: dataset_id)
+        neighbors.each do |n|
+          n["toxicities"] = dataset.values(n["_id"],prediction_feature_id)
+        end
       else 
-        query_fingerprint = self.fingerprint params[:type]
-        training_dataset = Dataset.find(params[:training_dataset_id])
-        prediction_feature = training_dataset.features.first
-        training_dataset.compounds.each do |compound|
-          candidate_fingerprint = compound.fingerprint params[:type]
-          sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-          fid = prediction_feature.id.to_s
-          did = params[:training_dataset_id].to_s
-          v = compound.toxicities[prediction_feature.id.to_s]
-          neighbors << {"_id" => compound.id, "toxicities" => {fid => {did => v[params[:training_dataset_id].to_s]}}, "tanimoto" => sim} if sim >= params[:min_sim] and v
+        query_fingerprint = self.fingerprint type
+        dataset.compounds.each do |compound|
+          values = dataset.values(compound,prediction_feature_id)
+          if values
+            candidate_fingerprint = compound.fingerprint type
+            sim = Algorithm::Similarity.tanimoto(query_fingerprint , candidate_fingerprint)
+            neighbors << {"_id" => compound.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
+          end
         end
-        neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
+        neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
       end
       neighbors
     end
 
-    def physchem_neighbors params
-      feature_dataset = Dataset.find params[:feature_dataset_id]
-      query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
-      neighbors = []
-      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
-        # TODO implement pearson and cosine similarity separatly
-        R.assign "x", query_fingerprint
-        R.assign "y", candidate_fingerprint
-        sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
-        if sim >= params[:min_sim]
-          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
-        end
-      end
-      neighbors
-    end
+#    def physchem_neighbors params
+#      # TODO: fix, tests
+#      feature_dataset = Dataset.find params[:feature_dataset_id]
+#      query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
+#      neighbors = []
+#      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
+#        # TODO implement pearson and cosine similarity separatly
+#        R.assign "x", query_fingerprint
+#        R.assign "y", candidate_fingerprint
+#        sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
+#        if sim >= params[:min_sim]
+#          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
+#        end
+#      end
+#      neighbors
+#    end
 
-    def db_neighbors params
+    def db_neighbors min_sim: 0.1, dataset_id:
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
 
       #qn = default_fingerprint_size
@@ -326,20 +328,20 @@ module OpenTox
         #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
         #{'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
         {'$project' => {
-          'tanimoto' => {'$let' => {
+          'similarity' => {'$let' => {
             'vars' => {'common' => {'$size' => {'$setIntersection' => ["$fingerprints.#{DEFAULT_FINGERPRINT}", fingerprints[DEFAULT_FINGERPRINT]]}}},
-            #'vars' => {'common' => {'$size' => {'$setIntersection' => ["$default_fingerprint", default_fingerprint]}}},
             'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
           '_id' => 1,
-          'toxicities' => 1,
+          #'toxicities' => 1,
           'dataset_ids' => 1
         }},
-        {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
-        {'$sort' => {'tanimoto' => -1}}
+        {'$match' =>  {'similarity' => {'$gte' => min_sim}}},
+        {'$sort' => {'similarity' => -1}}
       ]
 
-      $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
+      # TODO move into aggregate pipeline, see http://stackoverflow.com/questions/30537317/mongodb-aggregation-match-if-value-in-array
+      $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? dataset_id}
         
     end
     

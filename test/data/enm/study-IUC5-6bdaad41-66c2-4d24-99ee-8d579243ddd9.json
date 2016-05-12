@@ -1,0 +1,71 @@
+{
+  "uuid": "IUC5-6bdaad41-66c2-4d24-99ee-8d579243ddd9",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": "Thurnherr, T. et al.",
+    "year": "2011",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "TO_GENETIC_IN_VITRO_SECTION",
+      "term": "http://www.bioassayontology.org/bao#BAO_0002167",
+      "title": "7.6.1 Genetic toxicity in vitro"
+    },
+    "endpoint": "Exp Supporting Genetic toxicity in vitro.008",
+    "guideline": [
+      null
+    ]
+  },
+  "parameters": {
+    "Metabolic activation system": null,
+    "Species": "human pulmonary epithelial cell line A549",
+    "Target gene": null,
+    "Type of genotoxicity": "chromosome and DNA damage",
+    "Type of study": "Micronucleus test in vitro (MNvit) and Comet assay in vitro"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "supporting study",
+    "r_studyResultType": "experimental result",
+    "r_value": "other:"
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "GENOTOXICITY",
+      "conditions": {
+        "Metabolic activation": "without",
+        "Species": "A549"
+      },
+      "result": {
+        "unit": null,
+        "textValue": "negative"
+      }
+    },
+    {
+      "endpoint": "GENOTOXICITY",
+      "conditions": {
+        "Metabolic activation": "without",
+        "Species": "A549"
+      },
+      "result": {
+        "unit": null,
+        "textValue": "negative"
+      }
+    }
+  ]
+}

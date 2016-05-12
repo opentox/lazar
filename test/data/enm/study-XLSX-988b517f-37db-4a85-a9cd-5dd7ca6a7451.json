@@ -1,0 +1,75 @@
+{
+  "uuid": "XLSX-988b517f-37db-4a85-a9cd-5dd7ca6a7451",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-3dac4f9c-8c47-3085-9781-e70583adb12f"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "167",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "167",
+    "guideline": [
+      "WST-1"
+    ]
+  },
+  "parameters": {
+    "Cell line": "NCI-H292",
+    "Dispersion protocol": "Vortexing",
+    "Exposure duration,h": 24,
+    "Serum concentration,%": 0
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "EC25",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 2.051
+      }
+    },
+    {
+      "endpoint": "EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 2.632
+      }
+    },
+    {
+      "endpoint": "SLOPE EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 0.023
+      }
+    }
+  ]
+}

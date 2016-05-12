@@ -1,0 +1,72 @@
+{
+  "uuid": "NWKI-12dd4a77-2368-4a9c-b7a3-2f786aaf3bab",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-69b604fb-e892-31ba-a6f5-feb6cb04effb"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "CLIO-2DAF750"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "Cross-2Dlinked_dextran"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  "
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Cross-2Dlinked_dextran"
+      }
+    }
+  ]
+}

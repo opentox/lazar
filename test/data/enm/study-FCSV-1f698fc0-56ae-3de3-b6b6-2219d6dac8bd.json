@@ -1,0 +1,169 @@
+{
+  "uuid": "FCSV-1f698fc0-56ae-3de3-b6b6-2219d6dac8bd",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-98074b22-064e-3cd7-a732-f5fa3005fa73"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "DLS",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "ZetaSizer Nano ZS (Malvern Instruments)",
+    "Type of method": "DLS",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Z-Average Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": " ",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 86.9,
+        "errQualifier": "sd",
+        "errorValue": 0.72
+      }
+    },
+    {
+      "endpoint": "Z-Average Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 114.53,
+        "errQualifier": "sd",
+        "errorValue": 17.85
+      }
+    },
+    {
+      "endpoint": "Volume Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": " ",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 87.22,
+        "errQualifier": "sd",
+        "errorValue": 19.88
+      }
+    },
+    {
+      "endpoint": "Volume Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 114.42,
+        "errQualifier": "sd",
+        "errorValue": 31.9
+      }
+    },
+    {
+      "endpoint": "Number Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": " ",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 96.47,
+        "errQualifier": "sd",
+        "errorValue": 15.21
+      }
+    },
+    {
+      "endpoint": "Number Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 92.27,
+        "errQualifier": "sd",
+        "errorValue": 20.98
+      }
+    },
+    {
+      "endpoint": "Intensity Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": " ",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 96.47,
+        "errQualifier": "sd",
+        "errorValue": 3.5
+      }
+    },
+    {
+      "endpoint": "Intensity Mean Hydrodynamic Diameter",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)",
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 124.7,
+        "errQualifier": "sd",
+        "errorValue": 21.42
+      }
+    }
+  ]
+}

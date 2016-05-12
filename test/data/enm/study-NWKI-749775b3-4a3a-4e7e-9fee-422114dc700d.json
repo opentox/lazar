@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-749775b3-4a3a-4e7e-9fee-422114dc700d",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-438d1468-d5d7-3977-9dab-15a3a05add38"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.3109/17435390903276933",
+    "year": "2009",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "LDH Release",
+    "guideline": [
+      "Lactate Dehydrogenase Activity"
+    ]
+  },
+  "parameters": {
+    "Cell line": "Caco-2 cell",
+    "Method type": "Lactate Dehydrogenase Activity"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "LDH_Release",
+      "conditions": {
+        "Doses/concentrations": {
+          "loValue": 80,
+          "unit": "ug/cm^2"
+        }
+      },
+      "result": {
+        "unit": "%",
+        "loValue": 2
+      }
+    }
+  ]
+}

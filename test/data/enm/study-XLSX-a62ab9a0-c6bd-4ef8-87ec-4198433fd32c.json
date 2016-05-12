@@ -1,0 +1,75 @@
+{
+  "uuid": "XLSX-a62ab9a0-c6bd-4ef8-87ec-4198433fd32c",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-a44564c5-1458-3e3b-aca7-d63f5221d2a8"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "183",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "183",
+    "guideline": [
+      "WST-1"
+    ]
+  },
+  "parameters": {
+    "Cell line": "THP-1 macrophage",
+    "Dispersion protocol": "Tip",
+    "Exposure duration,h": 48,
+    "Serum concentration,%": 0.1
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "EC25",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 11.144
+      }
+    },
+    {
+      "endpoint": "EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 16.33
+      }
+    },
+    {
+      "endpoint": "SLOPE EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 0.207
+      }
+    }
+  ]
+}

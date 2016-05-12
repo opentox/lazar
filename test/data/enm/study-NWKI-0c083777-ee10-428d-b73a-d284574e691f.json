@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-0c083777-ee10-428d-b73a-d284574e691f",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-c4c91023-5b41-3d6d-bb4f-ee1152926be0"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "Particle Size",
+    "guideline": [
+      "DLS"
+    ]
+  },
+  "parameters": {
+    "DISTRIBUTION_TYPE": null,
+    "Method type": "DLS",
+    "TESTMAT_FORM": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "PARTICLE SIZE",
+      "conditions": {
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 286,
+        "errorValue": 2.2
+      }
+    }
+  ]
+}

@@ -1,0 +1,85 @@
+{
+  "uuid": "FCSV-0c5d6106-834b-369e-af18-3e32f38a75f9",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-8b5b62c3-7fd2-3bba-b293-b7537e4971b1"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_UNKNOWN_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.99 Physico chemical properties (other)"
+    },
+    "endpoint": "Ellman depletion assay",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "Type of method": "Serum.density",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Autot (ICP-AES)",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "nmol",
+        "loQualifier": "mean",
+        "loValue": 976.148,
+        "errQualifier": "sd",
+        "errorValue": 54.364
+      }
+    },
+    {
+      "endpoint": "Total surface area (SAtot)",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "cm^2",
+        "loQualifier": "mean",
+        "loValue": 10,
+        "errQualifier": "sd",
+        "errorValue": 1
+      }
+    },
+    {
+      "endpoint": "Protein density",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "ug/cm^2",
+        "loQualifier": "mean",
+        "loValue": 0.0,
+        "errQualifier": "sem",
+        "errorValue": 0.016
+      }
+    }
+  ]
+}

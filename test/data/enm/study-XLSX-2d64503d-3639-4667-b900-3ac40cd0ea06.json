@@ -1,0 +1,56 @@
+{
+  "uuid": "XLSX-2d64503d-3639-4667-b900-3ac40cd0ea06",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-3dac4f9c-8c47-3085-9781-e70583adb12f"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "167",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SPECIFIC_SURFACE_AREA_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1235",
+      "title": "4.28 Nanomaterial specific surface area"
+    },
+    "endpoint": "167",
+    "guideline": [
+      "SPECIFIC SURFACE AREA"
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "SPECIFIC_SURFACE_AREA",
+      "conditions": {
+      },
+      "result": {
+        "unit": "m2/g",
+        "loQualifier": ">=",
+        "loValue": 11.8,
+        "upQualifier": "<=",
+        "upValue": 13
+      }
+    }
+  ]
+}

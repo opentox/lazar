@@ -1,0 +1,92 @@
+{
+  "uuid": "NWKI-691d614d-a497-4a8f-bfdc-a6375b2e5230",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-9a13f473-8a29-32e4-9653-ec03f5fb8923"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": null,
+        "DESCRIPTION": null,
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "CdSe"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "CORE"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "CdSe"
+      }
+    },
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "AmphPolymer-2DPEG"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "Amphiphillic_Polymer"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  "
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Amphiphillic_Polymer"
+      }
+    }
+  ]
+}

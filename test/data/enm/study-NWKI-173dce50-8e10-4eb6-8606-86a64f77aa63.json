@@ -1,0 +1,60 @@
+{
+  "uuid": "NWKI-173dce50-8e10-4eb6-8606-86a64f77aa63",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-86b21444-5403-3e29-b117-e09ef92cca2a"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1021/es9016975",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ZETA_POTENTIAL_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "title": "4.29 Nanomaterial zeta potential"
+    },
+    "endpoint": "Isoelectric Point",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "TESTMAT_FORM": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ISOELECTRIC POINT",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "pH": null
+      },
+      "result": {
+        "unit": null,
+        "loValue": 5.4
+      }
+    }
+  ]
+}

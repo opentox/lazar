@@ -1,0 +1,73 @@
+{
+  "uuid": "NWKI-59bb2ce9-3e8b-4b2a-9491-c6e331e716b1",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-e518c122-5f4f-3611-8b30-56b671883e5c"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "PVA-2DED-2DAminoSPARK680"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "Ethylene_Diamine"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "NCCN"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Ethylene_Diamine"
+      }
+    }
+  ]
+}

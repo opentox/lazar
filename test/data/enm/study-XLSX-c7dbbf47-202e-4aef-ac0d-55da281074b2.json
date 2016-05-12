@@ -1,0 +1,53 @@
+{
+  "uuid": "XLSX-c7dbbf47-202e-4aef-ac0d-55da281074b2",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-92788191-34d9-39b4-aa9c-503da51fc1a6"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "134",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ASPECT_RATIO_SHAPE_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_274",
+      "title": "4.27 Nanomaterial aspect ratio/shape"
+    },
+    "endpoint": "134",
+    "guideline": [
+      "Shape"
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": "espherical"
+  },
+  "effects": [
+    {
+      "endpoint": "ASPECT RATIO",
+      "conditions": {
+      },
+      "result": {
+        "unit": null,
+        "loValue": 1.2
+      }
+    }
+  ]
+}

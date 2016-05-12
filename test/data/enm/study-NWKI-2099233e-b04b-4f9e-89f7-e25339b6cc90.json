@@ -1,0 +1,72 @@
+{
+  "uuid": "NWKI-2099233e-b04b-4f9e-89f7-e25339b6cc90",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-82c12809-d7af-3061-a531-1db744c521f0"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "CLIO-2DFITC"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "FITC"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  "
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "FITC"
+      }
+    }
+  ]
+}

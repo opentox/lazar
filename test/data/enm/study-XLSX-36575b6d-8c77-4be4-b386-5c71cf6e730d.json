@@ -1,0 +1,72 @@
+{
+  "uuid": "XLSX-36575b6d-8c77-4be4-b386-5c71cf6e730d",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-945d75a3-50b7-3655-8979-376d39096378"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "031",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "031",
+    "guideline": [
+      "TEM"
+    ]
+  },
+  "parameters": {
+    "Dispersion protocol": "Tip"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "PRIMARY SIZE 1ST DIMENSION",
+      "conditions": {
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 11
+      }
+    },
+    {
+      "endpoint": "PRIMARY SIZE 2ND DIMENSION",
+      "conditions": {
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 846
+      }
+    },
+    {
+      "endpoint": "SIZE IN SITU",
+      "conditions": {
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 209
+      }
+    }
+  ]
+}

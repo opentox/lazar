@@ -1,0 +1,75 @@
+{
+  "uuid": "XLSX-bb937f21-da37-4fa8-b1f0-1a0eb28ccf72",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-ad0a7571-a887-3611-a508-f32ad71f20be"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "078",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0010001_SECTION",
+      "term": "http://purl.bioontology.org/ontology/bao#BAO_0010001",
+      "title": "BAO_0010001 ATP Assay"
+    },
+    "endpoint": "078",
+    "guideline": [
+      "ATP"
+    ]
+  },
+  "parameters": {
+    "Cell line": "U-87 MG",
+    "Dispersion protocol": "Bath",
+    "Exposure duration,h": 24,
+    "Serum concentration,%": 0.1
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "EC25",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 6.156
+      }
+    },
+    {
+      "endpoint": "EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 16.615
+      }
+    },
+    {
+      "endpoint": "SLOPE EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 0.418
+      }
+    }
+  ]
+}

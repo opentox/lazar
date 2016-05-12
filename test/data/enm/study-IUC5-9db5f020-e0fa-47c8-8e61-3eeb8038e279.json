@@ -1,0 +1,53 @@
+{
+  "uuid": "IUC5-9db5f020-e0fa-47c8-8e61-3eeb8038e279",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": "Ragot J, Voetz M ",
+    "year": "2010",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "GI_GENERAL_INFORM_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.1 Appearance"
+    },
+    "endpoint": "Appearance/physical state/colour.001",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": "2 (reliable with restrictions)"
+  },
+  "interpretation": {
+    "result": "inorganic"
+  },
+  "effects": [
+    {
+      "endpoint": "solid",
+      "conditions": {
+        "Remark": "nanomaterial"
+      },
+      "result": {
+        "unit": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "uuid": "XLSX-1df396e3-b0b0-48f5-a227-1d9ed7f08c1f",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-12620892-23e5-37f4-9644-a82c4240d695"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "150",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "NPO_1911_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_1911",
+      "title": "NPO_1911 MTT Assay"
+    },
+    "endpoint": "150",
+    "guideline": [
+      "MTT"
+    ]
+  },
+  "parameters": {
+    "Cell line": "mES",
+    "Dispersion protocol": "Bath",
+    "Exposure duration,h": 240,
+    "Serum concentration,%": 0.15
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "EC25",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 14.691
+      }
+    },
+    {
+      "endpoint": "EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 23.02
+      }
+    },
+    {
+      "endpoint": "SLOPE EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 0.333
+      }
+    }
+  ]
+}

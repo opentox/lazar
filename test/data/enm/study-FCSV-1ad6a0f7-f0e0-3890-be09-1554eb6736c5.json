@@ -1,0 +1,63 @@
+{
+  "uuid": "FCSV-1ad6a0f7-f0e0-3890-be09-1554eb6736c5",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-206b1a13-e02a-38a0-88ec-d5a8bfdabc55"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Description",
+    "guideline": [
+      "Description"
+    ]
+  },
+  "parameters": {
+    "Type of method": null,
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": null,
+        "DESCRIPTION": null,
+        "ELEMENT_OR_GROUP": null,
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "CORE"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "[Au]"
+      }
+    }
+  ]
+}

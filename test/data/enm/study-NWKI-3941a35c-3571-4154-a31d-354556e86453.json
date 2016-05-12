@@ -1,0 +1,57 @@
+{
+  "uuid": "NWKI-3941a35c-3571-4154-a31d-354556e86453",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-e866549e-38cf-3b98-a0b1-a483e275d261"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1080/10934520600966177",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ASPECT_RATIO_SHAPE_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_274",
+      "title": "4.27 Nanomaterial aspect ratio/shape"
+    },
+    "endpoint": "Shape",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": "Spherical"
+  },
+  "effects": [
+    {
+      "endpoint": "SHAPE",
+      "conditions": {
+        "Remark": null
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Spherical"
+      }
+    }
+  ]
+}

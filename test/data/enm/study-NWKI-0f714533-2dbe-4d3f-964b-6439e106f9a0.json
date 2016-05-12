@@ -1,0 +1,93 @@
+{
+  "uuid": "NWKI-0f714533-2dbe-4d3f-964b-6439e106f9a0",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-0d6f156a-6ce8-3bac-97e3-b5d62ded7f4e"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "Unknown",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": null,
+        "DESCRIPTION": null,
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "Ag"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "CORE"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Ag"
+      }
+    },
+    {
+      "endpoint": "ATOMIC COMPOSITION",
+      "conditions": {
+        "COATING_DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "MEEECoating"
+        },
+        "DESCRIPTION": {
+          "loQualifier": "  ",
+          "loValue": "MEEE"
+        },
+        "ELEMENT_OR_GROUP": {
+          "loQualifier": "  ",
+          "loValue": "SCCOCCOCCO"
+        },
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "COATING"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "MEEE"
+      }
+    }
+  ]
+}

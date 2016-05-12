@@ -1,0 +1,59 @@
+{
+  "uuid": "NWKI-0603f68c-d040-45ee-a86f-e286e0b42fba",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-144a9226-4b93-36a9-ba2d-6b6c4903357b"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1021/ja309812z",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "Hydrodynamic size",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DISTRIBUTION_TYPE": null,
+    "TESTMAT_FORM": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "MASS MEDIAN AERODYNAMIC DIAMETER",
+      "conditions": {
+        "Remark": null,
+        "SEQ_NUM": null,
+        "Serum": {
+          "loValue": "cMEM"
+        }
+      },
+      "result": {
+        "unit": "nm",
+        "loValue": 206
+      }
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "uuid": "XLSX-18ffa080-b48e-461b-960c-e23577e9011d",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-d3a9ce39-6c15-3e4b-a5ce-5ea23e45ff16"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "110",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "NPO_1709_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_1709",
+      "title": "NPO_1709 LDH Release Assay"
+    },
+    "endpoint": "110",
+    "guideline": [
+      "LDH"
+    ]
+  },
+  "parameters": {
+    "Cell line": "NRK-52E",
+    "Dispersion protocol": "Bath",
+    "Exposure duration,h": 24,
+    "Serum concentration,%": 0.1
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "EC25",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 1926.134
+      }
+    },
+    {
+      "endpoint": "EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 2881.251
+      }
+    },
+    {
+      "endpoint": "SLOPE EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 38.205
+      }
+    }
+  ]
+}

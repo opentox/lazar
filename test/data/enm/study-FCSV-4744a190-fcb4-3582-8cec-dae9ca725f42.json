@@ -1,0 +1,77 @@
+{
+  "uuid": "FCSV-4744a190-fcb4-3582-8cec-dae9ca725f42",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-bc488cf3-986d-34cf-9ee7-12f98873dfe4"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ZETA_POTENTIAL_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "title": "4.29 Nanomaterial zeta potential"
+    },
+    "endpoint": "DLS",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "ZetaSizer Nano ZS (Malvern Instruments)",
+    "Type of method": "DLS",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": " ",
+        "Remark": null,
+        "pH": null
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "mean",
+        "loValue": -33.12,
+        "errQualifier": "sd",
+        "errorValue": 2.07
+      }
+    },
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)",
+        "Remark": null,
+        "pH": null
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "mean",
+        "loValue": -11.36,
+        "errQualifier": "sd",
+        "errorValue": 2.18
+      }
+    }
+  ]
+}

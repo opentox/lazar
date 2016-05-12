@@ -1,0 +1,114 @@
+{
+  "uuid": "FCSV-606bda8b-9bac-31cd-8864-504a0acb05ac",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-07ecc16e-528e-3904-bb96-0812dff8ea65"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "TEM",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "Tecnai 20 (FEI) microscope;Tecnai 20 (FEI) microscope;AMT 16000 camera",
+    "Type of method": "TEM",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Core size",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 38.4,
+        "errQualifier": "sd",
+        "errorValue": 2.5
+      }
+    },
+    {
+      "endpoint": "Density",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "g/cm^3",
+        "loQualifier": "",
+        "loValue": 10.5
+      }
+    },
+    {
+      "endpoint": "MW",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "g/mol",
+        "loQualifier": "",
+        "loValue": 108
+      }
+    },
+    {
+      "endpoint": "Mol/NP",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "",
+        "loQualifier": "",
+        "loValue": 0.0
+      }
+    },
+    {
+      "endpoint": "SA/NP",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "cm^2/NP",
+        "loQualifier": "",
+        "loValue": 0.0
+      }
+    }
+  ]
+}

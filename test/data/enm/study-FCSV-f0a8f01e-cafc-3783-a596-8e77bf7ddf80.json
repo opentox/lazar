@@ -1,0 +1,63 @@
+{
+  "uuid": "FCSV-f0a8f01e-cafc-3783-a596-8e77bf7ddf80",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-ded649fa-97e1-3ec6-bb3d-623506389ee0"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "SURFACE_CHEMISTRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.30 Nanomaterial surface chemistry"
+    },
+    "endpoint": "",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "Type of method": null,
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "FUNCTIONAL GROUP",
+      "conditions": {
+        "COATING_DESCRIPTION": null,
+        "DESCRIPTION": null,
+        "ELEMENT_OR_GROUP": null,
+        "Remark": null,
+        "TYPE": {
+          "loQualifier": "  ",
+          "loValue": "FUNCTIONALIZATION"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "3-Mercaptopropionic acid"
+      }
+    }
+  ]
+}

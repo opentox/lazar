@@ -1,0 +1,53 @@
+{
+  "uuid": "XLSX-0b932d4a-0c45-4c31-8566-4d10d5b941cd",
+  "owner": {
+    "substance": {
+      "uuid": "XLSX-7677801c-4895-3ffd-807a-832c589341df"
+    },
+    "company": {
+      "uuid": "XLSX-c4568d50-2e06-3173-95d2-01adb74e6632",
+      "name": "MODENA"
+    }
+  },
+  "citation": {
+    "title": "151",
+    "year": "2015",
+    "owner": "MODENA"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ZETA_POTENTIAL_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "title": "4.29 Nanomaterial zeta potential"
+    },
+    "endpoint": "151",
+    "guideline": [
+      "Zeta Potential"
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+      },
+      "result": {
+        "unit": "mV",
+        "loValue": 40
+      }
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "uuid": "NWKI-4bd8fefc-f691-4008-a426-c96ca2fda917",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-ea48c37d-840a-30d2-9740-1198a7e2c3b6"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_MELTING_SECTION",
+      "term": "http://semanticscience.org/resource/CHEMINF_000256",
+      "title": "4.2 Melting point / freezing point"
+    },
+    "endpoint": "Melting Point",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Melting Point",
+      "conditions": {
+        "Decomposition": null,
+        "Sublimation": null
+      },
+      "result": {
+        "unit": "Celsius",
+        "loQualifier": ">=",
+        "loValue": 1600
+      }
+    }
+  ]
+}

@@ -15,7 +15,7 @@ abort "Please install Rserve on your system. Execute 'install.packages('Rserve')
 # install R packages
 r_dir = File.join main_dir, "R"
 FileUtils.mkdir_p r_dir
-FileUtils.mkdir_p File.join(main_dir,"bin") # for Rserve binary
+#FileUtils.mkdir_p File.join(main_dir,"bin") # for Rserve binary
 rinstall = File.expand_path(File.join(File.dirname(__FILE__),"rinstall.R"))
 puts `Rscript --vanilla #{rinstall} #{r_dir}`
 

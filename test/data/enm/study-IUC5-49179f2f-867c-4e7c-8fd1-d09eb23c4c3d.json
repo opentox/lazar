@@ -1,0 +1,68 @@
+{
+  "uuid": "IUC5-49179f2f-867c-4e7c-8fd1-d09eb23c4c3d",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "2006",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "TO_ACUTE_ORAL_SECTION",
+      "term": "http://purl.enanomapper.org/onto/ENM_0000020",
+      "title": "7.2.1 Acute toxicity - oral"
+    },
+    "endpoint": "Acute toxicity: oral.001",
+    "guideline": [
+      "OECD Guideline 423 (Acute Oral toxicity - Acute Toxic Class Method)"
+    ]
+  },
+  "parameters": {
+    "Sex": "female",
+    "Species": "rat"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": "1 (reliable without restriction)"
+  },
+  "interpretation": {
+    "result": "practically nontoxic"
+  },
+  "effects": [
+    {
+      "endpoint": "LDLo",
+      "conditions": {
+        "Sex": "female"
+      },
+      "result": {
+        "unit": "mg/kg bw",
+        "loQualifier": ">=",
+        "loValue": 2000
+      }
+    },
+    {
+      "endpoint": "LD50 cut-off ",
+      "conditions": {
+        "Sex": "female"
+      },
+      "result": {
+        "unit": "mg/kg bw",
+        "loQualifier": ">=",
+        "loValue": 5000
+      }
+    }
+  ]
+}

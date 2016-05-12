@@ -1,0 +1,73 @@
+{
+  "uuid": "FCSV-dd5498ba-7787-3b4a-b5c3-358f78c7f7dc",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-b38f2b71-aa2d-3d72-af88-166a60bedee2"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "CRYSTALLITE_AND_GRAIN_SIZE_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.26 Nanomaterial crystallite and grain size"
+    },
+    "endpoint": "DLS",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "ZetaSizer Nano ZS (Malvern Instruments)",
+    "Type of method": "DLS",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Polydispersity index",
+      "conditions": {
+        "MEDIUM": " "
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 0.216,
+        "errQualifier": "sd",
+        "errorValue": 0.032
+      }
+    },
+    {
+      "endpoint": "Polydispersity index",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 0.197,
+        "errQualifier": "sd",
+        "errorValue": 0.015
+      }
+    }
+  ]
+}

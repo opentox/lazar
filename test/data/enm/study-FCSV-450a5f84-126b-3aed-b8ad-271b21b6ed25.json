@@ -1,0 +1,86 @@
+{
+  "uuid": "FCSV-450a5f84-126b-3aed-b8ad-271b21b6ed25",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-2ed7ebf8-d11d-3f39-8f05-b0132ec4d7e0"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_UNKNOWN_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "4.99 Physico chemical properties (other)"
+    },
+    "endpoint": "Absorbance.spectrophotometry.AS.",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "UV-1601PC absorbance spectrophotometer (Shimadzu)",
+    "Type of method": "Absorbance.spectrophotometry.AS.",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Localized Surface Plasmon Resonance (LSPR) index",
+      "conditions": {
+        "MEDIUM": " "
+      },
+      "result": {
+        "unit": "",
+        "loQualifier": "mean",
+        "loValue": 0.271,
+        "errQualifier": "sd",
+        "errorValue": 0.008
+      }
+    },
+    {
+      "endpoint": "Localized Surface Plasmon Resonance (LSPR) index",
+      "conditions": {
+        "MEDIUM": "Human serum (Sigma #H4522)"
+      },
+      "result": {
+        "unit": "",
+        "loQualifier": "mean",
+        "loValue": 0.349,
+        "errQualifier": "sd",
+        "errorValue": 0.033
+      }
+    },
+    {
+      "endpoint": "LSPR peak position (nm)",
+      "conditions": {
+        "MEDIUM": " "
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "mean",
+        "loValue": 543.07,
+        "errQualifier": "sd",
+        "errorValue": 0.4
+      }
+    }
+  ]
+}

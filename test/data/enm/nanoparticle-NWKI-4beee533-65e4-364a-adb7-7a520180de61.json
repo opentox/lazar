@@ -20,9 +20,9 @@
         "loValue": 140
       }
     ],
-    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/6F329893E3E7E48B645396FA27B8A2DCA31ED8EE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/CB2C470CE72633F6112D75138FF457C6B62247D2/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
       {
-        "loValue": "Triethoxycaprylsilane"
+        "loValue": 16
       }
     ],
     "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/34B336573C015AF89068B6685256FD68F1DF39B4/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
@@ -30,9 +30,9 @@
         "loValue": "ZnO"
       }
     ],
-    "https://data.enanomapper.net/property/P-CHEM/SPECIFIC_SURFACE_AREA_SECTION/SPECIFIC_SURFACE_AREA/CB2C470CE72633F6112D75138FF457C6B62247D2/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
+    "https://data.enanomapper.net/property/P-CHEM/SURFACE_CHEMISTRY_SECTION/ATOMIC+COMPOSITION/6F329893E3E7E48B645396FA27B8A2DCA31ED8EE/NOTSPECIFIED/d41d8cd9-8f00-3204-a980-0998ecf8427e": [
       {
-        "loValue": 16
+        "loValue": "Triethoxycaprylsilane"
       }
     ]
   },
@@ -64,10 +64,10 @@
 
         ],
         "bundles": {
-          "https://data.enanomapper.net/bundle/1": {
+          "https://data.enanomapper.net/bundle/6": {
             "count": 1,
             "tag": null,
-            "remarks": "NanoWiki"
+            "remarks": null
           }
         }
       },
@@ -114,10 +114,10 @@
 
         ],
         "bundles": {
-          "https://data.enanomapper.net/bundle/1": {
+          "https://data.enanomapper.net/bundle/6": {
             "count": 1,
             "tag": null,
-            "remarks": "NanoWiki"
+            "remarks": null
           }
         }
       },
@@ -143,10 +143,10 @@
     }
   ],
   "bundles": {
-    "https://data.enanomapper.net/bundle/1": {
+    "https://data.enanomapper.net/bundle/6": {
       "count": 1,
       "tag": null,
-      "remarks": "NanoWiki"
+      "remarks": null
     }
   }
 }

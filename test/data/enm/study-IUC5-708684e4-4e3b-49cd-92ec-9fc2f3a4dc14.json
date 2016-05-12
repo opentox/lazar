@@ -1,0 +1,129 @@
+{
+  "uuid": "IUC5-708684e4-4e3b-49cd-92ec-9fc2f3a4dc14",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "2010",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ZETA_POTENTIAL_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "title": "4.29 Nanomaterial zeta potential"
+    },
+    "endpoint": "Zeta potential.001",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "TESTMAT_FORM": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": "2 (reliable with restrictions)"
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "STD_DEV": {
+          "loValue": 2.9,
+          "unit": ""
+        },
+        "pH": {
+          "loValue": "1.9"
+        }
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "",
+        "loValue": 41.4,
+        "upQualifier": ""
+      }
+    },
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "STD_DEV": {
+          "loValue": 1.5,
+          "unit": ""
+        },
+        "pH": {
+          "loValue": "2.99"
+        }
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "",
+        "loValue": 39.3,
+        "upQualifier": ""
+      }
+    },
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "STD_DEV": {
+          "loValue": 6.5,
+          "unit": ""
+        },
+        "pH": {
+          "loValue": "4.26"
+        }
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "",
+        "loValue": 21.4,
+        "upQualifier": ""
+      }
+    },
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "STD_DEV": {
+          "loValue": 1.7,
+          "unit": ""
+        },
+        "pH": {
+          "loValue": "5.04"
+        }
+      },
+      "result": {
+        "unit": "mV",
+        "loQualifier": "",
+        "loValue": 34.5,
+        "upQualifier": ""
+      }
+    }
+  ]
+}

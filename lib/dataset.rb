@@ -7,6 +7,7 @@ module OpenTox
 
     field :substance_ids, type: Array, default: []
     field :feature_ids, type: Array, default: []
+    field :data_entries, type: Hash, default: {}
 
     # Readers
 
@@ -30,6 +31,16 @@ module OpenTox
       @features
     end
 
+    def values substance,feature
+      substance = substance.id if substance.is_a? Substance
+      feature = feature.id if feature.is_a? Feature
+      if data_entries[substance.to_s] and data_entries[substance.to_s][feature.to_s]
+        data_entries[substance.to_s][feature.to_s]
+      else
+        nil
+      end
+    end
+
     # Writers
 
     # Set compounds
@@ -40,6 +51,14 @@ module OpenTox
     # Set features
     def features=(features)
       self.feature_ids = features.collect{|f| f.id}
+    end
+
+    def add(substance,feature,value)
+      substance = substance.id if substance.is_a? Substance
+      feature = feature.id if feature.is_a? Feature
+      data_entries[substance.to_s] ||= {}
+      data_entries[substance.to_s][feature.to_s] ||= []
+      data_entries[substance.to_s][feature.to_s] << value
     end
 
     # Dataset operations
@@ -64,11 +83,10 @@ module OpenTox
           dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
           dataset.substances.each do |substance|
             substance.dataset_ids << dataset.id
-            substance.toxicities.each do |feature_id,data|
-              data[dataset.id.to_s] = data[self.id.to_s] # copy data entries
-            end
             substance.save
+            dataset.data_entries[substance.id.to_s] = data_entries[substance.id.to_s] ||= {}
           end
+          dataset.save
           dataset
         end
         start = last+1
@@ -95,7 +113,7 @@ module OpenTox
           else
             name = substance.name
           end
-          nr_measurements = features.collect{|f| substance.toxicities[f.id.to_s][self.id.to_s].size if substance.toxicities[f.id.to_s]}.compact.uniq
+          nr_measurements = features.collect{|f| data_entries[substance.id.to_s][f.id.to_s].size if data_entries[substance.id.to_s][f.id.to_s]}.compact.uniq
 
           if nr_measurements.size > 1
             warn "Unequal number of measurements (#{nr_measurements}) for '#{name}'. Skipping entries."
@@ -103,8 +121,8 @@ module OpenTox
             (0..nr_measurements.first-1).each do |i|
               row = [name]
               features.each do |f|
-                if substance.toxicities[f.id.to_s] and substance.toxicities[f.id.to_s][self.id.to_s] 
-                  row << substance.toxicities[f.id.to_s][self.id.to_s][i]
+                if data_entries[substance.id.to_s] and data_entries[substance.id.to_s][f.id.to_s]
+                  row << data_entries[substance.id.to_s][f.id.to_s]
                 else
                   row << ""
                 end
@@ -146,8 +164,6 @@ module OpenTox
     # does a lot of guesswork in order to determine feature types
     def parse_table table
 
-      time = Time.now
-
       # features
       feature_names = table.shift.collect{|f| f.strip}
       warnings << "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
@@ -174,39 +190,31 @@ module OpenTox
         feature_ids << feature.id if feature
       end
       
-      $logger.debug "Feature values: #{Time.now-time}"
-      time = Time.now
-
-      r = -1
-      compound_time = 0
-      value_time = 0
-
-      # compounds and values
+      # substances and values
 
       table.each_with_index do |vals,i|
-        ct = Time.now
         identifier = vals.shift.strip
         warn "No feature values for compound at position #{i+2}." if vals.compact.empty?
         begin
           case compound_format
           when /SMILES/i
-            compound = OpenTox::Compound.from_smiles(identifier)
+            substance = OpenTox::Compound.from_smiles(identifier)
           when /InChI/i
-            compound = OpenTox::Compound.from_inchi(identifier)
+            substance = OpenTox::Compound.from_inchi(identifier)
           # TODO nanoparticle
           end
         rescue 
-          compound = nil
+          substance = nil
         end
-        if compound.nil? # compound parsers may return nil
+        if substance.nil? # compound parsers may return nil
           warn "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
-        substance_ids << compound.id
-        compound.dataset_ids << self.id unless compound.dataset_ids.include? self.id
-        compound_time += Time.now-ct
+        substance_ids << substance.id
+        data_entries[substance.id.to_s] = {}
+        substance.dataset_ids << self.id unless substance.dataset_ids.include? self.id
+        substance.save
           
-        r += 1
         unless vals.size == feature_ids.size 
           warn "Number of values at position #{i+2} is different than header size (#{vals.size} vs. #{features.size}), all entries are ignored."
           next
@@ -214,32 +222,25 @@ module OpenTox
 
         vals.each_with_index do |v,j|
           if v.blank?
-            warn "Empty value for compound '#{identifier}' (row #{r+2}) and feature '#{feature_names[j]}' (column #{j+2})."
+            warn "Empty value for compound '#{identifier}' and feature '#{feature_names[i]}'."
             next
           elsif numeric[j]
             v = v.to_f
           else
             v = v.strip
           end
-          compound.toxicities[feature_ids[j].to_s] ||= {}
-          compound.toxicities[feature_ids[j].to_s][self.id.to_s] ||= []
-          compound.toxicities[feature_ids[j].to_s][self.id.to_s] << v
-          compound.save
+          data_entries[substance.id.to_s][feature_ids[j].to_s] ||= []
+          data_entries[substance.id.to_s][feature_ids[j].to_s] << v
         end
       end
-      compounds.duplicates.each do |compound|
+      substances.duplicates.each do |substance|
         positions = []
-        compounds.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == compound.inchi}
-        warn "Duplicate compound #{compound.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
+        substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == substance.inchi}
+        warn "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
       end
       substance_ids.uniq!
       feature_ids.uniq!
-      
-      $logger.debug "Value parsing: #{Time.now-time} (Compound creation: #{compound_time})"
-      time = Time.now
       save
-      $logger.debug "Saving: #{Time.now-time}"
-
     end
 
   end

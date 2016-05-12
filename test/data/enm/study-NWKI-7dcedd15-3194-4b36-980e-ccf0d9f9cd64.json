@@ -1,0 +1,56 @@
+{
+  "uuid": "NWKI-7dcedd15-3194-4b36-980e-ccf0d9f9cd64",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-e93a9eb3-83df-3522-b417-7b3a379054a6"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "Average Length",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DISTRIBUTION_TYPE": null,
+    "TESTMAT_FORM": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Average Length",
+      "conditions": {
+        "Remark": null,
+        "SEQ_NUM": null
+      },
+      "result": {
+        "unit": "μm",
+        "loValue": 1.5
+      }
+    }
+  ]
+}

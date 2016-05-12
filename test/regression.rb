@@ -17,7 +17,7 @@ class LazarRegressionTest < MiniTest::Test
     model.neighbor_algorithm_parameters[:type] = "MP2D"
     compound = Compound.from_smiles "CCCSCCSCC"
     prediction = model.predict compound
-    assert_equal 1.37, prediction[:value].round(2)
+    assert_equal 1.26, prediction[:value].round(2)
     assert_equal 3, prediction[:neighbors].size
   end
 

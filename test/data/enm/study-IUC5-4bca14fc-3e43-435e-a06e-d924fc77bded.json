@@ -1,0 +1,115 @@
+{
+  "uuid": "IUC5-4bca14fc-3e43-435e-a06e-d924fc77bded",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "2011",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "PC_GRANULOMETRY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/CHMO_0002119",
+      "title": "4.5 Particle size distribution (Granulometry)"
+    },
+    "endpoint": "Particle size distribution (Granulometry).001",
+    "guideline": [
+      "Transmission Electron Microscopy (TEM)"
+    ]
+  },
+  "parameters": {
+    "DISTRIBUTION_TYPE": "imaging technique",
+    "TESTMAT_FORM": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": "2 (reliable with restrictions)"
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "MASS MEDIAN DIAMETER",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": {
+          "loValue": null
+        },
+        "SEQ_NUM": {
+          "loValue": null
+        },
+        "STD_DEV": {
+          "loValue": null
+        }
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": ">=",
+        "loValue": 3,
+        "upQualifier": "<",
+        "upValue": 20
+      }
+    },
+    {
+      "endpoint": "MASS MEDIAN AERODYNAMIC DIAMETER",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": null,
+        "Remark": {
+          "loValue": null
+        },
+        "SEQ_NUM": {
+          "loValue": null
+        },
+        "STD_DEV": {
+          "Class": "GEOMETRIC STANDARD DEVIATION",
+          "isResult": "true",
+          "loQualifier": null,
+          "loValue": null,
+          "upQualifier": null
+        }
+      },
+      "result": {
+        "unit": null
+      }
+    },
+    {
+      "endpoint": "PARTICLE SIZE.D90",
+      "conditions": {
+        "PHRASEOTHER_PERCENTILE": {
+          "loQualifier": "  ",
+          "loValue": "D90"
+        },
+        "Remark": {
+          "loValue": null
+        },
+        "SEQ_NUM": {
+          "loValue": null
+        },
+        "STD_DEV": {
+          "loValue": null
+        }
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": "",
+        "loValue": 12.7,
+        "upQualifier": "",
+        "textValue": ""
+      }
+    }
+  ]
+}

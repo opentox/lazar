@@ -1,0 +1,60 @@
+{
+  "uuid": "NWKI-2e105bec-9f2f-456d-85ad-0f01e08dacb6",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-e93603a1-8e0d-372a-8acf-48533b86ecb5"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1021/es051043o",
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0002993_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0002993",
+      "title": "BAO_0002993 Cytotoxicity Assay"
+    },
+    "endpoint": "Concentration in cell",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Concentration_in_cell",
+      "conditions": {
+        "Concentration in culture medium": {
+          "loValue": 100,
+          "unit": "ng/g"
+        },
+        "Time": {
+          "loValue": 10,
+          "unit": "m"
+        }
+      },
+      "result": {
+        "unit": "ug/ml",
+        "loValue": 5
+      }
+    }
+  ]
+}

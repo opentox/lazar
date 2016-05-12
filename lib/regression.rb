@@ -3,49 +3,43 @@ module OpenTox
     
     class Regression
 
-      def self.local_weighted_average compound, params
+      def self.local_weighted_average substance, neighbors
         weighted_sum = 0.0
         sim_sum = 0.0
-        neighbors = params[:neighbors]
-        neighbors.each do |row|
-          sim = row["tanimoto"]
-          sim ||= 1 # TODO: sim f nanoparticles
-          if row["toxicities"][params[:prediction_feature_id].to_s] and row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s]
-            row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
-              weighted_sum += sim*act
-              sim_sum += sim
-            end
-          end
+        neighbors.each do |neighbor|
+          sim = neighbor["similarity"]
+          activities = neighbor["toxicities"]
+          activities.each do |act|
+            weighted_sum += sim*act
+            sim_sum += sim
+          end if activities
         end
         sim_sum == 0 ? prediction = nil : prediction = weighted_sum/sim_sum
         {:value => prediction}
       end
 
-      def self.local_fingerprint_regression  compound, params, method='pls'#, method_params="sigma=0.05"
-        neighbors = params[:neighbors]
-        return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
-        activities = []
+      def self.local_fingerprint_regression substance, neighbors, method='pls'#, method_params="sigma=0.05"
+        values = []
         fingerprints = {}
         weights = []
-        fingerprint_ids = neighbors.collect{|row| Compound.find(row["_id"]).fingerprint}.flatten.uniq.sort
-        
-        neighbors.each_with_index do |row,i|
-          neighbor = Compound.find row["_id"]
-          fingerprint = neighbor.fingerprint
-          if row["toxicities"][params[:prediction_feature_id].to_s]
-            row["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
-              activities << act
-              weights << row["tanimoto"]
-              fingerprint_ids.each_with_index do |id,j|
-                fingerprints[id] ||= []
-                fingerprints[id] << fingerprint.include?(id) 
-              end
+        fingerprint_ids = neighbors.collect{|n| Compound.find(n["_id"]).fingerprint}.flatten.uniq.sort
+
+        neighbors.each do |n|
+          fingerprint = Substance.find(n["_id"]).fingerprint
+          activities = n["toxicities"]
+          activities.each do |act|
+            values << act
+            weights << n["similarity"]
+            fingerprint_ids.each do |id|
+              fingerprints[id] ||= []
+              fingerprints[id] << fingerprint.include?(id) 
             end
-          end
+          end if activities
         end
 
         variables = []
-        data_frame = [activities]
+        data_frame = [values]
+
         fingerprints.each do |k,v| 
           unless v.uniq.size == 1
             data_frame << v.collect{|m| m ? "T" : "F"}
@@ -54,17 +48,16 @@ module OpenTox
         end
 
         if variables.empty?
-            result = local_weighted_average(compound, params)
-            result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
-            return result
-
+          prediction = local_weighted_average substance, neighbors
+          prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
+          prediction
         else
-          compound_features = variables.collect{|f| compound.fingerprint.include?(f) ? "T" : "F"} 
-          prediction = r_model_prediction method, data_frame, variables, weights, compound_features
+          substance_features = variables.collect{|f| substance.fingerprint.include?(f) ? "T" : "F"} 
+          prediction = r_model_prediction method, data_frame, variables, weights, substance_features
           if prediction.nil? or prediction[:value].nil?
-            prediction = local_weighted_average(compound, params)
-            prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
-            return prediction
+            prediction = local_weighted_average substance, neighbors
+            prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
+            prediction
           else
             prediction[:prediction_interval] = [prediction[:value]-1.96*prediction[:rmse], prediction[:value]+1.96*prediction[:rmse]]
             prediction[:value] = prediction[:value]
@@ -75,13 +68,10 @@ module OpenTox
       
       end
 
-      def self.local_physchem_regression  compound, params, method="pls"#, method_params="ncomp = 4"
+      #def self.local_physchem_regression(substance:, neighbors:, feature_id:, dataset_id:, method: 'pls')#, method_params="ncomp = 4"
+      def self.local_physchem_regression substance, neighbors, method='pls' #, method_params="ncomp = 4"
 
-        neighbors = params[:neighbors].select{|n| n["toxicities"][params[:prediction_feature_id].to_s] and n["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s]} # use only neighbors with measured activities
-
-        return {:value => nil, :confidence => nil, :warning => "No similar compounds in the training data"} unless neighbors.size > 0
-        return {:value => neighbors.first["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].median, :confidence => nil, :warning => "Only one similar compound in the training set"} unless neighbors.size > 1
-
+        #dataset = Dataset.find dataset_id
         activities = []
         weights = []
         pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem_descriptors.keys}.flatten.uniq
@@ -90,9 +80,11 @@ module OpenTox
         
         neighbors.each_with_index do |n,i|
           neighbor = Substance.find(n["_id"])
-          n["toxicities"][params[:prediction_feature_id].to_s][params[:training_dataset_id].to_s].each do |act|
+          activities = neighbor["toxicities"]
+          activities.each do |act|
             data_frame[0][i] = act
-            n["tanimoto"] ?  weights << n["tanimoto"] : weights << 1.0 # TODO cosine ?
+            # TODO: update with cosine similarity for physchem
+            weights << n["similarity"]
             neighbor.physchem_descriptors.each do |pid,values| 
               values = [values] unless values.is_a? Array
               values.uniq!
@@ -101,7 +93,7 @@ module OpenTox
               data_frame[j] ||= []
               data_frame[j][i] = values.for_R
             end
-          end
+          end if activities
           (0..pc_ids.size+1).each do |j| # for R: fill empty values with NA
             data_frame[j] ||= []
             data_frame[j][i] ||= "NA"
@@ -117,12 +109,12 @@ module OpenTox
         end
 
         if pc_ids.empty?
-          result = local_weighted_average(compound, params)
-          result[:warning] = "No variables for regression model. Using weighted average of similar compounds."
-          return result
+          prediction = local_weighted_average substance, neighbors
+          prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
+          prediction
         else
           query_descriptors = pc_ids.collect do |i|
-            compound.physchem_descriptors[i] ? compound.physchem_descriptors[i].for_R : "NA"
+            substance.physchem_descriptors[i] ? substance.physchem_descriptors[i].for_R : "NA"
           end
           remove_idx = []
           query_descriptors.each_with_index do |v,i|
@@ -135,9 +127,9 @@ module OpenTox
           end
           prediction = r_model_prediction method, data_frame, pc_ids.collect{|i| "\"#{i}\""}, weights, query_descriptors
           if prediction.nil?
-            prediction = local_weighted_average(compound, params)
-            prediction[:warning] = "Could not create local PLS model. Using weighted average of similar compounds."
-            return prediction
+            prediction = local_weighted_average substance, neighbors
+            prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
+            prediction
           else
             prediction
           end

@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-9a5a6b0a-6e10-4d89-b987-6984da13de1c",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-52edeff5-900d-3f5a-86ba-550e9b368239"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1002/smll.201002366",
+    "year": "2011",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "Toxicity Classifier",
+    "guideline": [
+      "PI uptake assay"
+    ]
+  },
+  "parameters": {
+    "Cell line": "BEAS-2B",
+    "Method type": "PI uptake assay"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": "Non-toxic"
+  },
+  "effects": [
+    {
+      "endpoint": "Toxicity Classifier",
+      "conditions": {
+        "Doses/concentrations": {
+          "loValue": 10,
+          "unit": "mg/L"
+        }
+      },
+      "result": {
+        "unit": null,
+        "textValue": "Non-toxic"
+      }
+    }
+  ]
+}

@@ -77,6 +77,7 @@ module OpenTox
     def statistics
       stat = ValidationStatistics.classification(predictions, Feature.find(model.prediction_feature_id).accept_values)
       update_attributes(stat)
+      stat
     end
 
     def confidence_plot
@@ -120,6 +121,7 @@ module OpenTox
     def statistics
       stat = ValidationStatistics.regression predictions
       update_attributes(stat)
+      stat
     end
 
     def misclassifications n=nil
@@ -164,24 +166,29 @@ module OpenTox
     end
 
     def correlation_plot
-      unless correlation_plot_id
+      #unless correlation_plot_id
         tmpfile = "/tmp/#{id.to_s}_correlation.png"
-        x = predictions.collect{|p| p[1]}
-        y = predictions.collect{|p| p[2]}
+        x = []
+        y = []
+        predictions.each do |sid,p|
+          x << p["value"]
+          y << p["measured"].median
+        end
         attributes = Model::Lazar.find(self.model_id).attributes
         attributes.delete_if{|key,_| key.match(/_id|_at/) or ["_id","creator","name"].include? key}
         attributes = attributes.values.collect{|v| v.is_a?(String) ? v.sub(/OpenTox::/,'') : v}.join("\n")
         R.assign "measurement", x
         R.assign "prediction", y
-        R.eval "all = c(-log(measurement),-log(prediction))"
+        R.eval "all = c(measurement,prediction)"
         R.eval "range = c(min(all), max(all))"
-        R.eval "image = qplot(-log(prediction),-log(measurement),main='#{self.name}',asp=1,xlim=range, ylim=range)"
+        R.eval "image = qplot(prediction,measurement,main='#{self.name}',asp=1,xlim=range, ylim=range)"
         R.eval "image = image + geom_abline(intercept=0, slope=1)"
-        R.eval "ggsave(file='#{tmpfile}', plot=image)"
+        #R.eval "ggsave(file='#{tmpfile}', plot=image)"
+        R.eval "ggsave(file='#{tmpfile}')"
         file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.png")
         plot_id = $gridfs.insert_one(file)
         update(:correlation_plot_id => plot_id)
-      end
+      #end
       $gridfs.find_one(_id: correlation_plot_id).data
     end
   end

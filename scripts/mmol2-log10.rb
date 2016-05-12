@@ -3,18 +3,21 @@ require_relative '../lib/lazar'
 include OpenTox
 newfile = ARGV[0].sub(/.csv/,"_log10.csv") 
 p newfile
-i = 1
 CSV.open(newfile, "wb") do |csv|
+  i = 1
   CSV.read(ARGV[0]).each do |line|
     smi,mmol = line
-    if mmol.numeric?
-      c = Compound.from_smiles smi
-      mmol = -Math.log10(mmol.to_f)
-      csv << [smi, mmol]
+    if i == 1
+      csv << [smi, "-log10(#{mmol})"]
     else
-      #csv << [smi, "-log10(#{mmol})"]
-      p "Line #{i}: '#{mmol}' is not a numeric value."
-      csv << [smi, ""]
+      if mmol.numeric?
+        c = Compound.from_smiles smi
+        mmol = -Math.log10(mmol.to_f)
+        csv << [smi, mmol]
+      else
+        p "Line #{i}: '#{mmol}' is not a numeric value."
+        #csv << [smi, ""]
+      end
     end
     i += 1
   end

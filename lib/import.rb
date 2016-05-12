@@ -9,16 +9,18 @@ module OpenTox
         #get list of bundle URIs
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         File.open(File.join(dir,"bundles.json"),"w+"){|f| f.puts JSON.pretty_generate(bundles)}
-        datasets = []
         bundles.each do |bundle|
+          p bundle["title"]
           nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"]+"?media=application%2Fjson"))["dataEntry"]
+          p nanoparticles.size
           nanoparticles.each do |nanoparticle|
             uuid = nanoparticle["values"]["https://data.enanomapper.net/identifier/uuid"]
             $logger.debug uuid
             File.open(File.join(dir,"nanoparticle-#{uuid}.json"),"w+"){|f| f.puts JSON.pretty_generate(nanoparticle)}
             studies = JSON.parse(RestClientWrapper.get(File.join(nanoparticle["compound"]["URI"],"study")))["study"]
+            p uuid if studies.size < 1 
             studies.each do |study|
-              File.open(File.join(dir,"study-#{uuid}.json"),"w+"){|f| f.puts JSON.pretty_generate(study)}
+              File.open(File.join(dir,"study-#{study["uuid"]}.json"),"w+"){|f| f.puts JSON.pretty_generate(study)}
             end
           end
         end
@@ -37,7 +39,7 @@ module OpenTox
             :source => np["compound"]["URI"],
           )
           np["bundles"].keys.each do |bundle_uri|
-            datasets[bundle_uri].substance_ids << nanoparticle.id
+            #datasets[bundle_uri].substance_ids << nanoparticle.id
             nanoparticle["dataset_ids"] << datasets[bundle_uri].id
           end
           bundle = datasets[np["bundles"].keys.first].id if np["bundles"].size == 1

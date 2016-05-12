@@ -28,12 +28,12 @@ class LazarClassificationTest < MiniTest::Test
     assert_equal compound_dataset.compounds, prediction_dataset.compounds
 
     cid = prediction_dataset.compounds[7].id.to_s
-    assert_equal "Could not find similar compounds with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warning]
+    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warning]
     prediction_dataset.predictions.each do |cid,pred|
-      assert_equal "Could not find similar compounds with experimental data in the training dataset.", pred[:warning] if pred[:value].nil?
+      assert_equal "Could not find similar substances with experimental data in the training dataset.", pred[:warning] if pred[:value].nil?
     end
     cid = Compound.from_smiles("CCOC(=O)N").id.to_s
-    assert_equal "1 compounds have been removed from neighbors, because they have the same structure as the query compound.", prediction_dataset.predictions[cid][:warning]
+    assert_equal "1 substances have been removed from neighbors, because they are identical with the query substance.", prediction_dataset.predictions[cid][:warning]
     # cleanup
     [training_dataset,model,compound_dataset,prediction_dataset].each{|o| o.delete}
   end

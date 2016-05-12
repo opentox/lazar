@@ -1,0 +1,73 @@
+{
+  "uuid": "FCSV-b26c5d41-1ba0-3e03-873e-7c634e382973",
+  "owner": {
+    "substance": {
+      "uuid": "FCSV-de7a4a31-ee94-313e-bfc4-acc11f0b56ec"
+    },
+    "company": {
+      "uuid": "FCSV-319611c6-e7da-3977-a5ac-eb74d49a4319",
+      "name": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv"
+    }
+  },
+  "citation": {
+    "title": "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles.csv",
+    "year": "2014",
+    "owner": null
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "UNKNOWN_TOXICITY_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "title": "7.99 Toxicity (other)"
+    },
+    "endpoint": "ICP-AES",
+    "guideline": [
+      "doi: 10.1021/nn406018q"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": "Perkin-Elmer",
+    "Type of method": "ICP-AES",
+    "testmat_form": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_studyResultType": "experimental result",
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Net cell association",
+      "conditions": {
+        "Cell": "A549"
+      },
+      "result": {
+        "unit": "mL/ug(Mg)",
+        "loQualifier": "mean",
+        "loValue": 0.102,
+        "errQualifier": "sd",
+        "errorValue": 0.009
+      }
+    },
+    {
+      "endpoint": "Log2 transformed",
+      "conditions": {
+        "Cell": "A549"
+      },
+      "result": {
+        "unit": "",
+        "loQualifier": "mean",
+        "loValue": -3.291,
+        "errQualifier": "std",
+        "errorValue": 0.13
+      }
+    }
+  ]
+}

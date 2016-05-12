@@ -30,7 +30,7 @@ module OpenTox
         self.training_dataset_id ||= training_dataset.id
         self.name ||= "#{training_dataset.name} #{prediction_feature.name}" 
         self.neighbor_algorithm_parameters ||= {}
-        self.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
+        self.neighbor_algorithm_parameters[:dataset_id] = training_dataset.id
 
         Algorithm.run(feature_selection_algorithm, self) if feature_selection_algorithm
         save
@@ -41,7 +41,7 @@ module OpenTox
         toxicities = []
         substances = []
         training_dataset.substances.each do |s|
-          s["toxicities"][prediction_feature_id][training_dataset_id.to_s].each do |act|
+          training_dataset.values(s,prediction_feature_id).each do |act|
             toxicities << act
             substances << s
           end
@@ -68,24 +68,41 @@ module OpenTox
         relevant_features.sort!{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
       end
 
-      def predict_compound compound
-        neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
-        # remove neighbors without prediction_feature
-        # check for database activities (neighbors may include query compound)
+      def predict_substance substance
+        neighbors = substance.send(neighbor_algorithm, neighbor_algorithm_parameters)
         database_activities = nil
         prediction = {}
-        if neighbors.collect{|n| n["_id"]}.include? compound.id
+        # handle query substance
+        if neighbors.collect{|n| n["_id"]}.include? substance.id
 
-          me = neighbors.select{|n| n["_id"] == compound.id}.first
-          database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["toxicities"][prediction_feature.id.to_s][training_dataset_id.to_s].uniq
+          query = neighbors.select{|n| n["_id"] == substance.id}.first
+          database_activities = training_dataset.values(query["_id"],prediction_feature_id)
           prediction[:database_activities] = database_activities
-          prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
-          neighbors.delete_if{|n| n["_id"] == compound.id}
+          prediction[:warning] = "#{database_activities.size} substances have been removed from neighbors, because they are identical with the query substance."
+          neighbors.delete_if{|n| n["_id"] == substance.id} # remove query substance for an unbiased prediction (also useful for loo validation)
         end
         if neighbors.empty?
-          prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
+          prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
+        elsif neighbors.size == 1
+          value = nil
+          tox = neighbors.first["toxicities"]
+          if tox.size == 1 # single measurement
+            value = tox
+          else # multiple measurement
+            if tox.collect{|t| t.numeric?}.uniq == [true] # numeric
+              value = tox.median
+            elsif tox.uniq.size == 1 # single value
+              value = tox.first
+            else # contradictory results
+              # TODO add majority vote
+            end
+          end
+          prediction.merge!({:value => value, :confidence => nil, :warning => "Only one similar compound in the training set. Predicting median of its experimental values."}) if value
         else
-          prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset_id,:prediction_feature_id => prediction_feature.id}))
+          # call prediction algorithm
+          klass,method = prediction_algorithm.split('.')
+          result = Object.const_get(klass).send(method,substance,neighbors)
+          prediction.merge! result
           prediction[:neighbors] = neighbors
           prediction[:neighbors] ||= []
         end
@@ -97,27 +114,27 @@ module OpenTox
         training_dataset = Dataset.find training_dataset_id
 
         # parse data
-        compounds = []
+        substances = []
         if object.is_a? Substance
-          compounds = [object] 
+          substances = [object] 
         elsif object.is_a? Array
-          compounds = object
+          substances = object
         elsif object.is_a? Dataset
-          compounds = object.compounds
+          substances = object.substances
         else 
           bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Compounds or an OpenTox::Dataset as parameter."
         end
 
         # make predictions
         predictions = {}
-        compounds.each do |c|
-          predictions[c.id.to_s] = predict_compound c
+        substances.each do |c|
+          predictions[c.id.to_s] = predict_substance c
           predictions[c.id.to_s][:prediction_feature_id] = prediction_feature_id 
         end
 
         # serialize result
         if object.is_a? Substance
-          prediction = predictions[compounds.first.id.to_s]
+          prediction = predictions[substances.first.id.to_s]
           prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
           return prediction
         elsif object.is_a? Array
@@ -160,7 +177,8 @@ module OpenTox
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "MP2D",
-          :training_dataset_id => training_dataset.id,
+          :dataset_id => training_dataset.id,
+          :prediction_feature_id => prediction_feature.id,
           :min_sim => 0.1
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
@@ -179,8 +197,9 @@ module OpenTox
         model.neighbor_algorithm_parameters ||= {}
         {
           :type => "MP2D",
-          :training_dataset_id => training_dataset.id,
-          :min_sim => 0.1
+          :min_sim => 0.1,
+          :dataset_id => training_dataset.id,
+          :prediction_feature_id => prediction_feature.id,
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end

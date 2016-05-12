@@ -48,6 +48,7 @@ NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
 R.eval "
 suppressPackageStartupMessages({
+  library(labeling,lib=\"#{rlib}\")
   library(iterators,lib=\"#{rlib}\")
   library(foreach,lib=\"#{rlib}\")
   library(ggplot2,lib=\"#{rlib}\")
@@ -75,6 +76,7 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","Cross
   "nanoparticle.rb",
   "dataset.rb",
   "algorithm.rb",
+  "similarity",
   "model.rb",
   "classification.rb",
   "regression.rb",

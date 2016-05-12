@@ -1,0 +1,63 @@
+{
+  "uuid": "NWKI-98ef698c-7c3a-4e90-b8d2-09f1be340f64",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-f1cc0abb-2905-3699-be62-b238a21e6bad"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "0",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "ZETA_POTENTIAL_SECTION",
+      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "title": "4.29 Nanomaterial zeta potential"
+    },
+    "endpoint": "Zeta Potential",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "TESTMAT_FORM": null,
+    "Type of method": null
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "ZETA POTENTIAL",
+      "conditions": {
+        "MEDIUM": null,
+        "Remark": null,
+        "pH": null
+      },
+      "result": {
+        "unit": "nm",
+        "loQualifier": ">=",
+        "loValue": -35,
+        "upQualifier": "<=",
+        "upValue": 48
+      }
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "uuid": "NWKI-299db44e-27a2-4aba-9c25-a1ae9a9e2959",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-d8f70c6c-3496-3ad3-8ab3-e4f08a178d30"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1016/j.chemosphere.2011.04.067",
+    "year": "2011",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "Percentage Viable Cells",
+    "guideline": [
+      "Cell number determination"
+    ]
+  },
+  "parameters": {
+    "Cell line": "HaCaT",
+    "Method type": "Cell number determination"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Percentage_Viable_Cells",
+      "conditions": {
+        "Doses/concentrations": {
+          "loValue": 2000,
+          "unit": "mg/L"
+        }
+      },
+      "result": {
+        "unit": null,
+        "loValue": 90
+      }
+    }
+  ]
+}

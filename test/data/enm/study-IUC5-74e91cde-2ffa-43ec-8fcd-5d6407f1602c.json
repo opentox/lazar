@@ -1,0 +1,59 @@
+{
+  "uuid": "IUC5-74e91cde-2ffa-43ec-8fcd-5d6407f1602c",
+  "owner": {
+    "substance": {
+      "uuid": "IUC5-5f313d1f-4129-499c-abbe-ac18642e2471"
+    },
+    "company": {
+      "uuid": "IUC5-354430c7-746e-450e-9722-09788eb90a29",
+      "name": "Ideaconsult Ltd. / Sofia / Bulgaria"
+    }
+  },
+  "citation": {
+    "title": null,
+    "year": "2008",
+    "owner": ""
+  },
+  "protocol": {
+    "topcategory": "P-CHEM",
+    "category": {
+      "code": "DUSTINESS_SECTION",
+      "term": "http://purl.enanomapper.org/onto/ENM_9000003",
+      "title": "4.31 Nanomaterial dustiness"
+    },
+    "endpoint": "Dustiness.001",
+    "guideline": [
+      "DIN 33897-2 (2002) Workplace atmospheres - Determination of the dustiness of bulk materials - Part 2:Continuous Drop (note: SUPERSEDED by EN 1505:2006)"
+    ]
+  },
+  "parameters": {
+    "DATA_GATHERING_INSTRUMENTS": null,
+    "Method details": null,
+    "SAMPLING": null,
+    "TESTMAT_FORM": null,
+    "Type of method": "continuous drop"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": "key study",
+    "r_studyResultType": "experimental result",
+    "r_value": ""
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "DUSTINESS INDEX",
+      "conditions": {
+        "STD_DEV": {
+        }
+      },
+      "result": {
+        "unit": null
+      }
+    }
+  ]
+}

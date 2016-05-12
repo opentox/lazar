@@ -1,0 +1,53 @@
+{
+  "uuid": "NWKI-58446ed4-a39a-4505-b359-f1d3008edf25",
+  "owner": {
+    "substance": {
+      "uuid": "NWKI-845bf8fc-788d-38f2-be58-030f27c0d337"
+    },
+    "company": {
+      "uuid": "NWKI-9f4e86d0-c85d-3e83-8249-a856659087da",
+      "name": "NanoWiki"
+    }
+  },
+  "citation": {
+    "title": "http://dx.doi.org/10.1038/nnano.2011.10",
+    "year": "2011",
+    "owner": "NanoWiki"
+  },
+  "protocol": {
+    "topcategory": "TOX",
+    "category": {
+      "code": "BAO_0003009_SECTION",
+      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "title": "BAO_0003009 Cell Viability Assay"
+    },
+    "endpoint": "Log Reciprocal EC50",
+    "guideline": [
+      ""
+    ]
+  },
+  "parameters": {
+    "Cell line": "Escherichia coli cells"
+  },
+  "reliability": {
+    "r_isRobustStudy": "false",
+    "r_isUsedforClassification": "false",
+    "r_isUsedforMSDS": "false",
+    "r_purposeFlag": null,
+    "r_value": null
+  },
+  "interpretation": {
+    "result": null
+  },
+  "effects": [
+    {
+      "endpoint": "Log_Reciprocal_EC50",
+      "conditions": {
+      },
+      "result": {
+        "unit": null,
+        "loValue": 2.2
+      }
+    }
+  ]
+}
