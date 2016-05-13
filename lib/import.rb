@@ -39,7 +39,6 @@ module OpenTox
             :source => np["compound"]["URI"],
           )
           np["bundles"].keys.each do |bundle_uri|
-            #datasets[bundle_uri].substance_ids << nanoparticle.id
             nanoparticle["dataset_ids"] << datasets[bundle_uri].id
           end
           bundle = datasets[np["bundles"].keys.first].id if np["bundles"].size == 1
@@ -59,7 +58,7 @@ module OpenTox
               end
             else
               feature = klass.find_or_create_by(
-                :name => "#{study["protocol"]["category"]["title"]} #{study["protocol"]["endpoint"]}",
+                :name => effect["endpoint"],
                 :unit => effect["result"]["unit"],
                 :category => study["protocol"]["topcategory"],
                 :conditions => effect["conditions"]
@@ -69,11 +68,7 @@ module OpenTox
           end
           nanoparticle.save
         end
-        datasets.each do |u,d|
-          d.feature_ids.uniq!
-          d.substance_ids.uniq!
-          d.save
-        end
+        datasets.each { |u,d| d.save }
       end
 
 =begin

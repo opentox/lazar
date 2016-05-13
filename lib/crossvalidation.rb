@@ -41,6 +41,7 @@ module OpenTox
           $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
           t = Time.now
           validation = Validation.create(model, fold[0], fold[1],cv)
+          #p validation
           $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
         #end
       end
@@ -166,29 +167,10 @@ module OpenTox
     end
 
     def correlation_plot
-      #unless correlation_plot_id
-        tmpfile = "/tmp/#{id.to_s}_correlation.png"
-        x = []
-        y = []
-        predictions.each do |sid,p|
-          x << p["value"]
-          y << p["measured"].median
-        end
-        attributes = Model::Lazar.find(self.model_id).attributes
-        attributes.delete_if{|key,_| key.match(/_id|_at/) or ["_id","creator","name"].include? key}
-        attributes = attributes.values.collect{|v| v.is_a?(String) ? v.sub(/OpenTox::/,'') : v}.join("\n")
-        R.assign "measurement", x
-        R.assign "prediction", y
-        R.eval "all = c(measurement,prediction)"
-        R.eval "range = c(min(all), max(all))"
-        R.eval "image = qplot(prediction,measurement,main='#{self.name}',asp=1,xlim=range, ylim=range)"
-        R.eval "image = image + geom_abline(intercept=0, slope=1)"
-        #R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        R.eval "ggsave(file='#{tmpfile}')"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.png")
-        plot_id = $gridfs.insert_one(file)
+      unless correlation_plot_id
+        plot_id = ValidationStatistics.correlation_plot predictions
         update(:correlation_plot_id => plot_id)
-      #end
+      end
       $gridfs.find_one(_id: correlation_plot_id).data
     end
   end

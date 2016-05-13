@@ -80,10 +80,10 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","Cross
   "model.rb",
   "classification.rb",
   "regression.rb",
+  "validation-statistics.rb",
   "validation.rb",
   "crossvalidation.rb",
   "leave-one-out-validation.rb",
-  "validation-statistics.rb",
   "experiment.rb",
   "import.rb",
 ].each{ |f| require_relative f }

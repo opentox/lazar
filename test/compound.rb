@@ -85,8 +85,8 @@ print c.sdf
       refute_nil c.fingerprint("MP2D")
     end
     c = d.compounds[371]
-    n = c.fingerprint_neighbors({:type => "FP4", :min_sim => 0.7, :training_dataset_id => d.id })
-    assert n.size >= 18, "Neighbors size (#{n.size}) should be larger than 17"
+    n = c.fingerprint_neighbors({:type => "FP4", :min_sim => 0.7, :dataset_id => d.id, :prediction_feature_id => d.features.first.id })
+    assert n.size >= 8, "Neighbors size (#{n.size}) should be larger than 7"
   end
 
   def test_openbabel_segfault
@@ -118,7 +118,7 @@ print c.sdf
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
       types.each do |type|
-        neighbors = c.fingerprint_neighbors({:type => type, :training_dataset_id => training_dataset.id, :min_sim => min_sim})
+        neighbors = c.fingerprint_neighbors({:type => type, :dataset_id => training_dataset.id, :min_sim => min_sim, :prediction_feature_id => training_dataset.features.first.id})
         unless type == "FP2" and smi == "CC(=O)CC(C)C#N" or smi == "C(=O)CC(C)C#N" and (type == "FP2" or type == "MACCS")
           refute_empty neighbors
         end
@@ -139,6 +139,7 @@ print c.sdf
   end
 
   def test_fingerprint_count_neighbors
+    skip
     types = ["MP2D", "MNA"]
     min_sim = 0.0
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
@@ -149,7 +150,7 @@ print c.sdf
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
       types.each do |type|
-        neighbors = c.fingerprint_count_neighbors({:type => type, :training_dataset_id => training_dataset.id, :min_sim => min_sim})
+        neighbors = c.fingerprint_count_neighbors({:type => type, :dataset_id => training_dataset.id, :min_sim => min_sim, :prediction_feature_id => training_dataset.features.first.id})
         if type == "FP4"
           fp4_neighbors = c.neighbors
           neighbors.each do |n|
@@ -170,10 +171,10 @@ print c.sdf
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
       t = Time.now
-      neighbors = c.db_neighbors(:training_dataset_id => training_dataset.id, :min_sim => 0.2)
+      neighbors = c.db_neighbors(:dataset_id => training_dataset.id, :min_sim => 0.2)
       p Time.now - t
       t = Time.now
-      neighbors2 = c.fingerprint_neighbors({:type => "MP2D", :training_dataset_id => training_dataset.id, :min_sim => 0.2})
+      neighbors2 = c.fingerprint_neighbors({:type => "MP2D", :dataset_id => training_dataset.id, :min_sim => 0.2, :prediction_feature_id => training_dataset.features.first.id})
       p Time.now - t
       p neighbors.size
       p neighbors2.size

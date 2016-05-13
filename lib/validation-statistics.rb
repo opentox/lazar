@@ -96,5 +96,29 @@ module OpenTox
         :finished_at => Time.now
       }
     end
+
+  end
+  
+  module Plot
+
+    def plot_id 
+      tmpfile = "/tmp/#{id.to_s}_correlation.png"
+      x = []
+      y = []
+      predictions.each do |sid,p|
+        x << p["value"]
+        y << p["measured"].median
+      end
+      R.assign "measurement", x
+      R.assign "prediction", y
+      R.eval "all = c(measurement,prediction)"
+      R.eval "range = c(min(all), max(all))"
+      R.eval "image = qplot(prediction,measurement,main='',asp=1,xlim=range, ylim=range)"
+      R.eval "image = image + geom_abline(intercept=0, slope=1)"
+      R.eval "ggsave(file='#{tmpfile}', plot=image)"
+      file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.png")
+      plot_id = $gridfs.insert_one(file)
+      plot_id
+    end
   end
 end

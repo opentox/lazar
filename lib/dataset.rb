@@ -5,8 +5,8 @@ module OpenTox
 
   class Dataset
 
-    field :substance_ids, type: Array, default: []
-    field :feature_ids, type: Array, default: []
+    #field :substance_ids, type: Array, default: []
+    #field :feature_ids, type: Array, default: []
     field :data_entries, type: Hash, default: {}
 
     # Readers
@@ -21,13 +21,14 @@ module OpenTox
 
     # Get all substances
     def substances
-      @substances ||= substance_ids.collect{|id| OpenTox::Substance.find id}
+      @substances ||= data_entries.keys.collect{|id| OpenTox::Substance.find id}.uniq
       @substances
     end
 
     # Get all features
     def features
-      @features ||= feature_ids.collect{|id| OpenTox::Feature.find(id)}
+      #@features ||= feature_ids.collect{|id| OpenTox::Feature.find(id)}
+      @features ||= data_entries.collect{|sid,data| data.keys.collect{|id| OpenTox::Feature.find(id)}}.flatten.uniq
       @features
     end
 
@@ -58,7 +59,11 @@ module OpenTox
       feature = feature.id if feature.is_a? Feature
       data_entries[substance.to_s] ||= {}
       data_entries[substance.to_s][feature.to_s] ||= []
-      data_entries[substance.to_s][feature.to_s] << value
+      if value.is_a? Array
+        data_entries[substance.to_s][feature.to_s] += value
+      else
+        data_entries[substance.to_s][feature.to_s] << value
+      end
     end
 
     # Dataset operations
@@ -67,7 +72,7 @@ module OpenTox
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
-      len = self.substance_ids.size
+      len = self.substances.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
       chunks = []
@@ -76,12 +81,14 @@ module OpenTox
         last = start+mid
         last = last-1 unless len%n >= i
         test_idxs = indices[start..last] || []
-        test_cids = test_idxs.collect{|i| substance_ids[i]}
+        test_substances = test_idxs.collect{|i| substances[i]}
         training_idxs = indices-test_idxs
-        training_cids = training_idxs.collect{|i| substance_ids[i]}
-        chunk = [training_cids,test_cids].collect do |cids|
-          dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
-          dataset.substances.each do |substance|
+        training_substances = training_idxs.collect{|i| substances[i]}
+        chunk = [training_substances,test_substances].collect do |substances|
+          dataset = self.class.create(:source => self.id )
+          substances.each do |substance|
+          #dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
+          #dataset.substances.each do |substance|
             substance.dataset_ids << dataset.id
             substance.save
             dataset.data_entries[substance.id.to_s] = data_entries[substance.id.to_s] ||= {}
@@ -170,6 +177,7 @@ module OpenTox
       compound_format = feature_names.shift.strip
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
       numeric = []
+      features = []
       # guess feature types
       feature_names.each_with_index do |f,i|
         metadata = {:name => f}
@@ -187,7 +195,7 @@ module OpenTox
           numeric[i] = false
           feature = NominalFeature.find_or_create_by(metadata)
         end
-        feature_ids << feature.id if feature
+        features << feature if feature
       end
       
       # substances and values
@@ -210,12 +218,10 @@ module OpenTox
           warn "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
           next
         end
-        substance_ids << substance.id
-        data_entries[substance.id.to_s] = {}
         substance.dataset_ids << self.id unless substance.dataset_ids.include? self.id
         substance.save
           
-        unless vals.size == feature_ids.size 
+        unless vals.size == features.size 
           warn "Number of values at position #{i+2} is different than header size (#{vals.size} vs. #{features.size}), all entries are ignored."
           next
         end
@@ -229,8 +235,7 @@ module OpenTox
           else
             v = v.strip
           end
-          data_entries[substance.id.to_s][feature_ids[j].to_s] ||= []
-          data_entries[substance.id.to_s][feature_ids[j].to_s] << v
+          add substance, features[j], v
         end
       end
       substances.duplicates.each do |substance|
@@ -238,8 +243,6 @@ module OpenTox
         substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == substance.inchi}
         warn "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
       end
-      substance_ids.uniq!
-      feature_ids.uniq!
       save
     end
 

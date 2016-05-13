@@ -32,20 +32,14 @@ module OpenTox
       predictions = validation_model.predict test_set.substances
       predictions.each{|cid,p| p.delete(:neighbors)}
       nr_unpredicted = 0
-      p predictions.size
       predictions.each do |cid,prediction|
-        p prediction
         if prediction[:value]
-          tox = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
-          p tox
-          #prediction[:measured] = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s][test_set.id.to_s]
-          prediction[:measured] = tox[test_set.id.to_s] if tox
+          prediction[:measured] = test_set.values(cid, prediction[:prediction_feature_id])
         else
           nr_unpredicted += 1
         end
-        predictions.delete(cid) unless prediction[:value] and prediction[:measured]
       end
-      p predictions.size
+      predictions.select!{|cid,p| p[:value] and p[:measured]}
       validation = self.new(
         :model_id => validation_model.id,
         :test_dataset_id => test_set.id,

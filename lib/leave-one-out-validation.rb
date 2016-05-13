@@ -13,18 +13,18 @@ module OpenTox
       t = Time.now
       model.training_dataset.features.first.nominal? ? klass = ClassificationLeaveOneOutValidation : klass = RegressionLeaveOneOutValidation
       loo = klass.new :model_id => model.id
-      predictions = model.predict model.training_dataset.compounds
+      predictions = model.predict model.training_dataset.substances
       predictions.each{|cid,p| p.delete(:neighbors)}
       nr_unpredicted = 0
       predictions.each do |cid,prediction|
         if prediction[:value]
-          tox = Substance.find(cid).toxicities[prediction[:prediction_feature_id].to_s]
-          prediction[:measured] = tox[model.training_dataset_id.to_s] if tox
+          prediction[:measured] = model.training_dataset.values(cid, prediction[:prediction_feature_id])
         else
           nr_unpredicted += 1
         end
         predictions.delete(cid) unless prediction[:value] and prediction[:measured]
       end
+      predictions.select!{|cid,p| p[:value] and p[:measured]}
       loo.nr_instances = predictions.size
       loo.nr_unpredicted = nr_unpredicted
       loo.predictions = predictions
@@ -86,6 +86,7 @@ module OpenTox
   
 
   class RegressionLeaveOneOutValidation < LeaveOneOutValidation
+    include Plot
 
     field :rmse, type: Float, default: 0
     field :mae, type: Float, default: 0
@@ -100,29 +101,7 @@ module OpenTox
 
     def correlation_plot
       unless correlation_plot_id
-        tmpfile = "/tmp/#{id.to_s}_correlation.svg"
-        predicted_values = []
-        measured_values = []
-        predictions.each do |pred|
-          pred[:database_activities].each do |activity|
-            if pred[:value]
-              predicted_values << pred[:value]
-              measured_values << activity
-            end
-          end
-        end
-        attributes = Model::Lazar.find(self.model_id).attributes
-        attributes.delete_if{|key,_| key.match(/_id|_at/) or ["_id","creator","name"].include? key}
-        attributes = attributes.values.collect{|v| v.is_a?(String) ? v.sub(/OpenTox::/,'') : v}.join("\n")
-        R.assign "measurement", measured_values
-        R.assign "prediction", predicted_values
-        R.eval "all = c(-log(measurement),-log(prediction))"
-        R.eval "range = c(min(all), max(all))"
-        R.eval "image = qplot(-log(prediction),-log(measurement),main='#{self.name}',asp=1,xlim=range, ylim=range)"
-        R.eval "image = image + geom_abline(intercept=0, slope=1)"
-        R.eval "ggsave(file='#{tmpfile}', plot=image)"
-        file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_correlation_plot.svg")
-        plot_id = $gridfs.insert_one(file)
+        #plot_id = correlation_plot 
         update(:correlation_plot_id => plot_id)
       end
       $gridfs.find_one(_id: correlation_plot_id).data
