@@ -5,8 +5,6 @@ module OpenTox
 
   class Dataset
 
-    #field :substance_ids, type: Array, default: []
-    #field :feature_ids, type: Array, default: []
     field :data_entries, type: Hash, default: {}
 
     # Readers
@@ -27,7 +25,6 @@ module OpenTox
 
     # Get all features
     def features
-      #@features ||= feature_ids.collect{|id| OpenTox::Feature.find(id)}
       @features ||= data_entries.collect{|sid,data| data.keys.collect{|id| OpenTox::Feature.find(id)}}.flatten.uniq
       @features
     end
@@ -43,16 +40,6 @@ module OpenTox
     end
 
     # Writers
-
-    # Set compounds
-    def compounds=(compounds)
-      self.substance_ids = compounds.collect{|c| c.id}.uniq
-    end
-
-    # Set features
-    def features=(features)
-      self.feature_ids = features.collect{|f| f.id}
-    end
 
     def add(substance,feature,value)
       substance = substance.id if substance.is_a? Substance
@@ -87,8 +74,6 @@ module OpenTox
         chunk = [training_substances,test_substances].collect do |substances|
           dataset = self.class.create(:source => self.id )
           substances.each do |substance|
-          #dataset = self.class.create(:substance_ids => cids, :feature_ids => feature_ids, :source => self.id )
-          #dataset.substances.each do |substance|
             substance.dataset_ids << dataset.id
             substance.save
             dataset.data_entries[substance.id.to_s] = data_entries[substance.id.to_s] ||= {}
@@ -108,7 +93,7 @@ module OpenTox
     # @return [String]
     def to_csv(inchi=false)
       CSV.generate() do |csv| 
-        compound = Substance.find(substance_ids.first).is_a? Compound
+        compound = substances.first.is_a? Compound
         if compound
           csv << [inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name}
         else
@@ -128,11 +113,7 @@ module OpenTox
             (0..nr_measurements.first-1).each do |i|
               row = [name]
               features.each do |f|
-                if data_entries[substance.id.to_s] and data_entries[substance.id.to_s][f.id.to_s]
-                  row << data_entries[substance.id.to_s][f.id.to_s]
-                else
-                  row << ""
-                end
+                values(substance,f) ? row << values(substance,f)[i] : row << ""
               end
               csv << row
             end
@@ -152,8 +133,8 @@ module OpenTox
     
     # Create a dataset from CSV file
     # TODO: document structure
-    def self.from_csv_file file, source=nil
-      source ||= file
+    def self.from_csv_file file, accept_empty_values=false
+      source = file
       name = File.basename(file,".*")
       dataset = self.find_by(:source => source, :name => name)
       if dataset
@@ -162,14 +143,14 @@ module OpenTox
         $logger.debug "Parsing #{file}."
         table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
         dataset = self.new(:source => source, :name => name)
-        dataset.parse_table table
+        dataset.parse_table table, accept_empty_values
       end
       dataset
     end
 
     # parse data in tabular format (e.g. from csv)
     # does a lot of guesswork in order to determine feature types
-    def parse_table table
+    def parse_table table, accept_empty_values
 
       # features
       feature_names = table.shift.collect{|f| f.strip}
@@ -200,24 +181,25 @@ module OpenTox
       
       # substances and values
 
+      all_substances = []
       table.each_with_index do |vals,i|
         identifier = vals.shift.strip
-        warn "No feature values for compound at position #{i+2}." if vals.compact.empty?
+        warn "No feature values for compound at line #{i+2} of #{source}." if vals.compact.empty? and !accept_empty_values
         begin
           case compound_format
           when /SMILES/i
             substance = OpenTox::Compound.from_smiles(identifier)
           when /InChI/i
             substance = OpenTox::Compound.from_inchi(identifier)
-          # TODO nanoparticle
           end
         rescue 
           substance = nil
         end
         if substance.nil? # compound parsers may return nil
-          warn "Cannot parse #{compound_format} compound '#{identifier}' at position #{i+2}, all entries are ignored."
+          warn "Cannot parse #{compound_format} compound '#{identifier}' at line #{i+2} of #{source}, all entries are ignored."
           next
         end
+        all_substances << substance
         substance.dataset_ids << self.id unless substance.dataset_ids.include? self.id
         substance.save
           
@@ -237,10 +219,11 @@ module OpenTox
           end
           add substance, features[j], v
         end
+        data_entries[substance.id.to_s] = {} if vals.empty? and accept_empty_values
       end
-      substances.duplicates.each do |substance|
+      all_substances.duplicates.each do |substance|
         positions = []
-        substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == substance.inchi}
+        all_substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == substance.inchi}
         warn "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
       end
       save

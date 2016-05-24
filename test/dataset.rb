@@ -30,7 +30,7 @@ class DatasetTest < MiniTest::Test
     csv.shift
     csv.each do |row|
       c = Compound.from_smiles row.shift
-      assert_equal row, c.toxicities[d.features.first.id.to_s][d.id.to_s]
+      assert_equal row, d.values(c,d.features.first)
     end
     d.delete 
   end
@@ -45,7 +45,7 @@ class DatasetTest < MiniTest::Test
     #  493 COC1=C(C=C(C(=C1)Cl)OC)Cl,1
     c = d.compounds[491]
     assert_equal c.smiles, "COc1cc(Cl)c(cc1Cl)OC"
-    assert_equal c.toxicities[d.feature_ids.first.to_s][d.id.to_s][0], "1"
+    assert_equal ["1"], d.values(c,d.features.first)
     d.delete
   end
 
@@ -64,9 +64,8 @@ class DatasetTest < MiniTest::Test
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal true, d.features.first.nominal
-    assert_equal csv.size-1-errors.size, d.compounds.size
+    assert_equal 1056, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
-    puts d.warnings.to_yaml
     errors.each do |smi|
       refute_empty d.warnings.grep %r{#{Regexp.escape(smi)}}
     end
@@ -94,17 +93,13 @@ class DatasetTest < MiniTest::Test
     assert_equal csv.first.size-1, d.features.size
     assert_match "EPAFHM_log10.csv",  d.source
     assert_equal "EPAFHM_log10",  d.name
-    refute_nil d.warnings
-    #p d.warnings
-    #assert_equal 74, d.warnings.size
     feature = d.features.first
     assert_kind_of NumericFeature, feature
-    assert_match /row 13/, d.warnings.join
-    assert_equal -Math.log10(0.0113), d.compounds.first.toxicities[feature.id.to_s][d.id.to_s].first
-    assert_equal -Math.log10(0.00323), d.compounds[5].toxicities[feature.id.to_s][d.id.to_s].first
+    assert_equal -Math.log10(0.0113), d.values(d.compounds.first,feature).first
+    assert_equal -Math.log10(0.00323), d.values(d.compounds[4],feature).first
     d2 = Dataset.find d.id
-    assert_equal -Math.log10(0.0113), d2.compounds[0].toxicities[feature.id.to_s][d.id.to_s].first
-    assert_equal -Math.log10(0.00323), d2.compounds[5].toxicities[feature.id.to_s][d.id.to_s].first
+    assert_equal -Math.log10(0.0113), d2.values(d2.compounds[0],feature).first
+    assert_equal -Math.log10(0.00323), d2.values(d2.compounds[4],feature).first
     d.delete
   end
 
@@ -112,11 +107,11 @@ class DatasetTest < MiniTest::Test
 
   def test_create_without_features_smiles_and_inchi
     ["smiles", "inchi"].each do |type|
-      d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction_#{type}_small.csv")
+      d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction_#{type}_small.csv"), true
       assert_equal Dataset, d.class
       refute_nil d.id
       dataset = Dataset.find d.id
-      assert_equal 3, d.compounds.size.to_i
+      assert_equal 3, d.compounds.size
       d.delete
     end
   end
@@ -130,8 +125,8 @@ class DatasetTest < MiniTest::Test
         assert_operator d.compounds.size, :>=, d.compounds.uniq.size
       end
       assert_operator fold[0].compounds.size, :>=, fold[1].compounds.size
-      assert_equal dataset.substance_ids.size, fold.first.substance_ids.size + fold.last.substance_ids.size
-      assert_empty (fold.first.substance_ids & fold.last.substance_ids)
+      assert_equal dataset.substances.size, fold.first.substances.size + fold.last.substances.size
+      assert_empty (fold.first.substances & fold.last.substances)
     end
   end
 
@@ -184,13 +179,13 @@ class DatasetTest < MiniTest::Test
     # get features
     assert_equal 6, new_dataset.features.size
     assert_equal 5, new_dataset.compounds.uniq.size
-    de = new_dataset.compounds.last.toxicities
-    fid = new_dataset.features.first.id.to_s
-    assert_equal ["1"], de[fid][d.id.to_s]
-    fid = new_dataset.features.last.id.to_s
-    assert_equal [1.0], de[fid][d.id.to_s]
-    fid = new_dataset.features[2].id.to_s
-    assert_equal ["false"], de[fid][d.id.to_s]
+    c = new_dataset.compounds.last
+    f = new_dataset.features.first
+    assert_equal ["1"], new_dataset.values(c,f)
+    f = new_dataset.features.last.id.to_s
+    assert_equal [1.0], new_dataset.values(c,f)
+    f = new_dataset.features[2]
+    assert_equal ["false"], new_dataset.values(c,f)
     d.delete
   end
 
@@ -208,7 +203,7 @@ class DatasetTest < MiniTest::Test
       csv.shift
       csv.each do |row|
         c = Compound.from_smiles row.shift
-        assert_equal row, c.toxicities[d.feature_ids.first.to_s][d.id.to_s]
+        assert_equal row, d.values(c,d.features.first)
       end
       d.delete 
     end
@@ -217,7 +212,7 @@ class DatasetTest < MiniTest::Test
   def test_from_csv2
     File.open("#{DATA_DIR}/temp_test.csv", "w+") { |file| file.write("SMILES,Hamster\nCC=O,true\n ,true\nO=C(N),true") }
     dataset = Dataset.from_csv_file "#{DATA_DIR}/temp_test.csv"
-    assert_equal "Cannot parse SMILES compound '' at position 3, all entries are ignored.",  dataset.warnings.join
+    assert_equal "Cannot parse SMILES compound '' at line 3 of /home/ist/lazar/test/data/temp_test.csv, all entries are ignored.",  dataset.warnings.join
     File.delete "#{DATA_DIR}/temp_test.csv"
     dataset.features.each{|f| feature = Feature.find f.id; feature.delete}
     dataset.delete
@@ -251,9 +246,7 @@ class DatasetTest < MiniTest::Test
         csv.each do |row|
           c = Compound.from_smiles(row.shift)
           p row
-          p c.toxicities
-          p d.feature_ids.first.to_s
-          assert_equal row, c.toxicities[d.feature_ids.first.to_s][d.id.to_s]
+          assert_equal row, d.values(c,d.features.first)
         end
         d.delete 
       end
@@ -285,55 +278,6 @@ class DatasetTest < MiniTest::Test
     #p "Dowload: #{Time.now-t}"
     d2.delete
     assert_nil Dataset.find d.id
-  end
-
-  def test_client_create
-    skip
-    d = Dataset.new
-    assert_equal Dataset, d.class
-    d.name = "Create dataset test"
-
-    # add data entries
-    features = ["test1", "test2"].collect do |title|
-      f = Feature.new 
-      f.name = title
-      f.numeric = true
-      f.save
-      f
-    end
-    
-    # manual low-level insertions without consistency checks for runtime efficiency
-    compounds = ["c1ccccc1NN", "CC(C)N", "C1C(C)CCCC1"].collect do |smi|
-      Compound.from_smiles smi
-    end
-    data_entries = []
-    data_entries << [1,2]
-    data_entries << [4,5]
-    data_entries << [6,7]
-    compounds.each_with_index do |c,i|
-      features.each_with_index do |f,j|
-        d.substance_ids << c.id
-        d.feature_ids << f.id
-        c.toxicities[f.id.to_s] = data_entries[i][j]
-      end
-    end
-
-    assert_equal 3, d.compounds.size
-    assert_equal 2, d.features.size
-    #assert_equal [[1,2],[4,5],[6,7]], d.data_entries
-    d.save
-    # check if dataset has been saved correctly
-    new_dataset = Dataset.find d.id
-    assert_equal 3, new_dataset.compounds.size
-    assert_equal 2, new_dataset.features.size
-    new_dataset.compounds.each_with_index do |c,i|
-      new_dataset.features.each_with_index do |f,j|
-        assert_equal data_entries[i][j], c.toxicities[f.id.to_s].first
-      end
-    end
-    d.delete
-    assert_nil Dataset.find d.id
-    assert_nil Dataset.find new_dataset.id
   end
 
 end

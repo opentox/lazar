@@ -68,6 +68,7 @@ module OpenTox
       x = []
       y = []
       predictions.each do |cid,pred|
+        p pred
         if pred[:value] and pred[:measured] 
           x << pred[:measured].median
           y << pred[:value]
