@@ -8,10 +8,11 @@ module OpenTox
       predictivity = {}
       nr_instances = 0
       predictions.each do |cid,pred|
-        # TODO use measured majority class
-        if pred[:measured].uniq.size == 1
+        # TODO
+        # use predictions without probabilities (single neighbor)??
+        # use measured majority class??
+        if pred[:measured].uniq.size == 1 and pred[:probabilities]
           m = pred[:measured].first
-        #pred[:measured].each do |m|
           if pred[:value] == m
             if pred[:value] == accept_values[0]
               confusion_matrix[0][0] += 1
@@ -63,12 +64,12 @@ module OpenTox
     end
 
     def self.regression predictions
+      # TODO: predictions within prediction_interval
       rmse = 0
       mae = 0
       x = []
       y = []
       predictions.each do |cid,pred|
-        p pred
         if pred[:value] and pred[:measured] 
           x << pred[:measured].median
           y << pred[:value]

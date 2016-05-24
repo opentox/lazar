@@ -69,6 +69,7 @@ module OpenTox
       end
 
       def predict_substance substance
+        neighbor_algorithm_parameters = Hash[self.neighbor_algorithm_parameters.map{ |k, v| [k.to_sym, v] }] # convert string keys to symbols
         neighbors = substance.send(neighbor_algorithm, neighbor_algorithm_parameters)
         database_activities = nil
         prediction = {}
@@ -82,22 +83,22 @@ module OpenTox
           neighbors.delete_if{|n| n["_id"] == substance.id} # remove query substance for an unbiased prediction (also useful for loo validation)
         end
         if neighbors.empty?
-          prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
+          prediction.merge!({:value => nil,:probabilities => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
         elsif neighbors.size == 1
           value = nil
           tox = neighbors.first["toxicities"]
           if tox.size == 1 # single measurement
-            value = tox
+            value = tox.first
           else # multiple measurement
             if tox.collect{|t| t.numeric?}.uniq == [true] # numeric
               value = tox.median
             elsif tox.uniq.size == 1 # single value
               value = tox.first
             else # contradictory results
-              # TODO add majority vote
+              # TODO add majority vote??
             end
           end
-          prediction.merge!({:value => value, :confidence => nil, :warning => "Only one similar compound in the training set. Predicting median of its experimental values."}) if value
+          prediction.merge!({:value => value, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting median of its experimental values.", :neighbors => neighbors}) if value
         else
           # call prediction algorithm
           klass,method = prediction_algorithm.split('.')

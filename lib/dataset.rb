@@ -229,6 +229,11 @@ module OpenTox
       save
     end
 
+    def delete
+      compounds.each{|c| c.dataset_ids.delete id.to_s}
+      super
+    end
+
   end
 
   # Dataset for lazar predictions

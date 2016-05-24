@@ -34,13 +34,16 @@ class ValidationTest < MiniTest::Test
     model.save
     cv = ClassificationCrossValidation.create model
     params = model.neighbor_algorithm_parameters
-    params.delete :training_dataset_id
     params = Hash[params.map{ |k, v| [k.to_s, v] }] # convert symbols to string
 
     cv.validations.each do |validation|
       validation_params = validation.model.neighbor_algorithm_parameters
-      validation_params.delete "training_dataset_id"
-      assert_equal params, validation_params
+      refute_nil params["dataset_id"]
+      refute_nil validation_params[:dataset_id]
+      refute_equal params["dataset_id"], validation_params[:dataset_id]
+      ["min_sim","type","prediction_feature_id"].each do |k|
+        assert_equal params[k], validation_params[k]
+      end
     end
   end
   
@@ -55,13 +58,14 @@ class ValidationTest < MiniTest::Test
       }
     }
     model = Model::LazarRegression.create dataset.features.first, dataset, params
-    p model
     cv = RegressionCrossValidation.create model
     cv.validation_ids.each do |vid|
       model = Model::Lazar.find(Validation.find(vid).model_id)
       assert_equal params[:neighbor_algorithm_parameters][:type], model[:neighbor_algorithm_parameters][:type]
       assert_equal params[:neighbor_algorithm_parameters][:min_sim], model[:neighbor_algorithm_parameters][:min_sim]
-      refute_equal params[:neighbor_algorithm_parameters][:training_dataset_id], model[:neighbor_algorithm_parameters][:training_dataset_id]
+      refute_nil model[:neighbor_algorithm_parameters][:dataset_id]
+      refute_equal dataset.id, model[:neighbor_algorithm_parameters][:dataset_id]
+      assert_equal model.training_dataset_id, model[:neighbor_algorithm_parameters][:dataset_id]
     end
 
     refute_nil cv.rmse
