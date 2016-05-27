@@ -254,36 +254,6 @@ module OpenTox
       self["chemblid"]
     end
 
-=begin
-    def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
-      neighbors = []
-      dataset = Dataset.find(dataset_id)
-      query_fingerprint = self.fingerprint type
-      dataset.compounds.each do |compound|
-        values = dataset.values(compound,prediction_feature_id)
-        if values
-          candidate_fingerprint = compound.fingerprint type
-#          features = (query_fingerprint + candidate_fingerprint).uniq
-#          min_sum = 0
-#          max_sum = 0
-#          features.each do |f|
-#            min,max = [query_fingerprint.count(f),candidate_fingerprint.count(f)].minmax
-#            min_sum += min
-#            max_sum += max
-#          end
-#          max_sum == 0 ? sim = 0 : sim = min_sum/max_sum.to_f
-#          neighbors << [compound.id, sim] if sim and sim >= params[:min_sim]
-#        end
-#      end
-#      neighbors.sort{|a,b| b.last <=> a.last}
-          sim = Algorithm::Similarity.tanimoto(query_fingerprint , candidate_fingerprint)
-          neighbors << {"_id" => compound.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
-        end
-      end
-      neighbors.sort{|a,b| b["similarity"] <=> a["similarity"]}
-    end
-=end
-
     def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
       neighbors = []
       dataset = Dataset.find(dataset_id)

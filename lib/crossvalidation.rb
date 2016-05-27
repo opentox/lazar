@@ -168,7 +168,7 @@ module OpenTox
 
     def correlation_plot
       unless correlation_plot_id
-        plot_id = ValidationStatistics.correlation_plot predictions
+        plot_id = ValidationStatistics.correlation_plot id, predictions
         update(:correlation_plot_id => plot_id)
       end
       $gridfs.find_one(_id: correlation_plot_id).data

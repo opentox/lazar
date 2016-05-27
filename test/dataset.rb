@@ -154,6 +154,7 @@ class DatasetTest < MiniTest::Test
       c = Compound.from_smiles row.shift
       serialized[c.inchi] = row
     end
+    #puts serialized.to_yaml
     original.each do |inchi,row|
       row.each_with_index do |v,i|
         if v.numeric?

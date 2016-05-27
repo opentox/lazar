@@ -46,11 +46,8 @@ module OpenTox
       feature = feature.id if feature.is_a? Feature
       data_entries[substance.to_s] ||= {}
       data_entries[substance.to_s][feature.to_s] ||= []
-      if value.is_a? Array
-        data_entries[substance.to_s][feature.to_s] += value
-      else
-        data_entries[substance.to_s][feature.to_s] << value
-      end
+      data_entries[substance.to_s][feature.to_s] << value
+      #data_entries[substance.to_s][feature.to_s].uniq! if value.numeric? # assuming that identical values come from the same source
     end
 
     # Dataset operations
@@ -75,6 +72,7 @@ module OpenTox
           dataset = self.class.create(:source => self.id )
           substances.each do |substance|
             substance.dataset_ids << dataset.id
+            substance.dataset_ids.uniq!
             substance.save
             dataset.data_entries[substance.id.to_s] = data_entries[substance.id.to_s] ||= {}
           end
@@ -200,7 +198,8 @@ module OpenTox
           next
         end
         all_substances << substance
-        substance.dataset_ids << self.id unless substance.dataset_ids.include? self.id
+        substance.dataset_ids << self.id
+        substance.dataset_ids.uniq!
         substance.save
           
         unless vals.size == features.size 

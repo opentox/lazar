@@ -3,12 +3,11 @@ module OpenTox
   class Nanoparticle < Substance
     include OpenTox
 
-    field :core, type: String
+    field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
-    field :bundles, type: Array, default: []
     field :proteomics, type: Hash, default: {}
 
-    def nanoparticle_neighbors min_sim: 0.1, type:, dataset_id:, prediction_feature_id:
+    def nanoparticle_neighbors_old min_sim: 0.9, type:, dataset_id:, prediction_feature_id:
       dataset = Dataset.find(dataset_id)
       neighbors = []
       dataset.nanoparticles.each do |np|
@@ -25,33 +24,96 @@ module OpenTox
       neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
       neighbors
     end
-
-    def add_feature feature, value, dataset_id
+ 
+    def nanoparticle_neighbors min_sim: 0.9, type:, dataset_id:, prediction_feature_id:
+      p self.name
+      #p self.physchem_descriptors.keys.size
       dataset = Dataset.find(dataset_id)
-      case feature.category
-      when "P-CHEM"
-        physchem_descriptors[feature.id.to_s] ||= []
-        physchem_descriptors[feature.id.to_s] << value
-        physchem_descriptors[feature.id.to_s].uniq!
-      when "Proteomics"
-        proteomics[feature.id.to_s] ||= []
-        proteomics[feature.id.to_s] << value
-        proteomics[feature.id.to_s].uniq!
-      when "TOX"
-        # TODO generic way of parsing TOX values
-        if feature.name == "Net cell association" and feature.unit == "mL/ug(Mg)" 
-          dataset.add self, feature, -Math.log10(value)
-        else
-          dataset.add self, feature, value
+      relevant_features = {}
+      toxicities = []
+      substances = []
+      # TODO: exclude query activities!!!
+      dataset.substances.each do |s|
+        dataset.values(s,prediction_feature_id).each do |act|
+          toxicities << act
+          substances << s
         end
-        dataset.save
-      else
-        warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
+      end
+      R.assign "tox", toxicities
+      feature_ids = physchem_descriptors.keys.select{|fid| Feature.find(fid).is_a? NumericFeature}
+      # identify relevant features
+      feature_ids.each do |feature_id|
+        feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
+        R.assign "feature", feature_values
+        begin
+          R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
+          pvalue = R.eval("cor$p.value").to_ruby
+          if pvalue <= 0.05
+            r = R.eval("cor$estimate").to_ruby
+            relevant_features[feature_id] = {}
+            relevant_features[feature_id]["pvalue"] = pvalue
+            relevant_features[feature_id]["r"] = r
+            relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
+            relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
+          end
+        rescue
+          warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{toxicities}) failed."
+        end
+      end
+      neighbors = []
+      substances.each do |substance|
+        values = dataset.values(substance,prediction_feature_id)
+        if values
+          common_descriptors = relevant_features.keys & substance.physchem_descriptors.keys
+          # scale values
+          query_descriptors = common_descriptors.collect{|d| (physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          neighbor_descriptors = common_descriptors.collect{|d| (substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          #weights = common_descriptors.collect{|d| 1-relevant_features[d]["pvalue"]}
+          weights = common_descriptors.collect{|d| relevant_features[d]["r"]**2}
+          #p weights
+          sim = Algorithm::Similarity.weighted_cosine(query_descriptors,neighbor_descriptors,weights)
+          ##p "SIM"
+          #p [sim, Algorithm::Similarity.cosine(query_descriptors,neighbor_descriptors)]
+          neighbors << {"_id" => substance.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
+        end
+      end
+      p neighbors.size
+      neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
+      neighbors
+    end
+
+    def add_feature feature, value, dataset
+      unless feature.name == "ATOMIC COMPOSITION" or feature.name == "FUNCTIONAL GROUP" # redundand
+        case feature.category
+        when "P-CHEM"
+          physchem_descriptors[feature.id.to_s] ||= []
+          physchem_descriptors[feature.id.to_s] << value
+          physchem_descriptors[feature.id.to_s].uniq!
+        when "Proteomics"
+          proteomics[feature.id.to_s] ||= []
+          proteomics[feature.id.to_s] << value
+          proteomics[feature.id.to_s].uniq!
+        when "TOX"
+          # TODO generic way of parsing TOX values
+          if feature.name == "Net cell association" and feature.unit == "mL/ug(Mg)" 
+            dataset.add self, feature, Math.log2(value)
+          elsif feature.name == "Total protein (BCA assay)"
+            physchem_descriptors[feature.id.to_s] ||= []
+            physchem_descriptors[feature.id.to_s] << value
+            physchem_descriptors[feature.id.to_s].uniq!
+          else
+            dataset.add self, feature, value
+          end
+          dataset.save
+          dataset_ids << dataset.id
+          dataset_ids.uniq!
+        else
+          warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
+        end
       end
     end
 
-    def parse_ambit_value feature, v, dataset_id
-      dataset = Dataset.find(dataset_id)
+    def parse_ambit_value feature, v, dataset
       v.delete "unit"
       # TODO: ppm instead of weights
       if v.keys == ["textValue"]

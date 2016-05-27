@@ -71,7 +71,6 @@ module OpenTox
       #def self.local_physchem_regression(substance:, neighbors:, feature_id:, dataset_id:, method: 'pls')#, method_params="ncomp = 4"
       def self.local_physchem_regression substance, neighbors, method='pls' #, method_params="ncomp = 4"
 
-        #dataset = Dataset.find dataset_id
         activities = []
         weights = []
         pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem_descriptors.keys}.flatten.uniq
@@ -83,7 +82,6 @@ module OpenTox
           activities = neighbor["toxicities"]
           activities.each do |act|
             data_frame[0][i] = act
-            # TODO: update with cosine similarity for physchem
             weights << n["similarity"]
             neighbor.physchem_descriptors.each do |pid,values| 
               values = [values] unless values.is_a? Array

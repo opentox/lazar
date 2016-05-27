@@ -9,10 +9,9 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_create_model_with_feature_selection
-    skip
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
-    feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors", :feature_selection_algorithm => "correlation_filter"})
     nanoparticle = training_dataset.nanoparticles[-34]
     #p nanoparticle.neighbors
     prediction = model.predict nanoparticle
@@ -23,45 +22,55 @@ class NanoparticleTest  < MiniTest::Test
 
   def test_create_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
-    #p training_dataset.nanoparticles.size
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors"})
-    #model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
     nanoparticle = training_dataset.nanoparticles[-34]
     prediction = model.predict nanoparticle
-    p prediction
     refute_nil prediction[:value]
+    assert_includes nanoparticle.dataset_ids, training_dataset.id
+    model.delete
   end
 
   def test_validate_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    #feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors"})
-    p model
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
     cv = RegressionCrossValidation.create model
     p cv
+    File.open("tmp.png","w+"){|f| f.puts cv.correlation_plot}
+    refute_nil cv.r_squared
+    refute_nil cv.rmse
   end
 
   def test_validate_pls_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    #feature = Feature.find_or_create_by(name: "7.99 Toxicity (other) ICP-AES", category: "TOX", unit: "mL/ug(Mg)")
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
-    #model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors"})
-    p model
     cv = RegressionCrossValidation.create model
     p cv
+    File.open("tmp.png","w+"){|f| f.puts cv.correlation_plot}
+    refute_nil cv.r_squared
+    refute_nil cv.rmse
   end
 
   def test_export
-    skip
     Dataset.all.each do |d|
       puts d.to_csv
     end
   end
 
   def test_summaries
+    datasets = Dataset.all
+    datasets = datasets.select{|d| !d.name.nil?}
+    datasets.each do |d|
+      p d.name
+      
+      #p d.features.select{|f| f.name.match (/Total/)}
+      #p d.features.collect{|f| "#{f.name} #{f.unit} #{f.conditions}"}
+      p d.features.uniq.collect{|f| f.name}
+    end
+    assert_equal 9, datasets.size
+=begin
     skip
     features = Feature.all.to_a
     #p features.collect do |f|
@@ -83,6 +92,7 @@ class NanoparticleTest  < MiniTest::Test
     #pccounts.each{|e,n| p Feature.find(e),n if n > 100}
     #p toxcounts.collect{|e,n| Feature.find(e).name if n > 1}.uniq
     toxcounts.each{|e,n| p Feature.find(e),n if n > 100}
+=end
   end
 
 

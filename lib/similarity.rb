@@ -38,7 +38,7 @@ module OpenTox
           magnitude_a += w[i].abs*a[i]**2
           magnitude_b += w[i].abs*b[i]**2
         end
-        dot_product/Math.sqrt(magnitude_a*magnitude_b)
+        dot_product/(Math.sqrt(magnitude_a)*Math.sqrt(magnitude_b))
       end
 
     end

@@ -32,12 +32,13 @@ module OpenTox
         self.neighbor_algorithm_parameters ||= {}
         self.neighbor_algorithm_parameters[:dataset_id] = training_dataset.id
 
-        Algorithm.run(feature_selection_algorithm, self) if feature_selection_algorithm
+        #send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
         save
         self
       end
 
       def correlation_filter
+        self.relevant_features = {}
         toxicities = []
         substances = []
         training_dataset.substances.each do |s|
@@ -49,23 +50,22 @@ module OpenTox
         R.assign "tox", toxicities
         feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
         feature_ids.each do |feature_id|
-          feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id]}
+          feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
           R.assign "feature", feature_values
           begin
-            #R.eval "cor <- cor.test(-log(tox),-log(feature),use='complete')"
-            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='complete')"
+            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
             pvalue = R.eval("cor$p.value").to_ruby
             if pvalue <= 0.05
               r = R.eval("cor$estimate").to_ruby
-              relevant_features[feature] = {}
-              relevant_features[feature]["pvalue"] = pvalue
-              relevant_features[feature]["r"] = r
+              self.relevant_features[feature_id] = {}
+              self.relevant_features[feature_id]["pvalue"] = pvalue
+              self.relevant_features[feature_id]["r"] = r
             end
           rescue
             warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{toxicities}) failed."
           end
         end
-        relevant_features.sort!{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
+        self.relevant_features = self.relevant_features.sort{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
       end
 
       def predict_substance substance
