@@ -62,7 +62,7 @@ suppressPackageStartupMessages({
 "
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -82,8 +82,9 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","Validation","Cross
   "regression.rb",
   "validation-statistics.rb",
   "validation.rb",
-  "crossvalidation.rb",
+  "train-test-validation.rb",
   "leave-one-out-validation.rb",
-  "experiment.rb",
+  "crossvalidation.rb",
+  #"experiment.rb",
   "import.rb",
 ].each{ |f| require_relative f }

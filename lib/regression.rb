@@ -8,7 +8,7 @@ module OpenTox
         sim_sum = 0.0
         neighbors.each do |neighbor|
           sim = neighbor["similarity"]
-          activities = neighbor["toxicities"]
+          activities = neighbor["measurements"]
           activities.each do |act|
             weighted_sum += sim*act
             sim_sum += sim
@@ -26,7 +26,7 @@ module OpenTox
 
         neighbors.each do |n|
           fingerprint = Substance.find(n["_id"]).fingerprint
-          activities = n["toxicities"]
+          activities = n["measurements"]
           activities.each do |act|
             values << act
             weights << n["similarity"]
@@ -79,7 +79,7 @@ module OpenTox
         
         neighbors.each_with_index do |n,i|
           neighbor = Substance.find(n["_id"])
-          activities = neighbor["toxicities"]
+          activities = neighbor["measurements"]
           activities.each do |act|
             data_frame[0][i] = act
             weights << n["similarity"]

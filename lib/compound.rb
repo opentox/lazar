@@ -260,7 +260,7 @@ module OpenTox
       if type == DEFAULT_FINGERPRINT
         neighbors = db_neighbors(min_sim: min_sim, dataset_id: dataset_id)
         neighbors.each do |n|
-          n["toxicities"] = dataset.values(n["_id"],prediction_feature_id)
+          n["measurements"] = dataset.values(n["_id"],prediction_feature_id)
         end
       else 
         query_fingerprint = self.fingerprint type
@@ -269,7 +269,7 @@ module OpenTox
           if values
             candidate_fingerprint = compound.fingerprint type
             sim = Algorithm::Similarity.tanimoto(query_fingerprint , candidate_fingerprint)
-            neighbors << {"_id" => compound.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
+            neighbors << {"_id" => compound.id, "measurements" => values, "similarity" => sim} if sim >= min_sim
           end
         end
       end
@@ -310,7 +310,7 @@ module OpenTox
             'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
           '_id' => 1,
-          #'toxicities' => 1,
+          #'measurements' => 1,
           'dataset_ids' => 1
         }},
         {'$match' =>  {'similarity' => {'$gte' => min_sim}}},

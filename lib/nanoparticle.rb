@@ -6,58 +6,43 @@ module OpenTox
     field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
     field :proteomics, type: Hash, default: {}
-
-    def nanoparticle_neighbors_old min_sim: 0.9, type:, dataset_id:, prediction_feature_id:
-      dataset = Dataset.find(dataset_id)
-      neighbors = []
-      dataset.nanoparticles.each do |np|
-        values = dataset.values(np,prediction_feature_id)
-        if values
-          common_descriptors = physchem_descriptors.keys & np.physchem_descriptors.keys
-          common_descriptors.select!{|id| NumericFeature.find(id) }
-          query_descriptors = common_descriptors.collect{|d| physchem_descriptors[d].first}
-          neighbor_descriptors = common_descriptors.collect{|d| np.physchem_descriptors[d].first}
-          sim = Algorithm::Similarity.cosine(query_descriptors,neighbor_descriptors)
-          neighbors << {"_id" => np.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
-        end
-      end
-      neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
-      neighbors
-    end
  
-    def nanoparticle_neighbors min_sim: 0.9, type:, dataset_id:, prediction_feature_id:
+    def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:
       p self.name
-      #p self.physchem_descriptors.keys.size
       dataset = Dataset.find(dataset_id)
       relevant_features = {}
-      toxicities = []
+      measurements = []
       substances = []
       # TODO: exclude query activities!!!
       dataset.substances.each do |s|
-        dataset.values(s,prediction_feature_id).each do |act|
-          toxicities << act
-          substances << s
+        if s.core == self.core # exclude nanoparticles with different core
+          dataset.values(s,prediction_feature_id).each do |act|
+            measurements << act
+            substances << s
+          end
         end
       end
-      R.assign "tox", toxicities
+      R.assign "tox", measurements
       feature_ids = physchem_descriptors.keys.select{|fid| Feature.find(fid).is_a? NumericFeature}
       # identify relevant features
       feature_ids.each do |feature_id|
         feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
-        R.assign "feature", feature_values
-        begin
-          R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
-          pvalue = R.eval("cor$p.value").to_ruby
-          if pvalue <= 0.05
-            r = R.eval("cor$estimate").to_ruby
-            relevant_features[feature_id] = {}
-            relevant_features[feature_id]["pvalue"] = pvalue
-            relevant_features[feature_id]["r"] = r
-            relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
-            relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
+        unless feature_values.uniq.size == 1
+          R.assign "feature", feature_values
+          begin
+            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
+            p_value = R.eval("cor$p.value").to_ruby
+            if p_value <= 0.05
+              r = R.eval("cor$estimate").to_ruby
+              relevant_features[feature_id] = {}
+              relevant_features[feature_id]["p_value"] = p_value
+              relevant_features[feature_id]["r"] = r
+              relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
+              relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
+            end
+          rescue
+            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
           end
-        rescue
-          warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{toxicities}) failed."
         end
       end
       neighbors = []
@@ -68,13 +53,17 @@ module OpenTox
           # scale values
           query_descriptors = common_descriptors.collect{|d| (physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
           neighbor_descriptors = common_descriptors.collect{|d| (substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
-          #weights = common_descriptors.collect{|d| 1-relevant_features[d]["pvalue"]}
+          #weights = common_descriptors.collect{|d| 1-relevant_features[d]["p_value"]}
           weights = common_descriptors.collect{|d| relevant_features[d]["r"]**2}
-          #p weights
           sim = Algorithm::Similarity.weighted_cosine(query_descriptors,neighbor_descriptors,weights)
-          ##p "SIM"
-          #p [sim, Algorithm::Similarity.cosine(query_descriptors,neighbor_descriptors)]
-          neighbors << {"_id" => substance.id, "toxicities" => values, "similarity" => sim} if sim >= min_sim
+          neighbors << {
+            "_id" => substance.id,
+            "measurements" => values,
+            "similarity" => sim,
+            "common_descriptors" => common_descriptors.collect do |id|
+              {:id => id, :p_value => relevant_features[id]["p_value"], :r_squared => relevant_features[id]["r"]**2}
+            end
+          } if sim >= min_sim
         end
       end
       p neighbors.size
@@ -94,10 +83,7 @@ module OpenTox
           proteomics[feature.id.to_s] << value
           proteomics[feature.id.to_s].uniq!
         when "TOX"
-          # TODO generic way of parsing TOX values
-          if feature.name == "Net cell association" and feature.unit == "mL/ug(Mg)" 
-            dataset.add self, feature, Math.log2(value)
-          elsif feature.name == "Total protein (BCA assay)"
+          if feature.name == "Total protein (BCA assay)"
             physchem_descriptors[feature.id.to_s] ||= []
             physchem_descriptors[feature.id.to_s] << value
             physchem_descriptors[feature.id.to_s].uniq!

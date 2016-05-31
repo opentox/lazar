@@ -11,7 +11,7 @@ class NanoparticleTest  < MiniTest::Test
   def test_create_model_with_feature_selection
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors", :feature_selection_algorithm => "correlation_filter"})
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors", :feature_selection_algorithm => "correlation_filter"})
     nanoparticle = training_dataset.nanoparticles[-34]
     #p nanoparticle.neighbors
     prediction = model.predict nanoparticle
@@ -23,7 +23,7 @@ class NanoparticleTest  < MiniTest::Test
   def test_create_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors"})
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors"})
     nanoparticle = training_dataset.nanoparticles[-34]
     prediction = model.predict nanoparticle
     refute_nil prediction[:value]
@@ -31,13 +31,67 @@ class NanoparticleTest  < MiniTest::Test
     model.delete
   end
 
+  # TODO move to validation-statistics
+  def test_inspect_cv
+    cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
+    cv.correlation_plot_id = nil
+    File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
+    #p cv
+=begin
+    #File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
+    cv.predictions.sort_by{|sid,p| -(p["value"] - p["measurements"].median).abs}[0,5].each do |sid,p|
+      s = Substance.find(sid)
+      puts
+      p s.name
+      p([p["value"],p["measurements"],(p["value"]-p["measured"].median).abs])
+      neighbors = s.physchem_neighbors dataset_id: cv.model.training_dataset_id, prediction_feature_id: cv.model.prediction_feature_id, type: nil
+      neighbors.each do |n|
+        neighbor = Substance.find(n["_id"])
+        p "=="
+        p neighbor.name, n["similarity"], n["measurements"]
+        p neighbor.core["name"]
+        p neighbor.coating.collect{|c| c["name"]}
+        n["common_descriptors"].each do |id|
+          f = Feature.find(id)
+          print "#{f.name} #{f.conditions["MEDIUM"]}"
+          print ", "
+        end
+        puts
+      end
+
+    end
+=end
+  end
+  def test_inspect_worst_prediction
+# TODO check/fix single/double neighbor prediction
+    cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
+    worst_predictions = cv.worst_predictions(n: 3,show_neigbors: false)
+    assert_equal 3, worst_predictions.size
+    assert_kind_of Integer, worst_predictions.first[:neighbors]
+    worst_predictions = cv.worst_predictions
+    #puts worst_predictions.to_yaml
+    assert_equal 5, worst_predictions.size
+    assert_kind_of Array, worst_predictions.first[:neighbors]
+    assert_kind_of Integer, worst_predictions.first[:neighbors].first[:common_descriptors]
+    worst_predictions = cv.worst_predictions(n: 2, show_common_descriptors: true)
+    puts worst_predictions.to_yaml
+    assert_equal 2, worst_predictions.size
+    assert_kind_of Array, worst_predictions.first[:neighbors]
+    refute_nil worst_predictions.first[:neighbors].first[:common_descriptors]
+    #p cv.model.training_dataset.features
+  end
+
   def test_validate_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
-    feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "nanoparticle_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    #feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
+    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
+    
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
     cv = RegressionCrossValidation.create model
-    p cv
-    File.open("tmp.png","w+"){|f| f.puts cv.correlation_plot}
+    p cv.predictions.sort_by{|sid,p| (p["value"] - p["measurements"].median).abs}
+    p cv.rmse
+    p cv.r_squared
+    File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
     refute_nil cv.r_squared
     refute_nil cv.rmse
   end
@@ -45,7 +99,7 @@ class NanoparticleTest  < MiniTest::Test
   def test_validate_pls_model
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "nanoparticle_neighbors"})
+    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "physchem_neighbors"})
     cv = RegressionCrossValidation.create model
     p cv
     File.open("tmp.png","w+"){|f| f.puts cv.correlation_plot}
@@ -79,7 +133,7 @@ class NanoparticleTest  < MiniTest::Test
     toxcounts = {}
     pccounts = {}
     Nanoparticle.all.each do |np|
-      np.toxicities.each do |t,v|
+      np.measurements.each do |t,v|
         toxcounts[t] ||= 0
         toxcounts[t] += 1#v.uniq.size
       end

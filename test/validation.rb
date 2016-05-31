@@ -1,6 +1,7 @@
 require_relative "setup.rb"
 
 class ValidationTest < MiniTest::Test
+  include OpenTox::Validation
 
   # defaults
   
@@ -86,7 +87,7 @@ class ValidationTest < MiniTest::Test
   def test_classification_loo_validation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::LazarClassification.create dataset.features.first, dataset
-    loo = ClassificationLeaveOneOutValidation.create model
+    loo = ClassificationLeaveOneOut.create model
     assert_equal 14, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
     assert loo.accuracy > 0.77
@@ -96,7 +97,7 @@ class ValidationTest < MiniTest::Test
   def test_regression_loo_validation
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::LazarRegression.create dataset.features.first, dataset
-    loo = RegressionLeaveOneOutValidation.create model
+    loo = RegressionLeaveOneOut.create model
     assert loo.r_squared > 0.34, "R^2 (#{loo.r_squared}) should be larger than 0.034"
   end
 

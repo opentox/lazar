@@ -69,7 +69,7 @@ module OpenTox
         training_idxs = indices-test_idxs
         training_substances = training_idxs.collect{|i| substances[i]}
         chunk = [training_substances,test_substances].collect do |substances|
-          dataset = self.class.create(:source => self.id )
+          dataset = self.class.create(:name => "#{self.name} (Fold #{i-1})",:source => self.id )
           substances.each do |substance|
             substance.dataset_ids << dataset.id
             substance.dataset_ids.uniq!

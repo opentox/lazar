@@ -7,7 +7,7 @@ module OpenTox
         sims = {}
         neighbors.each do |neighbor|
           sim = neighbor["similarity"]
-          activities = neighbor["toxicities"]
+          activities = neighbor["measurements"]
           activities.each do |act|
             sims[act] ||= []
             sims[act] << sim

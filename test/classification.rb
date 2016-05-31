@@ -20,7 +20,7 @@ class LazarClassificationTest < MiniTest::Test
     compound = Compound.from_smiles "CCO"
     prediction = model.predict compound
     assert_equal "true", prediction[:value]
-    assert_equal ["false"], prediction[:database_activities]
+    assert_equal ["false"], prediction[:measurements]
 
     # make a dataset prediction
     compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")

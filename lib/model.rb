@@ -22,7 +22,6 @@ module OpenTox
       # @param [OpenTox::Dataset] training_dataset
       # @return [OpenTox::Model::Lazar] Regression or classification model
       def initialize prediction_feature, training_dataset, params={}
-
         super params
 
         # set defaults for empty parameters
@@ -39,15 +38,15 @@ module OpenTox
 
       def correlation_filter
         self.relevant_features = {}
-        toxicities = []
+        measurements = []
         substances = []
         training_dataset.substances.each do |s|
           training_dataset.values(s,prediction_feature_id).each do |act|
-            toxicities << act
+            measurements << act
             substances << s
           end
         end
-        R.assign "tox", toxicities
+        R.assign "tox", measurements
         feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
         feature_ids.each do |feature_id|
           feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
@@ -62,7 +61,7 @@ module OpenTox
               self.relevant_features[feature_id]["r"] = r
             end
           rescue
-            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{toxicities}) failed."
+            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
           end
         end
         self.relevant_features = self.relevant_features.sort{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
@@ -71,22 +70,22 @@ module OpenTox
       def predict_substance substance
         neighbor_algorithm_parameters = Hash[self.neighbor_algorithm_parameters.map{ |k, v| [k.to_sym, v] }] # convert string keys to symbols
         neighbors = substance.send(neighbor_algorithm, neighbor_algorithm_parameters)
-        database_activities = nil
+        measurements = nil
         prediction = {}
         # handle query substance
         if neighbors.collect{|n| n["_id"]}.include? substance.id
 
           query = neighbors.select{|n| n["_id"] == substance.id}.first
-          database_activities = training_dataset.values(query["_id"],prediction_feature_id)
-          prediction[:database_activities] = database_activities
-          prediction[:warning] = "#{database_activities.size} substances have been removed from neighbors, because they are identical with the query substance."
+          measurements = training_dataset.values(query["_id"],prediction_feature_id)
+          prediction[:measurements] = measurements
+          prediction[:warning] = "#{measurements.size} substances have been removed from neighbors, because they are identical with the query substance."
           neighbors.delete_if{|n| n["_id"] == substance.id} # remove query substance for an unbiased prediction (also useful for loo validation)
         end
         if neighbors.empty?
           prediction.merge!({:value => nil,:probabilities => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
         elsif neighbors.size == 1
           value = nil
-          tox = neighbors.first["toxicities"]
+          tox = neighbors.first["measurements"]
           if tox.size == 1 # single measurement
             value = tox.first
           else # multiple measurement
@@ -141,7 +140,7 @@ module OpenTox
         elsif object.is_a? Array
           return predictions
         elsif object.is_a? Dataset
-          predictions.each{|cid,p| p.delete(:neighbors)}
+          #predictions.each{|cid,p| p.delete(:neighbors)}
           # prepare prediction dataset
           measurement_feature = Feature.find prediction_feature_id
 
@@ -187,6 +186,7 @@ module OpenTox
         model.save
         model
       end
+
     end
 
     class LazarRegression < Lazar
@@ -197,19 +197,21 @@ module OpenTox
         model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
         model.neighbor_algorithm_parameters ||= {}
         {
-          :type => "MP2D",
           :min_sim => 0.1,
           :dataset_id => training_dataset.id,
           :prediction_feature_id => prediction_feature.id,
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end
+        model.neighbor_algorithm_parameters[:type] = "MP2D" if training_dataset.substances.first.is_a? Compound
         model.save
         model
       end
+
     end
 
     class Prediction
+
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
