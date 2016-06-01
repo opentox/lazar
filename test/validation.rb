@@ -59,6 +59,7 @@ class ValidationTest < MiniTest::Test
       }
     }
     model = Model::LazarRegression.create dataset.features.first, dataset, params
+    assert_equal params[:neighbor_algorithm_parameters][:type], model[:neighbor_algorithm_parameters][:type]
     cv = RegressionCrossValidation.create model
     cv.validation_ids.each do |vid|
       model = Model::Lazar.find(Validation.find(vid).model_id)
@@ -74,7 +75,6 @@ class ValidationTest < MiniTest::Test
   end
 
   def test_physchem_regression_crossvalidation
-
     training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::LazarRegression.create(training_dataset.features.first, training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
     cv = RegressionCrossValidation.create model

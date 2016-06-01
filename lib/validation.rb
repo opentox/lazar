@@ -9,9 +9,9 @@ module OpenTox
       store_in collection: "validations"
       field :name, type: String
       field :model_id, type: BSON::ObjectId
-      field :nr_instances, type: Integer
-      field :nr_unpredicted, type: Integer
-      field :predictions, type: Hash
+      field :nr_instances, type: Integer, default: 0
+      field :nr_unpredicted, type: Integer, default: 0
+      field :predictions, type: Hash, default: {}
       field :finished_at, type: Time 
 
       def model

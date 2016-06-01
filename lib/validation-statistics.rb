@@ -98,8 +98,8 @@ module OpenTox
 
       def statistics
         # TODO: predictions within prediction_interval
-        rmse = 0
-        mae = 0
+        self.rmse = 0
+        self.mae = 0
         x = []
         y = []
         predictions.each do |cid,pred|
@@ -107,8 +107,8 @@ module OpenTox
             x << pred[:measurements].median
             y << pred[:value]
             error = pred[:value]-pred[:measurements].median
-            rmse += error**2
-            mae += error.abs
+            self.rmse += error**2
+            self.mae += error.abs
           else
             warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
             $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
@@ -117,17 +117,18 @@ module OpenTox
         R.assign "measurement", x
         R.assign "prediction", y
         R.eval "r <- cor(measurement,prediction,use='pairwise')"
-        r = R.eval("r").to_ruby
+        self.r_squared = R.eval("r").to_ruby**2
 
-        mae = mae/predictions.size
-        rmse = Math.sqrt(rmse/predictions.size)
-        $logger.debug "R^2 #{r**2}"
+        self.mae = self.mae/predictions.size
+        self.rmse = Math.sqrt(self.rmse/predictions.size)
+        $logger.debug "R^2 #{r_squared}"
         $logger.debug "RMSE #{rmse}"
         $logger.debug "MAE #{mae}"
+        save
         {
           :mae => mae,
           :rmse => rmse,
-          :r_squared => r**2,
+          :r_squared => r_squared,
         }
       end
 

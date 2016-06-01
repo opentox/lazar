@@ -3,23 +3,7 @@ module OpenTox
   module Validation
     class CrossValidation < Validation
       field :validation_ids, type: Array, default: []
-      field :model_id, type: BSON::ObjectId
       field :folds, type: Integer, default: 10
-      field :nr_instances, type: Integer, default: 0
-      field :nr_unpredicted, type: Integer, default: 0
-      field :predictions, type: Hash, default: {}
-
-      def time
-        finished_at - created_at
-      end
-
-      def validations
-        validation_ids.collect{|vid| TrainTest.find vid}
-      end
-
-      def model
-        Model::Lazar.find model_id
-      end
 
       def self.create model, n=10
         klass = ClassificationCrossValidation if model.is_a? Model::LazarClassification
@@ -54,6 +38,14 @@ module OpenTox
         cv.statistics
         cv.update_attributes(finished_at: Time.now)
         cv
+      end
+
+      def time
+        finished_at - created_at
+      end
+
+      def validations
+        validation_ids.collect{|vid| TrainTest.find vid}
       end
     end
 

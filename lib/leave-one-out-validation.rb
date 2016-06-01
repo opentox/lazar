@@ -49,7 +49,6 @@ module OpenTox
       field :mae, type: Float, default: 0
       field :r_squared, type: Float
       field :correlation_plot_id, type: BSON::ObjectId
-      field :confidence_plot_id, type: BSON::ObjectId
     end
 
   end

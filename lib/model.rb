@@ -33,7 +33,6 @@ module OpenTox
 
         #send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
         save
-        self
       end
 
       def correlation_filter
@@ -203,7 +202,7 @@ module OpenTox
         }.each do |key,value|
           model.neighbor_algorithm_parameters[key] ||= value
         end
-        model.neighbor_algorithm_parameters[:type] = "MP2D" if training_dataset.substances.first.is_a? Compound
+        model.neighbor_algorithm_parameters[:type] ||= "MP2D" if training_dataset.substances.first.is_a? Compound
         model.save
         model
       end
