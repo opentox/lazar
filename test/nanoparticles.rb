@@ -2,13 +2,14 @@ require_relative "setup.rb"
 
 
 class NanoparticleTest  < MiniTest::Test
+  include OpenTox::Validation
 
   def setup
     #Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
-    #`mongorestore --db=development #{File.join(File.dirname(__FILE__),"..","dump","production")}`
   end
 
   def test_create_model_with_feature_selection
+    skip
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors", :feature_selection_algorithm => "correlation_filter"})
@@ -21,6 +22,7 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_create_model
+    skip
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors"})
@@ -33,6 +35,7 @@ class NanoparticleTest  < MiniTest::Test
 
   # TODO move to validation-statistics
   def test_inspect_cv
+    skip
     cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
     cv.correlation_plot_id = nil
     File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
@@ -63,6 +66,7 @@ class NanoparticleTest  < MiniTest::Test
 =end
   end
   def test_inspect_worst_prediction
+    skip
 # TODO check/fix single/double neighbor prediction
     cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
     worst_predictions = cv.worst_predictions(n: 3,show_neigbors: false)
@@ -88,19 +92,21 @@ class NanoparticleTest  < MiniTest::Test
     
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
     cv = RegressionCrossValidation.create model
-    p cv.predictions.sort_by{|sid,p| (p["value"] - p["measurements"].median).abs}
+    p cv
+    #p cv.predictions.sort_by{|sid,p| (p["value"] - p["measurements"].median).abs}
     p cv.rmse
     p cv.r_squared
-    File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
+    #File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
     refute_nil cv.r_squared
     refute_nil cv.rmse
   end
 
   def test_validate_pls_model
+    skip
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
     model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "physchem_neighbors"})
-    cv = RegressionCrossValidation.create model
+    cv = Validation::RegressionCrossValidation.create model
     p cv
     File.open("tmp.png","w+"){|f| f.puts cv.correlation_plot}
     refute_nil cv.r_squared
@@ -108,16 +114,17 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_export
+    skip
     Dataset.all.each do |d|
       puts d.to_csv
     end
   end
 
   def test_summaries
+    skip
     datasets = Dataset.all
     datasets = datasets.select{|d| !d.name.nil?}
     datasets.each do |d|
-      p d.name
       
       #p d.features.select{|f| f.name.match (/Total/)}
       #p d.features.collect{|f| "#{f.name} #{f.unit} #{f.conditions}"}
@@ -125,7 +132,6 @@ class NanoparticleTest  < MiniTest::Test
     end
     assert_equal 9, datasets.size
 =begin
-    skip
     features = Feature.all.to_a
     #p features.collect do |f|
       #f if f.category == "TOX"

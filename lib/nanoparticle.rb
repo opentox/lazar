@@ -100,6 +100,8 @@ module OpenTox
     end
 
     def parse_ambit_value feature, v, dataset
+      #p dataset
+      #p feature
       v.delete "unit"
       # TODO: ppm instead of weights
       if v.keys == ["textValue"]

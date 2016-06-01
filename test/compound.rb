@@ -162,7 +162,7 @@ print c.sdf
   end
 
   def test_fingerprint_db_neighbors
-    #skip
+    skip
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     [
       "CC(=O)CC(C)C#N",
@@ -170,18 +170,12 @@ print c.sdf
       "C(=O)CC(C)C#N",
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
-      t = Time.now
       neighbors = c.db_neighbors(:dataset_id => training_dataset.id, :min_sim => 0.2)
-      p Time.now - t
-      t = Time.now
       neighbors2 = c.fingerprint_neighbors({:type => "MP2D", :dataset_id => training_dataset.id, :min_sim => 0.2, :prediction_feature_id => training_dataset.features.first.id})
-      p Time.now - t
-      p neighbors.size
-      p neighbors2.size
       #p neighbors
       #p neighbors2
       #p neighbors2 - neighbors
-      #assert_equal neighbors, neighbors2
+      assert_equal neighbors, neighbors2
     end
   end
 

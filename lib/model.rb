@@ -236,7 +236,7 @@ module OpenTox
       end
 
       def repeated_crossvalidation
-        RepeatedCrossValidation.find repeated_crossvalidation_id
+        Validation::RepeatedCrossValidation.find repeated_crossvalidation_id
       end
 
       def crossvalidations
@@ -244,7 +244,7 @@ module OpenTox
       end
 
       def leave_one_out_validation
-        LeaveOneOutValidation.find leave_one_out_validation_id
+        Validation::LeaveOneOut.find leave_one_out_validation_id
       end
 
       def regression?
@@ -269,8 +269,8 @@ module OpenTox
         end
         prediction_model[:model_id] = model.id
         prediction_model[:prediction_feature_id] = prediction_feature.id
-        prediction_model[:repeated_crossvalidation_id] = RepeatedCrossValidation.create(model).id
-        prediction_model[:leave_one_out_validation_id] = LeaveOneOutValidation.create(model).id
+        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
+        prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
         prediction_model.save
         prediction_model
       end

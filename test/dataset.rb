@@ -246,7 +246,6 @@ class DatasetTest < MiniTest::Test
         csv.shift
         csv.each do |row|
           c = Compound.from_smiles(row.shift)
-          p row
           assert_equal row, d.values(c,d.features.first)
         end
         d.delete 
