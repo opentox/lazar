@@ -9,10 +9,10 @@ module OpenTox
 
     attr_accessor :scaled_values
  
-    def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:
+    def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:, relevant_features:
       p name
       dataset = Dataset.find(dataset_id)
-      relevant_features = {}
+      #relevant_features = {}
       measurements = []
       substances = []
       # TODO: exclude query activities!!!
@@ -24,30 +24,6 @@ module OpenTox
           end
         end
       end
-      R.assign "tox", measurements
-      feature_ids = physchem_descriptors.keys.select{|fid| Feature.find(fid).is_a? NumericFeature}
-      # identify relevant features
-      feature_ids.each do |feature_id|
-        feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
-        unless feature_values.uniq.size == 1
-          R.assign "feature", feature_values
-          begin
-            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
-            p_value = R.eval("cor$p.value").to_ruby
-            if p_value <= 0.05
-              r = R.eval("cor$estimate").to_ruby
-              relevant_features[feature_id] = {}
-              relevant_features[feature_id]["p_value"] = p_value
-              relevant_features[feature_id]["r"] = r
-              relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
-              relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
-            end
-          rescue
-            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
-          end
-        end
-      end
-      #p relevant_features.keys.collect{|i| Feature.find(i).name}
       neighbors = []
       substances.each do |substance|
         values = dataset.values(substance,prediction_feature_id)

@@ -31,7 +31,7 @@ module OpenTox
         self.neighbor_algorithm_parameters ||= {}
         self.neighbor_algorithm_parameters[:dataset_id] = training_dataset.id
 
-        #send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
+        send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
         save
       end
 
@@ -49,25 +49,31 @@ module OpenTox
         feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
         feature_ids.each do |feature_id|
           feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
-          R.assign "feature", feature_values
-          begin
-            R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
-            pvalue = R.eval("cor$p.value").to_ruby
-            if pvalue <= 0.05
-              r = R.eval("cor$estimate").to_ruby
-              self.relevant_features[feature_id] = {}
-              self.relevant_features[feature_id]["pvalue"] = pvalue
-              self.relevant_features[feature_id]["r"] = r
+          unless feature_values.uniq.size == 1
+            R.assign "feature", feature_values
+            begin
+              R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
+              pvalue = R.eval("cor$p.value").to_ruby
+              if pvalue <= 0.05
+                r = R.eval("cor$estimate").to_ruby
+                self.relevant_features[feature_id] = {}
+                self.relevant_features[feature_id]["pvalue"] = pvalue
+                self.relevant_features[feature_id]["r"] = r
+                self.relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
+                self.relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
+              end
+            rescue
+              warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
             end
-          rescue
-            warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
           end
         end
         self.relevant_features = self.relevant_features.sort{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
+        p self.relevant_features
       end
 
       def predict_substance substance
         neighbor_algorithm_parameters = Hash[self.neighbor_algorithm_parameters.map{ |k, v| [k.to_sym, v] }] # convert string keys to symbols
+        neighbor_algorithm_parameters[:relevant_features] = self.relevant_features if self.relevant_features
         neighbors = substance.send(neighbor_algorithm, neighbor_algorithm_parameters)
         measurements = nil
         prediction = {}
