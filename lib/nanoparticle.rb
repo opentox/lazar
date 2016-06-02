@@ -10,6 +10,7 @@ module OpenTox
     attr_accessor :scaled_values
  
     def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:
+      p name
       dataset = Dataset.find(dataset_id)
       relevant_features = {}
       measurements = []
@@ -46,6 +47,7 @@ module OpenTox
           end
         end
       end
+      #p relevant_features.keys.collect{|i| Feature.find(i).name}
       neighbors = []
       substances.each do |substance|
         values = dataset.values(substance,prediction_feature_id)
@@ -86,9 +88,12 @@ module OpenTox
           physchem_descriptors[feature.id.to_s] << value
           physchem_descriptors[feature.id.to_s].uniq!
         when "Proteomics"
-          proteomics[feature.id.to_s] ||= []
-          proteomics[feature.id.to_s] << value
-          proteomics[feature.id.to_s].uniq!
+          #proteomics[feature.id.to_s] ||= []
+          #proteomics[feature.id.to_s] << value
+          #proteomics[feature.id.to_s].uniq!
+          physchem_descriptors[feature.id.to_s] ||= []
+          physchem_descriptors[feature.id.to_s] << value
+          physchem_descriptors[feature.id.to_s].uniq!
         when "TOX"
           if feature.name == "Total protein (BCA assay)"
             physchem_descriptors[feature.id.to_s] ||= []
@@ -109,6 +114,7 @@ module OpenTox
     def parse_ambit_value feature, v, dataset
       #p dataset
       #p feature
+      # TODO add study id to warnings
       v.delete "unit"
       # TODO: ppm instead of weights
       if v.keys == ["textValue"]

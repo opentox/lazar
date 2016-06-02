@@ -68,17 +68,10 @@ module OpenTox
             effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
             effect["conditions"].delete_if { |k, v| v.nil? }
             if study["protocol"]["category"]["title"].match(/Proteomics/) and effect["result"]["textValue"] and effect["result"]["textValue"].length > 50 # parse proteomics data
-=begin
-              JSON.parse(effect["result"]["textValue"]).each do |identifier, value|
-                # time critical step
-              t = Time.now
-                proteomics_features[identifier] ||= klass.find_or_create_by(:name => identifier, :category => "Proteomics")
-              t1 += Time.now - t
-              t = Time.now
+              JSON.parse(effect["result"]["textValue"]).each do |identifier, value| # time critical step
+                proteomics_features[identifier] ||= NumericFeature.find_or_create_by(:name => identifier, :category => "Proteomics")
                 nanoparticle.parse_ambit_value proteomics_features[identifier], value, dataset
-              t2 += Time.now - t
               end
-=end
             else
               feature = klass.find_or_create_by(
                 :name => effect["endpoint"],
@@ -90,10 +83,6 @@ module OpenTox
             end
           end
           nanoparticle.save
-          #p "Total time: #{Time.now - start_time}"
-          #p "Proteomics features: #{t1}"
-          #p "Proteomics values: #{t2}"
-          #p "Time2: #{t2}"
         end
         datasets.each { |u,d| d.save }
       end
