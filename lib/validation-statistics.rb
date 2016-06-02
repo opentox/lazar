@@ -100,6 +100,8 @@ module OpenTox
         # TODO: predictions within prediction_interval
         self.rmse = 0
         self.mae = 0
+        #self.within_prediction_interval = 0
+        #self.outside_prediction_interval = 0
         x = []
         y = []
         predictions.each do |cid,pred|
@@ -109,6 +111,9 @@ module OpenTox
             error = pred[:value]-pred[:measurements].median
             self.rmse += error**2
             self.mae += error.abs
+            #if pred[:prediction_interval]
+              #if pred[:measurements]
+            #end
           else
             warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
             $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
@@ -118,7 +123,6 @@ module OpenTox
         R.assign "prediction", y
         R.eval "r <- cor(measurement,prediction,use='pairwise')"
         self.r_squared = R.eval("r").to_ruby**2
-
         self.mae = self.mae/predictions.size
         self.rmse = Math.sqrt(self.rmse/predictions.size)
         $logger.debug "R^2 #{r_squared}"

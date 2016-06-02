@@ -6,9 +6,10 @@ module OpenTox
     field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
     field :proteomics, type: Hash, default: {}
+
+    attr_accessor :scaled_values
  
     def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:
-      p self.name
       dataset = Dataset.find(dataset_id)
       relevant_features = {}
       measurements = []
@@ -52,7 +53,9 @@ module OpenTox
           common_descriptors = relevant_features.keys & substance.physchem_descriptors.keys
           # scale values
           query_descriptors = common_descriptors.collect{|d| (physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          @scaled_values = common_descriptors.collect{|d| [d,(physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
           neighbor_descriptors = common_descriptors.collect{|d| (substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          neighbor_scaled_values = common_descriptors.collect{|d| [d,(substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
           #weights = common_descriptors.collect{|d| 1-relevant_features[d]["p_value"]}
           weights = common_descriptors.collect{|d| relevant_features[d]["r"]**2}
           sim = Algorithm::Similarity.weighted_cosine(query_descriptors,neighbor_descriptors,weights)
@@ -61,12 +64,16 @@ module OpenTox
             "measurements" => values,
             "similarity" => sim,
             "common_descriptors" => common_descriptors.collect do |id|
-              {:id => id, :p_value => relevant_features[id]["p_value"], :r_squared => relevant_features[id]["r"]**2}
+              {
+                :id => id,
+                :scaled_value => neighbor_scaled_values[id],
+                :p_value => relevant_features[id]["p_value"],
+                :r_squared => relevant_features[id]["r"]**2}
             end
           } if sim >= min_sim
         end
       end
-      p neighbors.size
+      $logger.debug "#{self.name}: #{neighbors.size} neighbors"
       neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
       neighbors
     end

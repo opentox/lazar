@@ -73,23 +73,19 @@ module OpenTox
 
         activities = []
         weights = []
-        pc_ids = neighbors.collect{|n| Substance.find(n["_id"]).physchem_descriptors.keys}.flatten.uniq
+        pc_ids = neighbors.collect{|n| n["common_descriptors"].collect{|d| d[:id]}}.flatten.uniq.sort
         data_frame = []
         data_frame[0] = []
         
         neighbors.each_with_index do |n,i|
-          neighbor = Substance.find(n["_id"])
-          activities = neighbor["measurements"]
+          activities = n["measurements"]
           activities.each do |act|
             data_frame[0][i] = act
             weights << n["similarity"]
-            neighbor.physchem_descriptors.each do |pid,values| 
-              values = [values] unless values.is_a? Array
-              values.uniq!
-              warn "More than one value for '#{Feature.find(pid).name}': #{values.join(', ')}. Using the median." unless values.size == 1
-              j = pc_ids.index(pid)+1
+            n["common_descriptors"].each do |d| 
+              j = pc_ids.index(d[:id])+1
               data_frame[j] ||= []
-              data_frame[j][i] = values.for_R
+              data_frame[j][i] = d[:scaled_value]
             end
           end if activities
           (0..pc_ids.size+1).each do |j| # for R: fill empty values with NA
@@ -97,10 +93,12 @@ module OpenTox
             data_frame[j][i] ||= "NA"
           end
         end
+
         remove_idx = []
         data_frame.each_with_index do |r,i|
           remove_idx << i if r.uniq.size == 1 # remove properties with a single value
         end
+
         remove_idx.reverse.each do |i|
           data_frame.delete_at i
           pc_ids.delete_at i
@@ -112,7 +110,7 @@ module OpenTox
           prediction
         else
           query_descriptors = pc_ids.collect do |i|
-            substance.physchem_descriptors[i] ? substance.physchem_descriptors[i].for_R : "NA"
+            substance.scaled_values[i] ? substance.scaled_values[i] : "NA"
           end
           remove_idx = []
           query_descriptors.each_with_index do |v,i|
@@ -127,10 +125,9 @@ module OpenTox
           if prediction.nil?
             prediction = local_weighted_average substance, neighbors
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
-            prediction
-          else
-            prediction
           end
+          p prediction
+          prediction
         end
       
       end
@@ -172,10 +169,15 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
           R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
           R.eval "names(fingerprint) <- features" 
           R.eval "prediction <- predict(model,fingerprint)"
+          value = R.eval("prediction").to_f
+          rmse = R.eval("getTrainPerf(model)$TrainRMSE").to_f
+          r_squared = R.eval("getTrainPerf(model)$TrainRsquared").to_f
+          prediction_interval = value-1.96*rmse, value+1.96*rmse
           {
-            :value => R.eval("prediction").to_f,
-            :rmse => R.eval("getTrainPerf(model)$TrainRMSE").to_f,
-            :r_squared => R.eval("getTrainPerf(model)$TrainRsquared").to_f,
+            :value => value,
+            :rmse => rmse,
+            :r_squared => r_squared,
+            :prediction_interval => prediction_interval
           }
         rescue 
           return nil
