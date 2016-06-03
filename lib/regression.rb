@@ -3,7 +3,7 @@ module OpenTox
     
     class Regression
 
-      def self.local_weighted_average substance, neighbors
+      def self.local_weighted_average substance:, neighbors:
         weighted_sum = 0.0
         sim_sum = 0.0
         neighbors.each do |neighbor|
@@ -18,7 +18,7 @@ module OpenTox
         {:value => prediction}
       end
 
-      def self.local_fingerprint_regression substance, neighbors, method='pls'#, method_params="sigma=0.05"
+      def self.local_fingerprint_regression substance:, neighbors:, method: pls#, method_params="sigma=0.05"
         values = []
         fingerprints = {}
         weights = []
@@ -68,8 +68,7 @@ module OpenTox
       
       end
 
-      #def self.local_physchem_regression(substance:, neighbors:, feature_id:, dataset_id:, method: 'pls')#, method_params="ncomp = 4"
-      def self.local_physchem_regression substance, neighbors, method='pls' #, method_params="ncomp = 4"
+      def self.local_physchem_regression substance:, neighbors:, method: pls
 
         activities = []
         weights = []
@@ -88,46 +87,39 @@ module OpenTox
               data_frame[j][i] = d[:scaled_value]
             end
           end if activities
-          #(0..pc_ids.size+1).each do |j| # for R: fill empty values with NA
           (0..pc_ids.size).each do |j| # for R: fill empty values with NA
             data_frame[j] ||= []
             data_frame[j][i] ||= "NA"
           end
         end
 
-        #remove_idx = []
-        #data_frame.each_with_index do |r,i|
-          #remove_idx << i if r.uniq.size == 1 # remove properties with a single value TODO: don't break R names assignment
-        #end
-
-        #p data_frame.size
-        #p pc_ids.size
-        #data_frame.delete_if.with_index { |_, index| remove_idx.include? index }
-        #pc_ids.delete_if.with_index { |_, index| remove_idx.include? index-1 }
-        #remove_idx.sort.reverse.each do |i|
-          #p i
-          #data_frame.delete_at i
-          #pc_ids.delete_at i
-        #end
-        #p data_frame.size
-        #p pc_ids.size
+        data_frame = data_frame.each_with_index.collect do |r,i|
+          if r.uniq.size == 1 # remove properties with a single value 
+            r = nil
+            pc_ids[i-1] = nil # data_frame frame has additional activity entry
+          end
+          r
+        end
+        data_frame.compact!
+        pc_ids.compact!
 
         if pc_ids.empty?
           prediction = local_weighted_average substance, neighbors
-          prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
+          prediction[:warning] = "No relevant variables for regression model. Using weighted average of similar substances."
           prediction
         else
           query_descriptors = pc_ids.collect { |i| substance.scaled_values[i] }
-          remove_idx = []
-          query_descriptors.each_with_index do |v,i|
-            #remove_idx << i if v == "NA"
-            remove_idx << i unless v
+          query_descriptors = query_descriptors.each_with_index.collect do |v,i|
+            unless v
+              v = nil
+              data_frame[i] = nil
+              pc_ids[i] = nil
+            end
+            v
           end
-          remove_idx.sort.reverse.each do |i|
-            data_frame.delete_at i
-            pc_ids.delete_at i
-            query_descriptors.delete_at i
-          end
+          query_descriptors.compact!
+          data_frame.compact!
+          pc_ids.compact!
           prediction = r_model_prediction method, data_frame, pc_ids.collect{|i| "\"#{i}\""}, weights, query_descriptors
           if prediction.nil?
             prediction = local_weighted_average substance, neighbors
@@ -143,7 +135,6 @@ module OpenTox
         R.assign "weights", training_weights
         r_data_frame = "data.frame(#{training_data.collect{|r| "c(#{r.join(',')})"}.join(', ')})"
 =begin
-=end
 rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
         File.open("tmp.R","w+"){|f|
           f.puts "suppressPackageStartupMessages({
@@ -162,19 +153,21 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
           f.puts "weights <- c(#{training_weights.join(', ')})"
           f.puts "features <- c(#{training_features.join(', ')})"
           f.puts "names(data) <- append(c('activities'),features)" #
+          f.puts "ctrl <- rfeControl(functions = #{method}, method = 'repeatedcv', repeats = 5, verbose = T)"
+          f.puts "lmProfile <- rfe(activities ~ ., data = data, rfeControl = ctrl)"
+
           f.puts "model <- train(activities ~ ., data = data, method = '#{method}')"
           f.puts "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
           f.puts "names(fingerprint) <- features" 
           f.puts "prediction <- predict(model,fingerprint)"
         }
+=end
         
         R.eval "data <- #{r_data_frame}"
         R.assign "features", training_features
-        p training_features.size
-        p R.eval("names(data)").to_ruby.size
         begin
           R.eval "names(data) <- append(c('activities'),features)" #
-          R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass)"
+          R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass, allowParallel=TRUE)"
           R.eval "fingerprint <- data.frame(rbind(c(#{query_feature_values.join ','})))"
           R.eval "names(fingerprint) <- features" 
           R.eval "prediction <- predict(model,fingerprint)"

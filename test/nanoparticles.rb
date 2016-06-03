@@ -23,12 +23,20 @@ class NanoparticleTest  < MiniTest::Test
 
   def test_inspect_cv
     cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
-    p cv
-    p cv.id
-    cv.correlation_plot_id = nil
+    #p cv
+    #p cv.id
+    #cv.correlation_plot_id = nil
     File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
-    p cv.statistics
+    #p cv.statistics
     #p cv.model.training_dataset.substances.first.physchem_descriptors.keys.collect{|d| Feature.find(d).name}
+    CrossValidation.all.sort_by{|cv| cv.created_at}.reverse.each do |cv|
+      p cv.name
+      p cv.created_at
+      begin
+      p cv.r_squared
+      rescue
+      end
+    end
   end
   def test_inspect_worst_prediction
   
@@ -37,12 +45,12 @@ class NanoparticleTest  < MiniTest::Test
     assert_equal 3, worst_predictions.size
     assert_kind_of Integer, worst_predictions.first[:neighbors]
     worst_predictions = cv.worst_predictions
-    #puts worst_predictions.to_yaml
     assert_equal 5, worst_predictions.size
     assert_kind_of Array, worst_predictions.first[:neighbors]
     assert_kind_of Integer, worst_predictions.first[:neighbors].first[:common_descriptors]
-    worst_predictions = cv.worst_predictions(n: 2, show_common_descriptors: true)
     puts worst_predictions.to_yaml
+    worst_predictions = cv.worst_predictions(n: 2, show_common_descriptors: true)
+    #puts worst_predictions.to_yaml
     assert_equal 2, worst_predictions.size
     assert_kind_of Array, worst_predictions.first[:neighbors]
     refute_nil worst_predictions.first[:neighbors].first[:common_descriptors]
@@ -67,7 +75,35 @@ class NanoparticleTest  < MiniTest::Test
     training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
     
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :feature_selection_algorithm => :correlation_filter, :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    model = Model::LazarRegression.create(feature, training_dataset, {
+      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
+      :feature_selection_algorithm => :correlation_filter,
+      :prediction_algorithm_parameters => {:method => 'pls'},
+      #:feature_selection_algorithm_parameters => {:category => "P-CHEM"},
+      #:feature_selection_algorithm_parameters => {:category => "Proteomics"},
+      :neighbor_algorithm => "physchem_neighbors",
+      :neighbor_algorithm_parameters => {:min_sim => 0.5}
+    })
+    cv = RegressionCrossValidation.create model
+    p cv.rmse
+    p cv.r_squared
+    refute_nil cv.r_squared
+    refute_nil cv.rmse
+  end
+
+  def test_validate_random_forest_model
+    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
+    
+    model = Model::LazarRegression.create(feature, training_dataset, {
+      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
+      :prediction_algorithm_parameters => {:method => 'rf'},
+      :feature_selection_algorithm => :correlation_filter,
+      #:feature_selection_algorithm_parameters => {:category => "P-CHEM"},
+      #:feature_selection_algorithm_parameters => {:category => "Proteomics"},
+      :neighbor_algorithm => "physchem_neighbors",
+      :neighbor_algorithm_parameters => {:min_sim => 0.5}
+    })
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared

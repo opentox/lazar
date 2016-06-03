@@ -57,6 +57,8 @@ suppressPackageStartupMessages({
   library(pls,lib=\"#{rlib}\")
   library(caret,lib=\"#{rlib}\")
   library(doMC,lib=\"#{rlib}\")
+  library(randomForest,lib=\"#{rlib}\")
+  library(plyr,lib=\"#{rlib}\")
   registerDoMC(#{NR_CORES})
 })
 "

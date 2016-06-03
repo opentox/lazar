@@ -3,6 +3,7 @@ module OpenTox
   module Model
 
     class Lazar 
+
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -11,11 +12,15 @@ module OpenTox
       field :name, type: String
       field :creator, type: String, default: __FILE__
       field :training_dataset_id, type: BSON::ObjectId
-      field :prediction_algorithm, type: String
       field :prediction_feature_id, type: BSON::ObjectId
+
+      field :prediction_algorithm, type: String
+      field :prediction_algorithm_parameters, type: Hash, default: {}
+
       field :neighbor_algorithm, type: String
       field :neighbor_algorithm_parameters, type: Hash, default: {}
       field :feature_selection_algorithm, type: String
+      field :feature_selection_algorithm_parameters, type: Hash, default: {}
       field :relevant_features, type: Hash
 
       # Create a lazar model from a training_dataset and a feature_dataset
@@ -35,7 +40,8 @@ module OpenTox
         save
       end
 
-      def correlation_filter
+      def correlation_filter 
+        # TODO: speedup, single assignment of all features to R+ parallel computation of significance?
         self.relevant_features = {}
         measurements = []
         substances = []
@@ -47,6 +53,7 @@ module OpenTox
         end
         R.assign "tox", measurements
         feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
+        feature_ids.select!{|fid| Feature.find(fid).category == feature_selection_algorithm_parameters[:category]} if feature_selection_algorithm_parameters[:category]
         feature_ids.each do |feature_id|
           feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
           unless feature_values.uniq.size == 1
@@ -68,7 +75,6 @@ module OpenTox
           end
         end
         self.relevant_features = self.relevant_features.sort{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
-        p self.relevant_features
       end
 
       def predict_substance substance
@@ -90,14 +96,14 @@ module OpenTox
           prediction.merge!({:value => nil,:probabilities => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
         elsif neighbors.size == 1
           value = nil
-          tox = neighbors.first["measurements"]
-          if tox.size == 1 # single measurement
-            value = tox.first
+          m = neighbors.first["measurements"]
+          if m.size == 1 # single measurement
+            value = m.first
           else # multiple measurement
-            if tox.collect{|t| t.numeric?}.uniq == [true] # numeric
-              value = tox.median
-            elsif tox.uniq.size == 1 # single value
-              value = tox.first
+            if m.collect{|t| t.numeric?}.uniq == [true] # numeric
+              value = m.median
+            elsif m.uniq.size == 1 # single value
+              value = m.first
             else # contradictory results
               # TODO add majority vote??
             end
@@ -106,7 +112,8 @@ module OpenTox
         else
           # call prediction algorithm
           klass,method = prediction_algorithm.split('.')
-          result = Object.const_get(klass).send(method,substance,neighbors)
+          params = prediction_algorithm_parameters.merge({:substance => substance, :neighbors => neighbors})
+          result = Object.const_get(klass).send(method,params)
           prediction.merge! result
           prediction[:neighbors] = neighbors
           prediction[:neighbors] ||= []
