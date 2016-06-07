@@ -71,6 +71,8 @@ module OpenTox
 
     class RepeatedCrossValidation < Validation
       field :crossvalidation_ids, type: Array, default: []
+      field :correlation_plot_id, type: BSON::ObjectId
+
       def self.create model, folds=10, repeats=3
         repeated_cross_validation = self.new
         repeats.times do |n|
@@ -80,8 +82,41 @@ module OpenTox
         repeated_cross_validation.save
         repeated_cross_validation
       end
+
       def crossvalidations
         crossvalidation_ids.collect{|id| CrossValidation.find(id)}
+      end
+
+      def correlation_plot format: "png"
+        #unless correlation_plot_id
+          feature = Feature.find(crossvalidations.first.model.prediction_feature)
+          title = feature.name
+          title += "[#{feature.unit}]" if feature.unit and !feature.unit.blank?
+          tmpfile = "/tmp/#{id.to_s}_correlation.#{format}"
+          images = []
+          crossvalidations.each_with_index do |cv,i|
+            x = []
+            y = []
+            cv.predictions.each do |sid,p|
+              x << p["value"]
+              y << p["measurements"].median
+            end
+            R.assign "measurement", x
+            R.assign "prediction", y
+            R.eval "all = c(measurement,prediction)"
+            R.eval "range = c(min(all), max(all))"
+            R.eval "image#{i} = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
+            R.eval "image#{i} = image#{i} + geom_abline(intercept=0, slope=1)"
+            images << "image#{i}"
+          end
+          R.eval "pdf('#{tmpfile}')"
+          R.eval "grid.arrange(#{images.join ","},ncol=#{images.size})"
+          R.eval "dev.off()"
+          file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{id.to_s}_correlation_plot.#{format}")
+          correlation_plot_id = $gridfs.insert_one(file)
+          update(:correlation_plot_id => correlation_plot_id)
+        #end
+      $gridfs.find_one(_id: correlation_plot_id).data
       end
     end
   end

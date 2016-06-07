@@ -6,6 +6,7 @@ class NanoparticleTest  < MiniTest::Test
 
   def setup
     # TODO: multiple runs create duplicates
+    #$mongo.database.drop
     #Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
   end
 

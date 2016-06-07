@@ -136,9 +136,9 @@ module OpenTox
         }
       end
 
-      def correlation_plot 
+      def correlation_plot format: "png"
         unless correlation_plot_id
-          tmpfile = "/tmp/#{id.to_s}_correlation.pdf"
+          tmpfile = "/tmp/#{id.to_s}_correlation.#{format}"
           x = []
           y = []
           feature = Feature.find(predictions.first.last["prediction_feature_id"])
@@ -155,7 +155,7 @@ module OpenTox
           R.eval "image = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
           R.eval "image = image + geom_abline(intercept=0, slope=1)"
           R.eval "ggsave(file='#{tmpfile}', plot=image)"
-          file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{id.to_s}_correlation_plot.png")
+          file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{id.to_s}_correlation_plot.#{format}")
           plot_id = $gridfs.insert_one(file)
           update(:correlation_plot_id => plot_id)
         end

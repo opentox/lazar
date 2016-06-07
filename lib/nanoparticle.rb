@@ -10,7 +10,6 @@ module OpenTox
     attr_accessor :scaled_values
  
     def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:, relevant_features:
-      p name
       dataset = Dataset.find(dataset_id)
       #relevant_features = {}
       measurements = []

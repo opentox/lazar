@@ -122,7 +122,7 @@ module OpenTox
           pc_ids.compact!
           prediction = r_model_prediction method, data_frame, pc_ids.collect{|i| "\"#{i}\""}, weights, query_descriptors
           if prediction.nil?
-            prediction = local_weighted_average substance, neighbors
+            prediction = local_weighted_average(substance: substance, neighbors: neighbors)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
           end
           p prediction
