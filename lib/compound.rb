@@ -257,12 +257,13 @@ module OpenTox
     def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
       neighbors = []
       dataset = Dataset.find(dataset_id)
-      if type == DEFAULT_FINGERPRINT
-        neighbors = db_neighbors(min_sim: min_sim, dataset_id: dataset_id)
-        neighbors.each do |n|
-          n["measurements"] = dataset.values(n["_id"],prediction_feature_id)
-        end
-      else 
+      # TODO: fix db_neighbors
+#      if type == DEFAULT_FINGERPRINT
+#        neighbors = db_neighbors(min_sim: min_sim, dataset_id: dataset_id)
+#        neighbors.each do |n|
+#          n["measurements"] = dataset.values(n["_id"],prediction_feature_id)
+#        end
+#      else 
         query_fingerprint = self.fingerprint type
         dataset.compounds.each do |compound|
           values = dataset.values(compound,prediction_feature_id)
@@ -271,7 +272,7 @@ module OpenTox
             sim = Algorithm::Similarity.tanimoto(query_fingerprint , candidate_fingerprint)
             neighbors << {"_id" => compound.id, "measurements" => values, "similarity" => sim} if sim >= min_sim
           end
-        end
+#        end
       end
       neighbors.sort{|a,b| b["similarity"] <=> a["similarity"]}
     end
@@ -294,6 +295,7 @@ module OpenTox
 #    end
 
     def db_neighbors min_sim: 0.1, dataset_id:
+      p fingerprints[DEFAULT_FINGERPRINT]
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
 
       #qn = default_fingerprint_size

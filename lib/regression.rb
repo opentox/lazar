@@ -18,7 +18,7 @@ module OpenTox
         {:value => prediction}
       end
 
-      def self.local_fingerprint_regression substance:, neighbors:, method: pls#, method_params="sigma=0.05"
+      def self.local_fingerprint_regression substance:, neighbors:, method: "pls" #, method_params="sigma=0.05"
         values = []
         fingerprints = {}
         weights = []
@@ -55,7 +55,7 @@ module OpenTox
           substance_features = variables.collect{|f| substance.fingerprint.include?(f) ? "T" : "F"} 
           prediction = r_model_prediction method, data_frame, variables, weights, substance_features
           if prediction.nil? or prediction[:value].nil?
-            prediction = local_weighted_average substance, neighbors
+            prediction = local_weighted_average(substance: substance, neighbors: neighbors)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
             prediction
           else
@@ -68,7 +68,7 @@ module OpenTox
       
       end
 
-      def self.local_physchem_regression substance:, neighbors:, method: pls
+      def self.local_physchem_regression substance:, neighbors:, method: "pls"
 
         activities = []
         weights = []
