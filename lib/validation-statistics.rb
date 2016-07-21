@@ -143,8 +143,8 @@ module OpenTox
           y = []
           feature = Feature.find(predictions.first.last["prediction_feature_id"])
           predictions.each do |sid,p|
-            x << p["value"]
-            y << p["measurements"].median
+            x << p["measurements"].median
+            y << p["value"]
           end
           R.assign "measurement", x
           R.assign "prediction", y

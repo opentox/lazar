@@ -73,6 +73,8 @@ module OpenTox
                 nanoparticle.parse_ambit_value proteomics_features[identifier], value, dataset
               end
             else
+              name = effect["endpoint"]
+              name = "log2(Net cell association)" if name == "Log2 transformed" # use a sensible name
               feature = klass.find_or_create_by(
                 :name => effect["endpoint"],
                 :unit => effect["result"]["unit"],
