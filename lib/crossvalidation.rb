@@ -18,7 +18,7 @@ module OpenTox
         cv.save # set created_at
         nr_instances = 0
         nr_unpredicted = 0
-        predictions = {}
+        #predictions = {}
         training_dataset = Dataset.find model.training_dataset_id
         training_dataset.folds(n).each_with_index do |fold,fold_nr|
           #fork do # parallel execution of validations can lead to Rserve and memory problems
@@ -28,7 +28,7 @@ module OpenTox
             cv.validation_ids << validation.id
             cv.nr_instances += validation.nr_instances
             cv.nr_unpredicted += validation.nr_unpredicted
-            cv.predictions.merge! validation.predictions
+            #cv.predictions.merge! validation.predictions
             $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
           #end
         end
@@ -46,6 +46,12 @@ module OpenTox
 
       def validations
         validation_ids.collect{|vid| TrainTest.find vid}
+      end
+
+      def predictions
+        predictions = {}
+        validations.each{|v| predictions.merge!(v.predictions)}
+        predictions
       end
     end
 

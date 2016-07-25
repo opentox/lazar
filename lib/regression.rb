@@ -48,7 +48,7 @@ module OpenTox
         end
 
         if variables.empty?
-          prediction = local_weighted_average substance, neighbors
+          prediction = local_weighted_average(substance: substance, neighbors: neighbors)
           prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
           prediction
         else
@@ -104,7 +104,7 @@ module OpenTox
         pc_ids.compact!
 
         if pc_ids.empty?
-          prediction = local_weighted_average substance, neighbors
+          prediction = local_weighted_average(substance: substance, neighbors: neighbors)
           prediction[:warning] = "No relevant variables for regression model. Using weighted average of similar substances."
           prediction
         else
