@@ -283,10 +283,45 @@ module OpenTox
         prediction_model[:model_id] = model.id
         prediction_model[:prediction_feature_id] = prediction_feature.id
         prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
-        prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
+        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
         prediction_model.save
         prediction_model
       end
+
+    end
+
+    class NanoPrediction < Prediction
+
+      def self.from_json_dump dir, category
+        Import::Enanomapper.import dir
+
+        prediction_model = self.new(
+          :endpoint => "log2(Net cell association)",
+          :source => "https://data.enanomapper.net/",
+          :species => "A549 human lung epithelial carcinoma cells",
+          :unit => "log2(ug/Mg)"
+        )
+        params = {
+          :feature_selection_algorithm => :correlation_filter,
+          :feature_selection_algorithm_parameters => {:category => category},
+          :neighbor_algorithm => "physchem_neighbors",
+          :neighbor_algorithm_parameters => {:min_sim => 0.5},
+          :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
+          :prediction_algorithm_parameters => {:method => 'rf'}, # random forests
+          } 
+        training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+        prediction_feature = Feature.find_or_create_by(name: "log2(Net cell association)", category: "TOX")
+        #prediction_feature = Feature.find("579621b84de73e267b414e55")
+        prediction_model[:prediction_feature_id] = prediction_feature.id
+        model = Model::LazarRegression.create(prediction_feature, training_dataset, params)
+        prediction_model[:model_id] = model.id
+        repeated_cv = Validation::RepeatedCrossValidation.create model
+        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
+        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
+        prediction_model.save
+        prediction_model
+      end
+
     end
 
   end
