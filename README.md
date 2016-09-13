@@ -42,4 +42,4 @@ Documentation
 
 Copyright
 ---------
-Copyright (c) 2009-2015 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.
+Copyright (c) 2009-2016 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.
