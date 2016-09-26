@@ -241,7 +241,7 @@ module OpenTox
 
     # @return [String] PubChem Compound Identifier (CID), derieved via restcall to pubchem
     def cid
-      pug_uri = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/"
+      pug_uri = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
       update(:cid => RestClientWrapper.post(File.join(pug_uri, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
