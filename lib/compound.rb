@@ -249,7 +249,7 @@ module OpenTox
     # @return [String] ChEMBL database compound id, derieved via restcall to chembl
     def chemblid
       # https://www.ebi.ac.uk/chembldb/ws#individualCompoundByInChiKey
-      uri = "http://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
+      uri = "https://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
       update(:chemblid => JSON.parse(RestClientWrapper.get(uri))["compounds"].first["chemblId"]) unless self["chemblid"] 
       self["chemblid"]
     end
