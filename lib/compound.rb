@@ -1,4 +1,4 @@
-CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
+CACTUS_URI="https://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
 
