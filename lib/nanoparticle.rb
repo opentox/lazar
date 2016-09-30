@@ -5,7 +5,7 @@ module OpenTox
 
     field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
-    field :proteomics, type: Hash, default: {}
+    #field :proteomics, type: Hash, default: {}
 
     attr_accessor :scaled_values
  
@@ -63,26 +63,16 @@ module OpenTox
           physchem_descriptors[feature.id.to_s] << value
           physchem_descriptors[feature.id.to_s].uniq!
         when "Proteomics"
-          #proteomics[feature.id.to_s] ||= []
-          #proteomics[feature.id.to_s] << value
-          #proteomics[feature.id.to_s].uniq!
           physchem_descriptors[feature.id.to_s] ||= []
           physchem_descriptors[feature.id.to_s] << value
           physchem_descriptors[feature.id.to_s].uniq!
         when "TOX"
-          if feature.name == "Total protein (BCA assay)"
-            physchem_descriptors[feature.id.to_s] ||= []
-            physchem_descriptors[feature.id.to_s] << value
-            physchem_descriptors[feature.id.to_s].uniq!
-          else
-            dataset.add self, feature, value
-          end
-          dataset.save
-          dataset_ids << dataset.id
-          dataset_ids.uniq!
+          dataset.add self, feature, value
         else
           warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
         end
+        dataset_ids << dataset.id
+        dataset_ids.uniq!
       end
     end
 

@@ -62,24 +62,43 @@ module OpenTox
           np["bundles"].keys.each do |bundle_uri|
             nanoparticle.dataset_ids << datasets[bundle_uri].id
           end
+
           dataset = datasets[np["bundles"].keys.first]
           proteomics_features = {}
+          category = study["protocol"]["topcategory"]
+          source = study["protocol"]["category"]["term"]
+
           study["effects"].each do |effect|
+
             effect["result"]["textValue"] ?  klass = NominalFeature : klass = NumericFeature
             effect["conditions"].delete_if { |k, v| v.nil? }
+
             if study["protocol"]["category"]["title"].match(/Proteomics/) and effect["result"]["textValue"] and effect["result"]["textValue"].length > 50 # parse proteomics data
+
               JSON.parse(effect["result"]["textValue"]).each do |identifier, value| # time critical step
-                proteomics_features[identifier] ||= NumericFeature.find_or_create_by(:name => identifier, :category => "Proteomics")
+                proteomics_features[identifier] ||= NumericFeature.find_or_create_by(:name => identifier, :category => "Proteomics", :unit => "Spectral counts", :source => source)
                 nanoparticle.parse_ambit_value proteomics_features[identifier], value, dataset
               end
             else
               name = effect["endpoint"]
-              name = "log2(Net cell association)" if name == "Log2 transformed" # use a sensible name
+              unit = effect["result"]["unit"]
+              warnings = []
+              case name
+              when "Log2 transformed" # use a sensible name
+                name = "log2(Net cell association)"
+                warnings = ["Original name was 'Log2 transformed'"]
+                unit = "log2(mL/ug(Mg))"
+              when "Total protein (BCA assay)"
+                category = "P-CHEM"
+                warnings = ["Category changed from TOX to P-CHEM"]
+              end
               feature = klass.find_or_create_by(
-                :name => effect["endpoint"],
-                :unit => effect["result"]["unit"],
-                :category => study["protocol"]["topcategory"],
-                :conditions => effect["conditions"]
+                :name => name,
+                :unit => unit,
+                :category => category,
+                :conditions => effect["conditions"],
+                :source => study["protocol"]["category"]["term"],
+                :warnings => warnings
               )
               nanoparticle.parse_ambit_value feature, effect["result"], dataset
             end
