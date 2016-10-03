@@ -13,31 +13,73 @@ module OpenTox
       field :creator, type: String, default: __FILE__
       field :training_dataset_id, type: BSON::ObjectId
       field :prediction_feature_id, type: BSON::ObjectId
-
-      field :prediction_algorithm, type: String
-      field :prediction_algorithm_parameters, type: Hash, default: {}
-
-      field :neighbor_algorithm, type: String
-      field :neighbor_algorithm_parameters, type: Hash, default: {}
-      field :feature_selection_algorithm, type: String
-      field :feature_selection_algorithm_parameters, type: Hash, default: {}
+      field :algorithms, type: Hash
       field :relevant_features, type: Hash
-
-      # Create a lazar model from a training_dataset and a feature_dataset
-      # @param [OpenTox::Dataset] training_dataset
-      # @return [OpenTox::Model::Lazar] Regression or classification model
-      def initialize prediction_feature, training_dataset, params={}
-        super params
+      
+      def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
+        bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
+        prediction_feature = training_dataset.features.first unless prediction_feature
+        # TODO: prediction_feature without training_dataset: use all available data
+        # explicit prediction algorithm
+        if algorithms[:prediction] and algorithms[:prediction][:method]
+          case algorithms[:prediction][:method]
+          when /Classifiction/
+            model = LazarClassification.new
+          when /Regression/
+            model = LazarRegression.new 
+          end
+        # guess model type
+        elsif prediction_feature.numeric? 
+          model = LazarRegression.new 
+        else
+          model = LazarClassification.new
+        end
+        # set defaults
+        if model.class == LazarClassification
+          model.algorithms = {
+            :similarity => {
+              :descriptors => "fingerprint['MP2D']",
+              :method => "Algorithm::Similarity.tanimoto",
+              :min => 0.1
+            },
+            :prediction => {
+              :descriptors => "fingerprint['MP2D']",
+              :method => "Algorithm::Classification.weighted_majority_vote",
+            },
+            :feature_selection => nil,
+          }
+        elsif model.class == LazarRegression
+          model.algorithms = {
+            :similarity => {
+              :descriptors => "fingerprint['MP2D']",
+              :method => "Algorithm::Similarity.tanimoto",
+              :min => 0.1
+            },
+            :prediction => {
+              :descriptors => "fingerprint['MP2D']",
+              :method => "Algorithm::Regression.local_caret",
+              :parameters => "pls",
+            },
+            :feature_selection => nil,
+          }
+        end
+        
+        # overwrite defaults
+        algorithms.each do |type,parameters|
+          parameters.each do |p,v|
+            model.algorithms[type][p] = v
+          end if parameters
+        end
 
         # set defaults for empty parameters
-        self.prediction_feature_id ||= prediction_feature.id
-        self.training_dataset_id ||= training_dataset.id
-        self.name ||= "#{training_dataset.name} #{prediction_feature.name}" 
-        self.neighbor_algorithm_parameters ||= {}
-        self.neighbor_algorithm_parameters[:dataset_id] = training_dataset.id
+        model.prediction_feature_id = prediction_feature.id
+        model.training_dataset_id = training_dataset.id
+        model.name = "#{training_dataset.name} #{prediction_feature.name}" 
 
-        send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
-        save
+        #send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
+        model.save
+        p model
+        model
       end
 
       def correlation_filter 
@@ -181,44 +223,10 @@ module OpenTox
     end
 
     class LazarClassification < Lazar
-      
-      def self.create prediction_feature, training_dataset, params={}
-        model = self.new prediction_feature, training_dataset, params
-        model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
-        model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.neighbor_algorithm_parameters ||= {}
-        {
-          :type => "MP2D",
-          :dataset_id => training_dataset.id,
-          :prediction_feature_id => prediction_feature.id,
-          :min_sim => 0.1
-        }.each do |key,value|
-          model.neighbor_algorithm_parameters[key] ||= value
-        end
-        model.save
-        model
-      end
 
     end
 
     class LazarRegression < Lazar
-
-      def self.create prediction_feature, training_dataset, params={}
-        model = self.new prediction_feature, training_dataset, params
-        model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
-        model.neighbor_algorithm_parameters ||= {}
-        {
-          :min_sim => 0.1,
-          :dataset_id => training_dataset.id,
-          :prediction_feature_id => prediction_feature.id,
-        }.each do |key,value|
-          model.neighbor_algorithm_parameters[key] ||= value
-        end
-        model.neighbor_algorithm_parameters[:type] ||= "MP2D" if training_dataset.substances.first.is_a? Compound
-        model.save
-        model
-      end
 
     end
 

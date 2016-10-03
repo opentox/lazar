@@ -1,8 +1,6 @@
 module OpenTox
 
-  # Ruby interface
-
-  # create default OpenTox classes (defined in opentox-client.rb)
+  # create default OpenTox classes
   # provides Mongoid's query and persistence methods
   # http://mongoid.org/en/mongoid/docs/persistence.html
   # http://mongoid.org/en/mongoid/docs/querying.html
@@ -25,4 +23,3 @@ module OpenTox
   end
 
 end
-

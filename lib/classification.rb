@@ -25,7 +25,9 @@ module OpenTox
         prediction = probabilities.key(p_max)
         {:value => prediction,:probabilities => probabilities}
       end
+
     end
+
   end
 end
 
