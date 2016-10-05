@@ -85,7 +85,13 @@ print c.sdf
       refute_nil c.fingerprint("MP2D")
     end
     c = d.compounds[371]
-    n = c.fingerprint_neighbors({:type => "FP4", :min_sim => 0.7, :dataset_id => d.id, :prediction_feature_id => d.features.first.id })
+    n = c.neighbors(
+      descriptors: {:method => "fingerprint", :type => "FP4"},
+      similarity: {:method => "Algorithm::Similarity.tanimoto", :min => 0.7},
+      dataset_id: d.id,
+      prediction_feature_id: d.features.first.id 
+    )
+
     assert n.size >= 8, "Neighbors size (#{n.size}) should be larger than 7"
   end
 
@@ -118,7 +124,12 @@ print c.sdf
     ].each do |smi|
       c = OpenTox::Compound.from_smiles smi
       types.each do |type|
-        neighbors = c.fingerprint_neighbors({:type => type, :dataset_id => training_dataset.id, :min_sim => min_sim, :prediction_feature_id => training_dataset.features.first.id})
+        neighbors = c.fingerprint_neighbors(
+          descriptors: {:method => "fingerprint",:type => type},
+          dataset_id: training_dataset.id,
+          similarity: {:method => "Algorithm::Similarity.tanimoto", :min => min_sim},
+          prediction_feature_id: training_dataset.features.first.id
+        )
         unless type == "FP2" and smi == "CC(=O)CC(C)C#N" or smi == "C(=O)CC(C)C#N" and (type == "FP2" or type == "MACCS")
           refute_empty neighbors
         end
@@ -197,8 +208,8 @@ print c.sdf
 
   def test_physchem
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C"
-    assert_equal PhysChem::OBDESCRIPTORS.size, c.physchem.size
-    assert_equal PhysChem::OBDESCRIPTORS.size, c.physchem(PhysChem.openbabel_descriptors).size
-    assert_equal PhysChem::unique_descriptors.size, c.physchem(PhysChem.unique_descriptors).size
+    assert_equal PhysChem::OBDESCRIPTORS.size, c.calculated_physchem.size
+    assert_equal PhysChem::OBDESCRIPTORS.size, c.calculated_physchem(PhysChem.openbabel_descriptors).size
+    assert_equal PhysChem::unique_descriptors.size, c.calculated_physchem(PhysChem.unique_descriptors).size
   end
 end
