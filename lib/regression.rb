@@ -3,7 +3,8 @@ module OpenTox
     
     class Regression
 
-      def self.local_weighted_average substance:, neighbors:
+      def self.weighted_average descriptors:nil, neighbors:, parameters:nil
+        # TODO: prediction_interval
         weighted_sum = 0.0
         sim_sum = 0.0
         neighbors.each do |neighbor|
@@ -18,7 +19,57 @@ module OpenTox
         {:value => prediction}
       end
 
-      def self.local_fingerprint_regression substance:, neighbors:, method: "pls" #, method_params="sigma=0.05"
+      def self.caret descriptors:, neighbors:, method: "pls", parameters:nil
+        values = []
+        descriptors = {}
+        weights = []
+        descriptor_ids = neighbors.collect{|n| n["descriptors"]}.flatten.uniq.sort
+
+        neighbors.each do |n|
+          activities = n["measurements"]
+          activities.each do |act|
+            values << act
+            weights << n["similarity"]
+            descriptor_ids.each do |id|
+              descriptors[id] ||= []
+              descriptors[id] << n["descriptors"].include?(id) 
+            end
+          end if activities
+        end
+
+        variables = []
+        data_frame = [values]
+
+        descriptors.each do |k,v| 
+          unless v.uniq.size == 1
+            data_frame << v.collect{|m| m ? "T" : "F"}
+            variables << k
+          end
+        end
+
+        if variables.empty?
+          prediction = weighted_average(descriptors: descriptors, neighbors: neighbors)
+          prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
+          prediction
+        else
+          substance_features = variables.collect{|f| descriptors.include?(f) ? "T" : "F"} 
+          #puts data_frame.to_yaml
+          prediction = r_model_prediction method, data_frame, variables, weights, substance_features
+          if prediction.nil? or prediction[:value].nil?
+            prediction = weighted_average(descriptors: descriptors, neighbors: neighbors)
+            prediction[:warning] = "Could not create local caret model. Using weighted average of similar substances."
+            prediction
+          else
+            prediction[:prediction_interval] = [prediction[:value]-1.96*prediction[:rmse], prediction[:value]+1.96*prediction[:rmse]]
+            prediction[:value] = prediction[:value]
+            prediction[:rmse] = prediction[:rmse]
+            prediction
+          end
+        end
+      
+      end
+
+      def self.fingerprint_regression substance:, neighbors:, method: "pls" #, method_params="sigma=0.05"
         values = []
         fingerprints = {}
         weights = []
@@ -48,14 +99,14 @@ module OpenTox
         end
 
         if variables.empty?
-          prediction = local_weighted_average(substance: substance, neighbors: neighbors)
+          prediction = weighted_average(substance: substance, neighbors: neighbors)
           prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
           prediction
         else
           substance_features = variables.collect{|f| substance.fingerprint.include?(f) ? "T" : "F"} 
           prediction = r_model_prediction method, data_frame, variables, weights, substance_features
           if prediction.nil? or prediction[:value].nil?
-            prediction = local_weighted_average(substance: substance, neighbors: neighbors)
+            prediction = weighted_average(substance: substance, neighbors: neighbors)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
             prediction
           else
@@ -68,7 +119,8 @@ module OpenTox
       
       end
 
-      def self.local_physchem_regression substance:, neighbors:, method: "pls"
+=begin
+      def self.physchem_regression substance:, neighbors:, method: "pls"
 
         activities = []
         weights = []
@@ -104,7 +156,7 @@ module OpenTox
         pc_ids.compact!
 
         if pc_ids.empty?
-          prediction = local_weighted_average(substance: substance, neighbors: neighbors)
+          prediction = weighted_average(substance: substance, neighbors: neighbors)
           prediction[:warning] = "No relevant variables for regression model. Using weighted average of similar substances."
           prediction
         else
@@ -122,7 +174,7 @@ module OpenTox
           pc_ids.compact!
           prediction = r_model_prediction method, data_frame, pc_ids.collect{|i| "\"#{i}\""}, weights, query_descriptors
           if prediction.nil?
-            prediction = local_weighted_average(substance: substance, neighbors: neighbors)
+            prediction = weighted_average(substance: substance, neighbors: neighbors)
             prediction[:warning] = "Could not create local PLS model. Using weighted average of similar substances."
           end
           p prediction
@@ -130,6 +182,7 @@ module OpenTox
         end
       
       end
+=end
 
       def self.r_model_prediction method, training_data, training_features, training_weights, query_feature_values
         R.assign "weights", training_weights

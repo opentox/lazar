@@ -5,10 +5,10 @@ module OpenTox
 
     field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
-    #field :proteomics, type: Hash, default: {}
 
     attr_accessor :scaled_values
  
+=begin
     def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:, relevant_features:
       dataset = Dataset.find(dataset_id)
       #relevant_features = {}
@@ -27,12 +27,12 @@ module OpenTox
       substances.each do |substance|
         values = dataset.values(substance,prediction_feature_id)
         if values
-          common_descriptors = relevant_features.keys & substance.physchem_descriptors.keys
+          common_descriptors = relevant_features.keys & substance.descriptors.keys
           # scale values
-          query_descriptors = common_descriptors.collect{|d| (physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
-          @scaled_values = common_descriptors.collect{|d| [d,(physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
-          neighbor_descriptors = common_descriptors.collect{|d| (substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
-          neighbor_scaled_values = common_descriptors.collect{|d| [d,(substance.physchem_descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
+          query_descriptors = common_descriptors.collect{|d| (descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          @scaled_values = common_descriptors.collect{|d| [d,(descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
+          neighbor_descriptors = common_descriptors.collect{|d| (substance.descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
+          neighbor_scaled_values = common_descriptors.collect{|d| [d,(substance.descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
           #weights = common_descriptors.collect{|d| 1-relevant_features[d]["p_value"]}
           weights = common_descriptors.collect{|d| relevant_features[d]["r"]**2}
           sim = Algorithm::Similarity.weighted_cosine(query_descriptors,neighbor_descriptors,weights)
@@ -54,18 +54,19 @@ module OpenTox
       neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
       neighbors
     end
+=end
 
     def add_feature feature, value, dataset
       unless feature.name == "ATOMIC COMPOSITION" or feature.name == "FUNCTIONAL GROUP" # redundand
         case feature.category
         when "P-CHEM"
-          physchem_descriptors[feature.id.to_s] ||= []
-          physchem_descriptors[feature.id.to_s] << value
-          physchem_descriptors[feature.id.to_s].uniq!
+          properties[feature.id.to_s] ||= []
+          properties[feature.id.to_s] << value
+          properties[feature.id.to_s].uniq!
         when "Proteomics"
-          physchem_descriptors[feature.id.to_s] ||= []
-          physchem_descriptors[feature.id.to_s] << value
-          physchem_descriptors[feature.id.to_s].uniq!
+          properties[feature.id.to_s] ||= []
+          properties[feature.id.to_s] << value
+          properties[feature.id.to_s].uniq!
         when "TOX"
           dataset.add self, feature, value
         else

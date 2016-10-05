@@ -15,21 +15,22 @@ module OpenTox
 
     class Similarity
 
-      def self.tanimoto a, b
-        ( a & b).size/(a|b).size.to_f
+      def self.tanimoto fingerprints
+        ( fingerprints[0] & fingerprints[1]).size/(fingerprints[0]|fingerprints[1]).size.to_f
       end
 
-      def self.euclid a, b
-        sq = a.zip(b).map{|a,b| (a - b) ** 2}
+      def self.euclid fingerprints
+        sq = fingerprints[0].zip(fingerprints[1]).map{|a,b| (a - b) ** 2}
         Math.sqrt(sq.inject(0) {|s,c| s + c})
       end
 
       # http://stackoverflow.com/questions/1838806/euclidean-distance-vs-pearson-correlation-vs-cosine-similarity
-      def self.cosine a, b
-        Algorithm::Vector.dot_product(a, b) / (Algorithm::Vector.magnitude(a) * Algorithm::Vector.magnitude(b))
+      def self.cosine fingerprints
+        Algorithm::Vector.dot_product(fingerprints[0], fingerprints[1]) / (Algorithm::Vector.magnitude(fingerprints[0]) * Algorithm::Vector.magnitude(fingerprints[1]))
       end
 
-      def self.weighted_cosine(a, b, w)
+      def self.weighted_cosine fingerprints # [a,b,weights]
+        a, b, w = fingerprints
         dot_product = 0
         magnitude_a = 0
         magnitude_b = 0

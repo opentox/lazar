@@ -28,101 +28,91 @@ module OpenTox
           when /Regression/
             model = LazarRegression.new 
           end
+
         # guess model type
         elsif prediction_feature.numeric? 
           model = LazarRegression.new 
         else
           model = LazarClassification.new
         end
+
         # set defaults
-        if model.class == LazarClassification
+        substance_classes = training_dataset.substances.collect{|s| s.class.to_s}.uniq
+        bad_request_error "Cannot create models for mixed substance classes '#{substance_classes.join ', '}'." unless substance_classes.size == 1
+
+        if substance_classes.first == "OpenTox::Compound"
+
           model.algorithms = {
+            :descriptors => {
+              :method => "fingerprint",
+              :type => 'MP2D',
+            },
             :similarity => {
-              :descriptors => "fingerprint['MP2D']",
               :method => "Algorithm::Similarity.tanimoto",
               :min => 0.1
             },
-            :prediction => {
-              :descriptors => "fingerprint['MP2D']",
-              :method => "Algorithm::Classification.weighted_majority_vote",
-            },
-            :feature_selection => nil,
+            :feature_selection => nil
           }
-        elsif model.class == LazarRegression
-          model.algorithms = {
-            :similarity => {
-              :descriptors => "fingerprint['MP2D']",
-              :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.1
-            },
-            :prediction => {
-              :descriptors => "fingerprint['MP2D']",
-              :method => "Algorithm::Regression.local_caret",
+
+          if model.class == LazarClassification
+            model.algorithms[:prediction] = {
+                :method => "Algorithm::Classification.weighted_majority_vote",
+            }
+          elsif model.class == LazarRegression
+            model.algorithms[:prediction] = {
+              :method => "Algorithm::Regression.caret",
               :parameters => "pls",
+            }
+          end
+
+        elsif substance_classes.first == "OpenTox::Nanoparticle"
+          model.algorithms = {
+            :descriptors => {
+              :method => "properties",
+              #:types => ["P-CHEM","Proteomics"],
+              :types => ["P-CHEM"],
             },
-            :feature_selection => nil,
+            :similarity => {
+              :method => "Algorithm::Similarity.weighted_cosine",
+              :min => 0.5
+            },
+            :prediction => {
+              :method => "Algorithm::Regression.caret",
+              :parameters => "rf",
+            },
+            :feature_selection => {
+              :method => "Algorithm::FeatureSelection.correlation_filter",
+            },
           }
+        else
+          bad_request_error "Cannot create models for #{substance_classes.first}."
         end
         
-        # overwrite defaults
+        # overwrite defaults with explicit parameters
         algorithms.each do |type,parameters|
-          parameters.each do |p,v|
-            model.algorithms[type][p] = v
-          end if parameters
+          if parameters and parameters.is_a? Hash
+            parameters.each do |p,v|
+              model.algorithms[type] ||= {}
+              model.algorithms[type][p] = v
+            end
+          else
+            model.algorithms[type] = parameters
+          end
         end
 
-        # set defaults for empty parameters
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
         model.name = "#{training_dataset.name} #{prediction_feature.name}" 
 
-        #send(feature_selection_algorithm.to_sym) if feature_selection_algorithm
+        if model.algorithms[:feature_selection] and model.algorithms[:feature_selection][:method]
+          model.relevant_features = Algorithm.run model.algorithms[:feature_selection][:method], dataset: training_dataset, prediction_feature: prediction_feature, types: model.algorithms[:descriptors][:types]
+        end
         model.save
-        p model
         model
       end
 
-      def correlation_filter 
-        # TODO: speedup, single assignment of all features to R+ parallel computation of significance?
-        self.relevant_features = {}
-        measurements = []
-        substances = []
-        training_dataset.substances.each do |s|
-          training_dataset.values(s,prediction_feature_id).each do |act|
-            measurements << act
-            substances << s
-          end
-        end
-        R.assign "tox", measurements
-        feature_ids = training_dataset.substances.collect{ |s| s["physchem_descriptors"].keys}.flatten.uniq
-        feature_ids.select!{|fid| Feature.find(fid).category == feature_selection_algorithm_parameters[:category]} if feature_selection_algorithm_parameters[:category]
-        feature_ids.each do |feature_id|
-          feature_values = substances.collect{|s| s["physchem_descriptors"][feature_id].first if s["physchem_descriptors"][feature_id]}
-          unless feature_values.uniq.size == 1
-            R.assign "feature", feature_values
-            begin
-              R.eval "cor <- cor.test(tox,feature,method = 'pearson',use='pairwise')"
-              pvalue = R.eval("cor$p.value").to_ruby
-              if pvalue <= 0.05
-                r = R.eval("cor$estimate").to_ruby
-                self.relevant_features[feature_id] = {}
-                self.relevant_features[feature_id]["pvalue"] = pvalue
-                self.relevant_features[feature_id]["r"] = r
-                self.relevant_features[feature_id]["mean"] = R.eval("mean(feature, na.rm=TRUE)").to_ruby
-                self.relevant_features[feature_id]["sd"] = R.eval("sd(feature, na.rm=TRUE)").to_ruby
-              end
-            rescue
-              warn "Correlation of '#{Feature.find(feature_id).name}' (#{feature_values}) with '#{Feature.find(prediction_feature_id).name}' (#{measurements}) failed."
-            end
-          end
-        end
-        self.relevant_features = self.relevant_features.sort{|a,b| a[1]["pvalue"] <=> b[1]["pvalue"]}.to_h
-      end
-
       def predict_substance substance
-        neighbor_algorithm_parameters = Hash[self.neighbor_algorithm_parameters.map{ |k, v| [k.to_sym, v] }] # convert string keys to symbols
-        neighbor_algorithm_parameters[:relevant_features] = self.relevant_features if self.relevant_features
-        neighbors = substance.send(neighbor_algorithm, neighbor_algorithm_parameters)
+        neighbors = substance.neighbors dataset_id: training_dataset_id, prediction_feature_id: prediction_feature_id, descriptors: algorithms[:descriptors], similarity: algorithms[:similarity], relevant_features: relevant_features
         measurements = nil
         prediction = {}
         # handle query substance
@@ -153,9 +143,17 @@ module OpenTox
           prediction.merge!({:value => value, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting median of its experimental values.", :neighbors => neighbors}) if value
         else
           # call prediction algorithm
-          klass,method = prediction_algorithm.split('.')
-          params = prediction_algorithm_parameters.merge({:substance => substance, :neighbors => neighbors})
-          result = Object.const_get(klass).send(method,params)
+          case algorithms[:descriptors][:method]
+          when "fingerprint"
+            descriptors = substance.fingerprints[algorithms[:descriptors][:type]]
+          when "properties"
+            descriptors = substance.properties
+          else
+            bad_request_error "Descriptor method '#{algorithms[:descriptors][:method]}' not available."
+          end
+          params = algorithms[:prediction].merge({:descriptors => descriptors, :neighbors => neighbors})
+          params.delete :method
+          result = Algorithm.run algorithms[:prediction][:method], params
           prediction.merge! result
           prediction[:neighbors] = neighbors
           prediction[:neighbors] ||= []
@@ -176,7 +174,7 @@ module OpenTox
         elsif object.is_a? Dataset
           substances = object.substances
         else 
-          bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Compounds or an OpenTox::Dataset as parameter."
+          bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Substances or an OpenTox::Dataset as parameter."
         end
 
         # make predictions
@@ -194,7 +192,6 @@ module OpenTox
         elsif object.is_a? Array
           return predictions
         elsif object.is_a? Dataset
-          #predictions.each{|cid,p| p.delete(:neighbors)}
           # prepare prediction dataset
           measurement_feature = Feature.find prediction_feature_id
 
@@ -205,8 +202,6 @@ module OpenTox
             :prediction_feature_id => prediction_feature.id,
             :predictions => predictions
           )
-
-          #prediction_dataset.save
           return prediction_dataset
         end
 
@@ -314,7 +309,7 @@ module OpenTox
           :feature_selection_algorithm_parameters => {:category => category},
           :neighbor_algorithm => "physchem_neighbors",
           :neighbor_algorithm_parameters => {:min_sim => 0.5},
-          :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
+          :prediction_algorithm => "OpenTox::Algorithm::Regression.physchem_regression",
           :prediction_algorithm_parameters => {:method => 'rf'}, # random forests
           } 
         training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")

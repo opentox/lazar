@@ -75,9 +75,9 @@ module OpenTox
       fingerprints[type]
     end
 
-    def physchem descriptors=PhysChem.openbabel_descriptors
+    def calculated_physchem descriptors=PhysChem.openbabel_descriptors
       # TODO: speedup java descriptors
-      calculated_ids = physchem_descriptors.keys
+      calculated_ids = descriptors.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
       new_ids = descriptors.collect{|d| d.id.to_s} - calculated_ids
       descs = {}
@@ -90,11 +90,11 @@ module OpenTox
       # avoid recalculating Cdk features with multiple values
       descs.keys.uniq.each do |k|
         descs[k].send(k[0].downcase,k[1],self).each do |n,v|
-          physchem_descriptors[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
+          descriptors[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
         end
       end
       save
-      physchem_descriptors.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
+      descriptors.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
     end
 
     def smarts_match smarts, count=false
@@ -254,6 +254,7 @@ module OpenTox
       self["chemblid"]
     end
 
+=begin
     def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
       neighbors = []
       dataset = Dataset.find(dataset_id)
@@ -276,6 +277,7 @@ module OpenTox
       end
       neighbors.sort{|a,b| b["similarity"] <=> a["similarity"]}
     end
+=end
 
 #    def physchem_neighbors params
 #      # TODO: fix, tests
@@ -340,7 +342,7 @@ module OpenTox
     # @return [Float] molecular weight
     def molecular_weight
       mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
-      physchem([mw_feature])[mw_feature.id.to_s]
+      calculated_physchem([mw_feature])[mw_feature.id.to_s]
     end
 
     private

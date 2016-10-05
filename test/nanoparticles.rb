@@ -6,19 +6,24 @@ class NanoparticleTest  < MiniTest::Test
 
   def setup
     # TODO: multiple runs create duplicates
-    $mongo.database.drop
-    Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
+    #$mongo.database.drop
+    #Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
+    @training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+    unless @training_dataset
+      Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
+      @training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+    end
   end
 
   def test_create_model
     skip
-    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
+    @training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors"})
-    nanoparticle = training_dataset.nanoparticles[-34]
+    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors"})
+    nanoparticle = @training_dataset.nanoparticles[-34]
     prediction = model.predict nanoparticle
     refute_nil prediction[:value]
-    assert_includes nanoparticle.dataset_ids, training_dataset.id
+    assert_includes nanoparticle.dataset_ids, @training_dataset.id
     model.delete
   end
 
@@ -29,7 +34,7 @@ class NanoparticleTest  < MiniTest::Test
     #cv.correlation_plot_id = nil
     File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
     #p cv.statistics
-    #p cv.model.training_dataset.substances.first.physchem_descriptors.keys.collect{|d| Feature.find(d).name}
+    #p cv.model.@training_dataset.substances.first.physchem_descriptors.keys.collect{|d| Feature.find(d).name}
     CrossValidation.all.sort_by{|cv| cv.created_at}.reverse.each do |cv|
       p cv.name
       p cv.created_at
@@ -59,11 +64,10 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_model
-    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     #feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
     feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
     
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :feature_selection_algorithm => :correlation_filter, :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :feature_selection_algorithm => :correlation_filter, :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -73,10 +77,9 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_pls_model
-    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
     
-    model = Model::LazarRegression.create(feature, training_dataset, {
+    model = Model::LazarRegression.create(feature, @training_dataset, {
       :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
       :feature_selection_algorithm => :correlation_filter,
       :prediction_algorithm_parameters => {:method => 'pls'},
@@ -93,10 +96,9 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_random_forest_model
-    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
     
-    model = Model::LazarRegression.create(feature, training_dataset, {
+    model = Model::LazarRegression.create(feature, @training_dataset, {
       :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
       :prediction_algorithm_parameters => {:method => 'rf'},
       :feature_selection_algorithm => :correlation_filter,
@@ -113,10 +115,9 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_proteomics_pls_model
-    training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
     feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
     
-    model = Model::LazarRegression.create(feature, training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "proteomics_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "proteomics_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared
