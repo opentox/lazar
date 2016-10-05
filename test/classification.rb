@@ -4,7 +4,7 @@ class LazarClassificationTest < MiniTest::Test
 
   def test_lazar_classification
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = Model::LazarClassification.create training_dataset.features.first, training_dataset
+    model = Model::Lazar.create training_dataset: training_dataset
 
     [ {
       :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
@@ -40,9 +40,9 @@ class LazarClassificationTest < MiniTest::Test
 
   def test_lazar_kazius
     t = Time.now
-    dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"kazius.csv")
     t = Time.now
-    model = Model::LazarClassification.create(dataset.features.first,dataset)
+    model = Model::Lazar.create training_dataset: training_dataset
     t = Time.now
     2.times do
       compound = Compound.from_smiles("Clc1ccccc1NN")
@@ -50,6 +50,6 @@ class LazarClassificationTest < MiniTest::Test
       assert_equal "1", prediction[:value]
       #assert_in_delta 0.019858401199860445, prediction[:confidence], 0.001
     end
-    dataset.delete
+    training_dataset.delete
   end
 end
