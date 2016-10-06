@@ -83,6 +83,7 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","
   "model.rb",
   "classification.rb",
   "regression.rb",
+  "caret.rb",
   "validation-statistics.rb",
   "validation.rb",
   "train-test-validation.rb",

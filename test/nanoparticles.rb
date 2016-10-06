@@ -5,29 +5,26 @@ class NanoparticleTest  < MiniTest::Test
   include OpenTox::Validation
 
   def setup
-    # TODO: multiple runs create duplicates
-    #$mongo.database.drop
-    #Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
     @training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
     unless @training_dataset
       Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
       @training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
     end
+    @prediction_feature = @training_dataset.features.select{|f| f["name"] == 'log2(Net cell association)'}.first
   end
 
   def test_create_model
-    skip
-    @training_dataset = Dataset.find_or_create_by(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles")
-    feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :neighbor_algorithm => "physchem_neighbors"})
+    model = Model::Lazar.create training_dataset: @training_dataset
     nanoparticle = @training_dataset.nanoparticles[-34]
     prediction = model.predict nanoparticle
+    p prediction
     refute_nil prediction[:value]
     assert_includes nanoparticle.dataset_ids, @training_dataset.id
     model.delete
   end
 
   def test_inspect_cv
+    skip
     cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
     #p cv
     #p cv.id
@@ -45,6 +42,7 @@ class NanoparticleTest  < MiniTest::Test
     end
   end
   def test_inspect_worst_prediction
+    skip
   
     cv = CrossValidation.all.sort_by{|cv| cv.created_at}.last
     worst_predictions = cv.worst_predictions(n: 3,show_neigbors: false)
@@ -64,10 +62,8 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_model
-    #feature = Feature.find_or_create_by(name: "Net cell association", category: "TOX", unit: "mL/ug(Mg)")
-    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
-    
-    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_weighted_average", :feature_selection_algorithm => :correlation_filter, :neighbor_algorithm => "physchem_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    algorithms = { :prediction => {:method => "Algorithm::Regression.weighted_average" } }
+    model = Model::Lazar.create training_dataset: @training_dataset
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -77,17 +73,14 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_pls_model
-    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
-    
-    model = Model::LazarRegression.create(feature, @training_dataset, {
-      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
-      :feature_selection_algorithm => :correlation_filter,
-      :prediction_algorithm_parameters => {:method => 'pls'},
-      #:feature_selection_algorithm_parameters => {:category => "P-CHEM"},
-      #:feature_selection_algorithm_parameters => {:category => "Proteomics"},
-      :neighbor_algorithm => "physchem_neighbors",
-      :neighbor_algorithm_parameters => {:min_sim => 0.5}
-    })
+    algorithms = {
+      :descriptors => {
+        :method => "properties",
+        :types => ["P-CHEM"]
+      },
+      :prediction => {:method => "Algorithm::Caret.regression", :parameters => 'pls' },
+    }
+    model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -96,17 +89,14 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_random_forest_model
-    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
-    
-    model = Model::LazarRegression.create(feature, @training_dataset, {
-      :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression",
-      :prediction_algorithm_parameters => {:method => 'rf'},
-      :feature_selection_algorithm => :correlation_filter,
-      #:feature_selection_algorithm_parameters => {:category => "P-CHEM"},
-      #:feature_selection_algorithm_parameters => {:category => "Proteomics"},
-      :neighbor_algorithm => "physchem_neighbors",
-      :neighbor_algorithm_parameters => {:min_sim => 0.5}
-    })
+    algorithms = {
+      :descriptors => {
+        :method => "properties",
+        :types => ["P-CHEM"]
+      },
+      :prediction => {:method => "Algorithm::Caret.regression", :parameters => 'rf' }
+    }
+    model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -115,9 +105,28 @@ class NanoparticleTest  < MiniTest::Test
   end
 
   def test_validate_proteomics_pls_model
-    feature = Feature.find_or_create_by(name: "Log2 transformed", category: "TOX")
-    
-    model = Model::LazarRegression.create(feature, @training_dataset, {:prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression", :neighbor_algorithm => "proteomics_neighbors", :neighbor_algorithm_parameters => {:min_sim => 0.5}})
+    algorithms = {
+      :descriptors => {
+        :method => "properties",
+        :types => ["Proteomics"]
+      },
+      :prediction => {:method => "Algorithm::Caret.regression", :parameters => 'rf' }
+    }
+    model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
+    cv = RegressionCrossValidation.create model
+    p cv.rmse
+    p cv.r_squared
+    refute_nil cv.r_squared
+    refute_nil cv.rmse
+  end
+
+  def test_validate_all_default_model
+    algorithms = {
+      :descriptors => {
+        :types => ["Proteomics","P-CHEM"]
+      },
+    }
+    model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     cv = RegressionCrossValidation.create model
     p cv.rmse
     p cv.r_squared

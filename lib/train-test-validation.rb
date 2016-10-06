@@ -9,10 +9,7 @@ module OpenTox
 
       def self.create model, training_set, test_set
         
-        atts = model.attributes.dup # do not modify attributes of the original model
-        atts["_id"] = BSON::ObjectId.new
-        atts[:training_dataset_id] = training_set.id
-        validation_model = model.class.create model.prediction_feature, training_set, atts
+        validation_model = model.class.create prediction_feature: model.prediction_feature, training_dataset: training_set, algorithms: model.algorithms
         validation_model.save
         predictions = validation_model.predict test_set.substances
         nr_unpredicted = 0

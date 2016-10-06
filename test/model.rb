@@ -13,7 +13,7 @@ class ModelTest < MiniTest::Test
         :min => 0.1
       },
       :prediction => {
-        :method => "Algorithm::Regression.caret",
+        :method => "Algorithm::Caret.regression",
         :parameters => "pls",
       },
       :feature_selection => nil,
@@ -65,7 +65,7 @@ class ModelTest < MiniTest::Test
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Regression.caret", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.weighted_cosine", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
@@ -78,7 +78,7 @@ class ModelTest < MiniTest::Test
       training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
     end
     model = Model::Lazar.create  training_dataset: training_dataset
-    assert_equal "Algorithm::Regression.caret", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
     assert_equal "rf", model.algorithms[:prediction][:parameters]
     assert_equal "Algorithm::Similarity.weighted_cosine", model.algorithms[:similarity][:method]
     prediction = model.predict training_dataset.substances[14]
@@ -87,6 +87,7 @@ class ModelTest < MiniTest::Test
   end
 
   def test_nanoparticle_parameters
+    skip
   end
 
   def test_regression_with_feature_selection
@@ -98,13 +99,14 @@ class ModelTest < MiniTest::Test
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Regression.caret", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
   end
 
   def test_caret_parameters
+    skip
   end
 
   def test_default_classification
@@ -152,26 +154,5 @@ class ModelTest < MiniTest::Test
     assert_equal "false", prediction[:value]
     assert_equal 4, prediction[:neighbors].size
   end
-
-=begin
-  def test_physchem_description
-    assert_equal 355, PhysChem.descriptors.size
-    assert_equal 15, PhysChem.openbabel_descriptors.size
-    assert_equal 295, PhysChem.cdk_descriptors.size
-    assert_equal 45, PhysChem.joelib_descriptors.size
-    assert_equal 310, PhysChem.unique_descriptors.size
-  end
-
-  def test_physchem
-    assert_equal 355, PhysChem.descriptors.size
-    c = Compound.from_smiles "CC(=O)CC(C)C"
-    logP = PhysChem.find_or_create_by :name => "Openbabel.logP"
-    assert_equal 1.6215, logP.calculate(c)
-    jlogP = PhysChem.find_or_create_by :name => "Joelib.LogP"
-    assert_equal 3.5951, jlogP.calculate(c)
-    alogP = PhysChem.find_or_create_by :name => "Cdk.ALOGP.ALogP"
-    assert_equal 0.35380000000000034, alogP.calculate(c)
-  end
-=end
 
 end
