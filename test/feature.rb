@@ -32,7 +32,6 @@ class FeatureTest < MiniTest::Test
   def test_duplicated_features
     metadata = {
       :name => "feature duplication test",
-      :nominal => true,
     }
     feature = NumericFeature.find_or_create_by metadata
     dup_feature = NumericFeature.find_or_create_by metadata

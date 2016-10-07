@@ -63,7 +63,7 @@ class DatasetTest < MiniTest::Test
     f = File.join DATA_DIR, "multi_cell_call.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
-    assert_equal true, d.features.first.nominal
+    assert_equal true, d.features.first.nominal?
     assert_equal 1056, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     errors.each do |smi|

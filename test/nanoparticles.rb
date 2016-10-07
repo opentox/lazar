@@ -19,7 +19,7 @@ class NanoparticleTest  < MiniTest::Test
     prediction = model.predict nanoparticle
     refute_nil prediction[:value]
     assert_includes nanoparticle.dataset_ids, @training_dataset.id
-    asser_true @prediction_feature.measured
+    assert true, @prediction_feature.measured
     model.delete
   end
 
@@ -39,7 +39,8 @@ class NanoparticleTest  < MiniTest::Test
       :prediction => {:parameters => 'pls' },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
-    assert_equal "pls", model.algorithms[:prediction][:method]
+    assert_equal "pls", model.algorithms[:prediction][:parameters]
+    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -53,7 +54,8 @@ class NanoparticleTest  < MiniTest::Test
       :prediction => { :parameters => 'pls' }
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
-    assert_equal "pls", model.algorithms[:prediction][:method]
+    assert_equal "pls", model.algorithms[:prediction][:parameters]
+    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
     p cv.rmse
     p cv.r_squared
