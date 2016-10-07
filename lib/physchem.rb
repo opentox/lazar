@@ -42,7 +42,7 @@ module OpenTox
     def self.descriptors desc=DESCRIPTORS
       desc.collect do |name,description|
         lib,desc = name.split('.',2)
-        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
       end
     end
 
@@ -54,11 +54,11 @@ module OpenTox
           CDK_DESCRIPTIONS.select{|d| desc == d[:java_class].split('.').last.sub('Descriptor','') }.first[:names].each do |n|
             dname = "#{name}.#{n}"
             description = DESCRIPTORS[dname]
-            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
           end
         else
           description = DESCRIPTORS[name]
-          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
         end
       end
       udesc

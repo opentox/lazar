@@ -16,10 +16,10 @@ module OpenTox
           folds: n
         )
         cv.save # set created_at
+
         nr_instances = 0
         nr_unpredicted = 0
-        #predictions = {}
-        training_dataset = Dataset.find model.training_dataset_id
+        training_dataset = model.training_dataset
         training_dataset.folds(n).each_with_index do |fold,fold_nr|
           #fork do # parallel execution of validations can lead to Rserve and memory problems
             $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"

@@ -8,54 +8,6 @@ module OpenTox
 
     attr_accessor :scaled_values
  
-=begin
-    def physchem_neighbors min_sim: 0.9, dataset_id:, prediction_feature_id:, relevant_features:
-      dataset = Dataset.find(dataset_id)
-      #relevant_features = {}
-      measurements = []
-      substances = []
-      # TODO: exclude query activities!!!
-      dataset.substances.each do |s|
-        if s.core == self.core # exclude nanoparticles with different core
-          dataset.values(s,prediction_feature_id).each do |act|
-            measurements << act
-            substances << s
-          end
-        end
-      end
-      neighbors = []
-      substances.each do |substance|
-        values = dataset.values(substance,prediction_feature_id)
-        if values
-          common_descriptors = relevant_features.keys & substance.descriptors.keys
-          # scale values
-          query_descriptors = common_descriptors.collect{|d| (descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
-          @scaled_values = common_descriptors.collect{|d| [d,(descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
-          neighbor_descriptors = common_descriptors.collect{|d| (substance.descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]}
-          neighbor_scaled_values = common_descriptors.collect{|d| [d,(substance.descriptors[d].median-relevant_features[d]["mean"])/relevant_features[d]["sd"]]}.to_h
-          #weights = common_descriptors.collect{|d| 1-relevant_features[d]["p_value"]}
-          weights = common_descriptors.collect{|d| relevant_features[d]["r"]**2}
-          sim = Algorithm::Similarity.weighted_cosine(query_descriptors,neighbor_descriptors,weights)
-          neighbors << {
-            "_id" => substance.id,
-            "measurements" => values,
-            "similarity" => sim,
-            "common_descriptors" => common_descriptors.collect do |id|
-              {
-                :id => id,
-                :scaled_value => neighbor_scaled_values[id],
-                :p_value => relevant_features[id]["p_value"],
-                :r_squared => relevant_features[id]["r"]**2}
-            end
-          } if sim >= min_sim
-        end
-      end
-      $logger.debug "#{self.name}: #{neighbors.size} neighbors"
-      neighbors.sort!{|a,b| b["similarity"] <=> a["similarity"]}
-      neighbors
-    end
-=end
-
     def add_feature feature, value, dataset
       unless feature.name == "ATOMIC COMPOSITION" or feature.name == "FUNCTIONAL GROUP" # redundand
         case feature.category
@@ -78,8 +30,6 @@ module OpenTox
     end
 
     def parse_ambit_value feature, v, dataset
-      #p dataset
-      #p feature
       # TODO add study id to warnings
       v.delete "unit"
       # TODO: ppm instead of weights

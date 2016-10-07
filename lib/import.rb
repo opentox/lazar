@@ -76,7 +76,7 @@ module OpenTox
             if study["protocol"]["category"]["title"].match(/Proteomics/) and effect["result"]["textValue"] and effect["result"]["textValue"].length > 50 # parse proteomics data
 
               JSON.parse(effect["result"]["textValue"]).each do |identifier, value| # time critical step
-                proteomics_features[identifier] ||= NumericFeature.find_or_create_by(:name => identifier, :category => "Proteomics", :unit => "Spectral counts", :source => source)
+                proteomics_features[identifier] ||= NumericFeature.find_or_create_by(:name => identifier, :category => "Proteomics", :unit => "Spectral counts", :source => source,:measured => true)
                 nanoparticle.parse_ambit_value proteomics_features[identifier], value, dataset
               end
             else
@@ -98,6 +98,7 @@ module OpenTox
                 :category => category,
                 :conditions => effect["conditions"],
                 :source => study["protocol"]["category"]["term"],
+                :measured => true,
                 :warnings => warnings
               )
               nanoparticle.parse_ambit_value feature, effect["result"], dataset

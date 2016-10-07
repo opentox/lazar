@@ -165,11 +165,9 @@ module OpenTox
         feature = nil
         if values.size == 0 # empty feature
         elsif  values.size > 5 and types.size == 1 and types.first == true # 5 max classes
-          metadata["numeric"] = true
           numeric[i] = true
           feature = NumericFeature.find_or_create_by(metadata)
         else
-          metadata["nominal"] = true
           metadata["accept_values"] = values
           numeric[i] = false
           feature = NominalFeature.find_or_create_by(metadata)

@@ -3,7 +3,7 @@ module OpenTox
     
     class Classification
 
-      def self.weighted_majority_vote descriptors:nil, neighbors:
+      def self.weighted_majority_vote descriptors:nil, neighbors:, method:nil, relevant_features:nil
         sims = {}
         neighbors.each do |neighbor|
           sim = neighbor["similarity"]
