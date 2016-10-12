@@ -10,7 +10,8 @@ module OpenTox
         selected_variables = []
         selected_descriptor_ids = []
         model.independent_variables.each_with_index do |v,i|
-          R.assign "independent", v.collect{|n| to_r(n)}
+          v.collect!{|n| to_r(n)}
+          R.assign "independent", v
           begin
             R.eval "cor <- cor.test(dependent,independent,method = 'pearson',use='pairwise')"
             pvalue = R.eval("cor$p.value").to_ruby
@@ -20,7 +21,6 @@ module OpenTox
               selected_descriptor_ids << model.descriptor_ids[i]
             end
           rescue
-            #warn "Correlation of '#{model.prediction_feature.name}' (#{model.dependent_variables}) with '#{Feature.find(model.descriptor_ids[i]).name}' (#{v}) failed."
             warn "Correlation of '#{model.prediction_feature.name}' (#{model.dependent_variables}) with (#{v}) failed."
           end
         end
@@ -33,8 +33,6 @@ module OpenTox
       def self.to_r v
         return 0 if v == false
         return 1 if v == true
-        return "NA" if v.nil? 
-        return "NA" if v.is_a? Float and v.nan?
         v
       end
 

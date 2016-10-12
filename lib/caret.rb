@@ -71,8 +71,7 @@ module OpenTox
       def self.to_r v
         return "F" if v == false
         return "T" if v == true
-        return "NA" if v.nil? 
-        return "NA" if v.is_a? Float and v.nan?
+        return nil if v.is_a? Float and v.nan?
         v
       end
 
