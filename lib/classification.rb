@@ -3,24 +3,17 @@ module OpenTox
     
     class Classification
 
-      def self.weighted_majority_vote descriptors:nil, neighbors:, method:nil, relevant_features:nil
-        sims = {}
-        neighbors.each do |neighbor|
-          sim = neighbor["similarity"]
-          activities = neighbor["measurements"]
-          activities.each do |act|
-            sims[act] ||= []
-            sims[act] << sim
-          end if activities
+      def self.weighted_majority_vote dependent_variables:, independent_variables:nil, weights:, query_variables:
+        class_weights = {}
+        dependent_variables.each_with_index do |v,i|
+          class_weights[v] ||= []
+          class_weights[v] << weights[i] unless v.nil?
         end
-        sim_all = sims.collect{|a,s| s}.flatten
-        sim_sum = sim_all.sum
-        sim_max = sim_all.max
         probabilities = {}
-        sims.each do |a,s|
-          probabilities[a] = s.sum/sim_sum
+        class_weights.each do |a,w|
+          probabilities[a] = w.sum/weights.sum
         end
-        probabilities = probabilities.collect{|a,p| [a,sim_max*p]}.to_h
+        probabilities = probabilities.collect{|a,p| [a,weights.max*p]}.to_h
         p_max = probabilities.collect{|a,p| p}.max
         prediction = probabilities.key(p_max)
         {:value => prediction,:probabilities => probabilities}

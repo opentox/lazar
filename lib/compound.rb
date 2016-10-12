@@ -75,7 +75,11 @@ module OpenTox
       fingerprints[type]
     end
 
-    def calculated_physchem descriptors=PhysChem.openbabel_descriptors
+    def calculated_properties types=["OPENBABEL"]
+      descriptors = []
+      types.each do |t|
+        descriptors += PhysChem.descriptors OpenTox.const_get(t)
+      end
       # TODO: speedup java descriptors
       calculated_ids = properties.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
@@ -253,48 +257,6 @@ module OpenTox
       update(:chemblid => JSON.parse(RestClientWrapper.get(uri))["compounds"].first["chemblId"]) unless self["chemblid"] 
       self["chemblid"]
     end
-
-=begin
-    def fingerprint_neighbors(type:, min_sim: 0.1, dataset_id:, prediction_feature_id:)
-      neighbors = []
-      dataset = Dataset.find(dataset_id)
-      # TODO: fix db_neighbors
-#      if type == DEFAULT_FINGERPRINT
-#        neighbors = db_neighbors(min_sim: min_sim, dataset_id: dataset_id)
-#        neighbors.each do |n|
-#          n["measurements"] = dataset.values(n["_id"],prediction_feature_id)
-#        end
-#      else 
-        query_fingerprint = self.fingerprint type
-        dataset.compounds.each do |compound|
-          values = dataset.values(compound,prediction_feature_id)
-          if values
-            candidate_fingerprint = compound.fingerprint type
-            sim = Algorithm::Similarity.tanimoto(query_fingerprint , candidate_fingerprint)
-            neighbors << {"_id" => compound.id, "measurements" => values, "similarity" => sim} if sim >= min_sim
-          end
-#        end
-      end
-      neighbors.sort{|a,b| b["similarity"] <=> a["similarity"]}
-    end
-=end
-
-#    def physchem_neighbors params
-#      # TODO: fix, tests
-#      feature_dataset = Dataset.find params[:feature_dataset_id]
-#      query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
-#      neighbors = []
-#      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
-#        # TODO implement pearson and cosine similarity separatly
-#        R.assign "x", query_fingerprint
-#        R.assign "y", candidate_fingerprint
-#        sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
-#        if sim >= params[:min_sim]
-#          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
-#        end
-#      end
-#      neighbors
-#    end
 
     def db_neighbors min_sim: 0.1, dataset_id:
       p fingerprints[DEFAULT_FINGERPRINT]

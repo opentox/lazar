@@ -45,12 +45,45 @@ class LazarRegressionTest < MiniTest::Test
   end
 
   def test_local_physchem_regression
-    skip # TODO: fix
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
-    model = Model::Lazar.create(training_dataset.features.first, training_dataset, :prediction_algorithm => "OpenTox::Algorithm::Regression.local_physchem_regression")
+    algorithms = {
+      :descriptors => ["PhysChem::OPENBABEL"],
+      :similarity => {
+        :method => "Algorithm::Similarity.weighted_cosine",
+        :min => 0.5
+      },
+    }
+    model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
+    p model
     compound = Compound.from_smiles "NC(=O)OCCC"
     prediction = model.predict compound
     refute_nil prediction[:value]
+  end
+
+  def test_local_physchem_regression_with_feature_selection
+    training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
+    algorithms = {
+      :descriptors => {
+        :method => "calculated_properties",
+        :types => ["OPENBABEL"]
+      },
+      :similarity => {
+        :method => "Algorithm::Similarity.weighted_cosine",
+        :min => 0.5
+      },
+      :feature_selection => {
+        :method => "Algorithm::FeatureSelection.correlation_filter",
+      },
+    }
+    model = Model::Lazar.create(training_dataset.features.first, training_dataset, algorithms)
+    p model
+    compound = Compound.from_smiles "NC(=O)OCCC"
+    prediction = model.predict compound
+    refute_nil prediction[:value]
+  end
+
+  def test_local_physchem_classification
+    skip
   end
 
 end

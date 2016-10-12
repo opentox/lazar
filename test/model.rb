@@ -4,17 +4,13 @@ class ModelTest < MiniTest::Test
 
   def test_default_regression
     algorithms = {
-      :descriptors => {
-        :method => "fingerprint",
-        :type => "MP2D"
-      },
+      :descriptors => [ "MP2D" ],
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
         :min => 0.1
       },
       :prediction => {
-        :method => "Algorithm::Caret.regression",
-        :parameters => "pls",
+        :method => "Algorithm::Caret.pls",
       },
       :feature_selection => nil,
     }
@@ -29,17 +25,13 @@ class ModelTest < MiniTest::Test
 
   def test_regression_parameters
     algorithms = {
-      :descriptors => {
-        :method => "fingerprint",
-        :type => "MP2D"
-      },
+      :descriptors => [ "MP2D" ],
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
         :min => 0.3
       },
       :prediction => {
         :method => "Algorithm::Regression.weighted_average",
-        :parameters => "rf",
       },
       :feature_selection => nil,
     }
@@ -57,18 +49,22 @@ class ModelTest < MiniTest::Test
 
   def test_physchem_regression
     algorithms = {
-      :descriptors => "physchem",
+      :descriptors => ["PhysChem::OPENBABEL"],
       :similarity => {
-        :method => "Algorithm::Similarity.weighted_cosine",
+        :method => "Algorithm::Similarity.cosine",
       }
     }
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
-    assert_equal "Algorithm::Similarity.weighted_cosine", model.algorithms[:similarity][:method]
+    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Similarity.cosine", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
+    prediction = model.predict training_dataset.substances[10]
+    p prediction
+    refute_nil prediction[:value]
+    # TODO test predictin
   end
 
   def test_nanoparticle_default
@@ -78,8 +74,7 @@ class ModelTest < MiniTest::Test
       training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
     end
     model = Model::Lazar.create  training_dataset: training_dataset
-    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
-    assert_equal "rf", model.algorithms[:prediction][:parameters]
+    assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.weighted_cosine", model.algorithms[:similarity][:method]
     prediction = model.predict training_dataset.substances[14]
     assert_includes prediction[:prediction_interval][0]..prediction[:prediction_interval][1], prediction[:measurements].median, "This assertion assures that measured values are within the prediction interval. It may fail in 5% of the predictions."
@@ -99,7 +94,7 @@ class ModelTest < MiniTest::Test
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
@@ -111,10 +106,7 @@ class ModelTest < MiniTest::Test
 
   def test_default_classification
     algorithms = {
-      :descriptors => {
-        :method => "fingerprint",
-        :type => 'MP2D',
-      },
+      :descriptors => [ "MP2D" ],
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
         :min => 0.1
@@ -135,10 +127,7 @@ class ModelTest < MiniTest::Test
  
   def test_classification_parameters
     algorithms = {
-      :descriptors => {
-        :method => "fingerprint",
-        :type => 'MACCS',
-      },
+      :descriptors => ['MACCS'],
       :similarity => {
         :min => 0.4
       },
