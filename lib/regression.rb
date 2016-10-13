@@ -4,7 +4,6 @@ module OpenTox
     class Regression
 
       def self.weighted_average dependent_variables:, independent_variables:nil, weights:, query_variables:
-      #def self.weighted_average descriptors:nil, neighbors:, parameters:nil, method:nil, relevant_features:nil
         # TODO: prediction_interval
         weighted_sum = 0.0
         sim_sum = 0.0

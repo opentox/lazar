@@ -75,9 +75,10 @@ module OpenTox
       fingerprints[type]
     end
 
-    def calculated_properties types=["OPENBABEL"]
+    def calculated_properties types=["PhysChem::OPENBABEL"]
       descriptors = []
       types.each do |t|
+        p t
         descriptors += PhysChem.descriptors OpenTox.const_get(t)
       end
       # TODO: speedup java descriptors
@@ -304,7 +305,7 @@ module OpenTox
     # @return [Float] molecular weight
     def molecular_weight
       mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
-      calculated_physchem([mw_feature])[mw_feature.id.to_s]
+      calculated_properties[mw_feature.id.to_s]
     end
 
     private

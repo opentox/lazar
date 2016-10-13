@@ -22,10 +22,7 @@ class LazarRegressionTest < MiniTest::Test
   def test_mpd_fingerprints
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
     algorithms = {
-      :descriptors => {
-        :method => "fingerprint",
-        :type => "MP2D"
-      }
+      :descriptors => [ "MP2D" ]
     }
     model = Model::Lazar.create training_dataset: training_dataset, algorithms: algorithms
     compound = Compound.from_smiles "CCCSCCSCC"

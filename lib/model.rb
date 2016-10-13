@@ -126,7 +126,8 @@ module OpenTox
           end
           model.descriptor_ids = model.fingerprints.flatten.uniq
           model.descriptor_ids.each do |d|
-            model.independent_variables << model.substance_ids.collect_with_index{|s,i| model.fingerprints[i].include? d}
+            # resulting model may break BSON size limit (e.g. f Kazius dataset
+            model.independent_variables << model.substance_ids.collect_with_index{|s,i| model.fingerprints[i].include? d} if model.algorithms[:prediction][:method].match /Caret/
           end
         else
           # parse independent_variables
@@ -225,7 +226,6 @@ module OpenTox
         else
           # call prediction algorithm
           result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
-          p result
           prediction.merge! result
           prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
         end

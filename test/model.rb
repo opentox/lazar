@@ -100,48 +100,4 @@ class ModelTest < MiniTest::Test
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
   end
 
-  def test_caret_parameters
-    skip
-  end
-
-  def test_default_classification
-    algorithms = {
-      :descriptors => [ "MP2D" ],
-      :similarity => {
-        :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.1
-      },
-      :prediction => {
-        :method => "Algorithm::Classification.weighted_majority_vote",
-      },
-      :feature_selection => nil,
-    }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = Model::Lazar.create  training_dataset: training_dataset
-    assert_kind_of Model::LazarClassification, model
-    assert_equal algorithms, model.algorithms
-    substance = training_dataset.substances[10]
-    prediction = model.predict substance
-    assert_equal "false", prediction[:value]
-  end
- 
-  def test_classification_parameters
-    algorithms = {
-      :descriptors => ['MACCS'],
-      :similarity => {
-        :min => 0.4
-      },
-    }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
-    model = Model::Lazar.create training_dataset: training_dataset, algorithms: algorithms
-    assert_kind_of Model::LazarClassification, model
-    assert_equal "Algorithm::Classification.weighted_majority_vote", model.algorithms[:prediction][:method]
-    assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
-    assert_equal algorithms[:similarity][:min], model.algorithms[:similarity][:min]
-    substance = training_dataset.substances[10]
-    prediction = model.predict substance
-    assert_equal "false", prediction[:value]
-    assert_equal 4, prediction[:neighbors].size
-  end
-
 end
