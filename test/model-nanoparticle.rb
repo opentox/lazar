@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class NanoparticleTest  < MiniTest::Test
+class NanoparticleModelTest  < MiniTest::Test
   include OpenTox::Validation
 
   def setup

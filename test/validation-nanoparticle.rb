@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class NanoparticleTest  < MiniTest::Test
+class NanoparticleValidationTest  < MiniTest::Test
   include OpenTox::Validation
 
   def setup
@@ -24,8 +24,11 @@ class NanoparticleTest  < MiniTest::Test
 
   def test_validate_pls_nanoparticle_model
     algorithms = {
-      :descriptors => { :types => ["P-CHEM"] },
-      :prediction => {:parameters => 'pls' },
+      :descriptors => {
+        :method => "properties",
+        :categories => ["P-CHEM"]
+      },
+      :prediction => {:method => 'Algorithm::Caret.pls' },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     assert_equal "pls", model.algorithms[:prediction][:parameters]
@@ -39,12 +42,15 @@ class NanoparticleTest  < MiniTest::Test
 
   def test_validate_proteomics_pls_nanoparticle_model
     algorithms = {
-      :descriptors => { :types => ["Proteomics"] },
-      :prediction => { :parameters => 'pls' }
+      :descriptors => {
+        :method => "properties",
+        :categories => ["Proteomics"]
+      },
+      :prediction => {:method => 'Algorithm::Caret.pls' },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     assert_equal "pls", model.algorithms[:prediction][:parameters]
-    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -55,7 +61,8 @@ class NanoparticleTest  < MiniTest::Test
   def test_validate_all_default_nanoparticle_model
     algorithms = {
       :descriptors => {
-        :types => ["Proteomics","P-CHEM"]
+        :method => "properties",
+        :categories => ["Proteomics","P-CHEM"]
       },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms

@@ -30,8 +30,8 @@ module OpenTox
             R.eval "model <- train(activities ~ ., data = data, method = '#{method}', na.action = na.pass, allowParallel=TRUE)"
           rescue => e
             $logger.debug "R caret model creation error for:"
-            $logger.debug JSON.pretty_generate(dependent_variables)
-            $logger.debug JSON.pretty_generate(independent_variables)
+            $logger.debug dependent_variables
+            $logger.debug independent_variables
             return {:value => nil, :warning => "R caret model cration error."}
           end
           begin

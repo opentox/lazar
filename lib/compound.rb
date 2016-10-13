@@ -300,9 +300,8 @@ module OpenTox
     # Calculate molecular weight of Compound with OB and store it in object
     # @return [Float] molecular weight
     def molecular_weight
-      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW").id.to_s
-      calculate_properties unless properties[mw_feature]
-      properties[mw_feature]
+      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
+      calculate_properties([mw_feature]).first
     end
 
     private
