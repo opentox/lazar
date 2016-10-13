@@ -78,7 +78,6 @@ module OpenTox
     def calculated_properties types=["PhysChem::OPENBABEL"]
       descriptors = []
       types.each do |t|
-        p t
         descriptors += PhysChem.descriptors OpenTox.const_get(t)
       end
       # TODO: speedup java descriptors

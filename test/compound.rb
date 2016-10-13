@@ -124,9 +124,7 @@ print c.sdf
 
   def test_physchem
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C"
-    p c.calculated_properties
     assert_equal PhysChem::OPENBABEL.size, c.calculated_properties.size
-    assert_equal PhysChem::OPENBABEL.size, c.calculated_properties(PhysChem.openbabel_descriptors).size
-    assert_equal PhysChem::unique_descriptors.size, c.calculated_physchem(PhysChem.unique_descriptors).size
+    assert_equal PhysChem::OPENBABEL.size, c.calculated_properties(["PhysChem::OPENBABEL"]).size
   end
 end
