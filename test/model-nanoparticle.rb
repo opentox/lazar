@@ -31,10 +31,6 @@ class NanoparticleModelTest  < MiniTest::Test
     model.delete
   end
 
-  def test_nanoparticle_parameters
-    skip
-  end
-
   def test_import_ld
     skip # Ambit JSON-LD export defunct
     dataset_ids = Import::Enanomapper.import_ld

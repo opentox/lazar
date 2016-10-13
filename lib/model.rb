@@ -28,23 +28,9 @@ module OpenTox
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
         prediction_feature = training_dataset.features.first unless prediction_feature
         # TODO: prediction_feature without training_dataset: use all available data
-        # explicit prediction algorithm
-        if algorithms[:prediction] and algorithms[:prediction][:method]
-          case algorithms[:prediction][:method]
-          when /Classification/i
-            model = LazarClassification.new
-          when /Regression/i
-            model = LazarRegression.new 
-          else
-            bad_request_error "Prediction method '#{algorithms[:prediction][:method]}' not implemented."
-          end
 
         # guess model type
-        elsif prediction_feature.numeric? 
-          model = LazarRegression.new 
-        else
-          model = LazarClassification.new
-        end
+        prediction_feature.numeric? ?  model = LazarRegression.new : model = LazarClassification.new
 
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
@@ -193,17 +179,17 @@ module OpenTox
             query_descriptors = substance.calculate_properties(features)
             similarity_descriptors = query_descriptors.collect_with_index{|v,i| (v-descriptor_means[i])/descriptor_sds[i]}
           else
-            similarity_descriptors = descriptor_ids.collect_with_index{|id,i|
+            similarity_descriptors = []
+            query_descriptors = []
+            descriptor_ids.each_with_index do |id,i|
               prop = substance.properties[id]
               prop = prop.median if prop.is_a? Array # measured
-              (prop-descriptor_means[i])/descriptor_sds[i]
-            }
-            query_descriptors = descriptor_ids.collect_with_index{|id,i|
-              prop = substance.properties[id]
-              prop = prop.median if prop.is_a? Array # measured
-              substance.properties[id]
-            }
+              if prop
+                similarity_descriptors[i] = (prop-descriptor_means[i])/descriptor_sds[i]
+                query_descriptors[i] = prop
+              end
             end
+          end
         else
           bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
         end

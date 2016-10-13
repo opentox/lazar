@@ -9,6 +9,11 @@ module OpenTox
         if independent_variables.flatten.uniq == ["NA"] 
           prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
           prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
+        elsif
+          dependent_variables.size < 3
+          prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
+          prediction[:warning] = "Insufficient number of neighbors (#{dependent_variables.size}) for regression model. Using weighted average of similar substances."
+
         else
           dependent_variables.each_with_index do |v,i| 
             dependent_variables[i] = to_r(v)

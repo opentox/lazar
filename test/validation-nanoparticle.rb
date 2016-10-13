@@ -31,8 +31,7 @@ class NanoparticleValidationTest  < MiniTest::Test
       :prediction => {:method => 'Algorithm::Caret.pls' },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
-    assert_equal "pls", model.algorithms[:prediction][:parameters]
-    assert_equal "Algorithm::Caret.regression", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
     p cv.rmse
     p cv.r_squared
@@ -49,7 +48,6 @@ class NanoparticleValidationTest  < MiniTest::Test
       :prediction => {:method => 'Algorithm::Caret.pls' },
     }
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
-    assert_equal "pls", model.algorithms[:prediction][:parameters]
     assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
     p cv.rmse
@@ -73,9 +71,4 @@ class NanoparticleValidationTest  < MiniTest::Test
     refute_nil cv.rmse
   end
 
-
-  def test_import_ld
-    skip # Ambit JSON-LD export defunct
-    dataset_ids = Import::Enanomapper.import_ld
-  end
 end

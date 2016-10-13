@@ -231,10 +231,7 @@ class DatasetTest < MiniTest::Test
     datasets.each{|d| d.delete}
   end
 
-  # skips, may be removed in the future
-
   def test_simultanous_upload
-    skip
     threads = []
     3.times do |t|
       threads << Thread.new(t) do |up|
