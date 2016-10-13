@@ -49,7 +49,10 @@ class ModelTest < MiniTest::Test
 
   def test_physchem_regression
     algorithms = {
-      :descriptors => [PhysChem::OPENBABEL],
+      :descriptors => {
+        :method => "calculate_properties",
+        :features => PhysChem.openbabel_descriptors,
+      },
       :similarity => {
         :method => "Algorithm::Similarity.cosine",
       }
@@ -60,9 +63,9 @@ class ModelTest < MiniTest::Test
     assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.cosine", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
+    algorithms[:descriptors].delete :features
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
     prediction = model.predict training_dataset.substances[10]
-    p prediction
     refute_nil prediction[:value]
     # TODO test predictin
   end

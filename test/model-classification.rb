@@ -4,7 +4,10 @@ class LazarClassificationTest < MiniTest::Test
 
   def test_classification_default
     algorithms = {
-      :descriptors => [ "MP2D" ],
+      :descriptors => {
+        :method => "fingerprint",
+        :type => "MP2D"
+      },
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
         :min => 0.1
@@ -55,7 +58,10 @@ class LazarClassificationTest < MiniTest::Test
  
   def test_classification_parameters
     algorithms = {
-      :descriptors => ['MACCS'],
+      :descriptors => {
+        :method => "fingerprint",
+        :type => "MACCS"
+      },
       :similarity => {
         :min => 0.4
       },
@@ -86,7 +92,11 @@ class LazarClassificationTest < MiniTest::Test
     training_dataset.delete
   end
 
-  def test_fingerprint_feature_selection
+  def test_caret_classification
+    skip
+  end
+
+  def test_fingerprint_chisq_feature_selection
     skip
   end
 

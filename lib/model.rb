@@ -57,7 +57,10 @@ module OpenTox
         if substance_classes.first == "OpenTox::Compound"
 
           model.algorithms = {
-            :descriptors => ['MP2D'],
+            :descriptors => {
+              :method => "fingerprint",
+              :type => "MP2D",
+            },
             :similarity => {
               :method => "Algorithm::Similarity.tanimoto",
               :min => 0.1
@@ -77,7 +80,10 @@ module OpenTox
 
         elsif substance_classes.first == "OpenTox::Nanoparticle"
           model.algorithms = {
-            :descriptors => ["P-CHEM"],
+            :descriptors => {
+              :method => "properties",
+              :category => "P-CHEM",
+            },
             #:descriptors => ["P-CHEM","Proteomics"],
             :similarity => {
               :method => "Algorithm::Similarity.weighted_cosine",
@@ -115,34 +121,41 @@ module OpenTox
           end if values
         end
 
+        descriptor_method = model.algorithms[:descriptors][:method]
+        case descriptor_method
         # parse fingerprints
-        if model.fingerprints?
-          model.algorithms[:descriptors].each do |type|
-            model.substances.each_with_index do |s,i|
-              model.fingerprints[i] ||= [] 
-              model.fingerprints[i] += s.fingerprint(type)
-              model.fingerprints[i].uniq!
-            end
+        when "fingerprint"
+          type = model.algorithms[:descriptors][:type]
+          model.substances.each_with_index do |s,i|
+            model.fingerprints[i] ||= [] 
+            model.fingerprints[i] += s.fingerprint(type)
+            model.fingerprints[i].uniq!
           end
           model.descriptor_ids = model.fingerprints.flatten.uniq
           model.descriptor_ids.each do |d|
-            # resulting model may break BSON size limit (e.g. f Kazius dataset
+            # resulting model may break BSON size limit (e.g. f Kazius dataset)
             model.independent_variables << model.substance_ids.collect_with_index{|s,i| model.fingerprints[i].include? d} if model.algorithms[:prediction][:method].match /Caret/
           end
-        else
-          # parse independent_variables
-          if (model.algorithms[:descriptors] & [PhysChem::OPENBABEL,PhysChem::CDK,PhysChem::JOELIB]).empty?
-            properties = model.substances.collect { |s| s.properties }
-            all_property_ids = properties.collect{|p| p.keys}.flatten.uniq
-            model.descriptor_ids = all_property_ids.select{|id| model.algorithms[:descriptors].include? Feature.find(id).category }
-            model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
-
-          # calculate physchem properties
-          else
-            properties = model.substances.collect { |s| s.calculate_properties(model.algorithms[:descriptors]) }
-            model.descriptor_ids = properties.collect{|p| p.keys}.flatten.uniq
-            model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i]}}
+        # calculate physchem properties
+        when "calculate_properties"
+          features = model.algorithms[:descriptors][:features]
+          model.descriptor_ids = features.collect{|f| f.id.to_s}
+          model.algorithms[:descriptors].delete(:features)
+          model.algorithms[:descriptors].delete(:type)
+          model.substances.each_with_index do |s,i|
+            s.calculate_properties(features).each_with_index do |v,j|
+              model.independent_variables[j] ||= []
+              model.independent_variables[j][i] = v
+            end
           end
+        # parse independent_variables
+        when "properties"
+          properties = model.substances.collect { |s| s.properties }
+          all_property_ids = properties.collect{|p| p.keys}.flatten.uniq
+          model.descriptor_ids = all_property_ids.select{|id| model.algorithms[:descriptors].include? Feature.find(id).category }
+          model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
+        else
+          bad_request_error "Descriptor method '#{descriptor_method}' not implemented."
         end
         
         if model.algorithms[:feature_selection] and model.algorithms[:feature_selection][:method]
@@ -165,7 +178,7 @@ module OpenTox
         
         case algorithms[:similarity][:method]
         when /tanimoto/ # binary features
-          similarity_descriptors = algorithms[:descriptors].collect{|type| substance.fingerprint(type)}.flatten.uniq
+          similarity_descriptors = substance.fingerprint algorithms[:descriptors][:type]
           # TODO this excludes descriptors only present in the query substance
           query_descriptors = descriptor_ids.collect{|id| similarity_descriptors.include? id}
         when /euclid|cosine/ # quantitative features
@@ -295,7 +308,7 @@ module OpenTox
       end
 
       def fingerprints?
-        algorithms[:similarity][:method].match("tanimoto") ? true : false
+        algorithms[:descriptors][:method] == "fingerprint" ? true : false
       end
 
     end

@@ -1,6 +1,5 @@
 require_relative "setup.rb"
 
-
 class NanoparticleTest  < MiniTest::Test
   include OpenTox::Validation
 
@@ -13,7 +12,7 @@ class NanoparticleTest  < MiniTest::Test
     @prediction_feature = @training_dataset.features.select{|f| f["name"] == 'log2(Net cell association)'}.first
   end
 
-  def test_create_model
+  def test_nanoparticle_model
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
     nanoparticle = @training_dataset.nanoparticles[-34]
     prediction = model.predict nanoparticle
@@ -22,6 +21,8 @@ class NanoparticleTest  < MiniTest::Test
     assert true, @prediction_feature.measured
     model.delete
   end
+
+  # validations
 
   def test_validate_default_nanoparticle_model
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
@@ -77,15 +78,9 @@ class NanoparticleTest  < MiniTest::Test
     refute_nil cv.rmse
   end
 
-  def test_export
-    skip
-    Dataset.all.each do |d|
-      puts d.to_csv
-    end
-  end
 
   def test_import_ld
-    skip
+    skip # Ambit JSON-LD export defunct
     dataset_ids = Import::Enanomapper.import_ld
   end
 end
