@@ -32,6 +32,7 @@ module OpenTox
 
       def self.weighted_cosine scaled_properties # [a,b,weights]
         a,b,w = remove_nils scaled_properties
+        return cosine(scaled_properties) if w.uniq.size == 1
         dot_product = 0
         magnitude_a = 0
         magnitude_b = 0

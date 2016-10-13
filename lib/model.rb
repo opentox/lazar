@@ -82,7 +82,7 @@ module OpenTox
           model.algorithms = {
             :descriptors => {
               :method => "properties",
-              :category => "P-CHEM",
+              :categories => ["P-CHEM"],
             },
             #:descriptors => ["P-CHEM","Proteomics"],
             :similarity => {
@@ -150,9 +150,14 @@ module OpenTox
           end
         # parse independent_variables
         when "properties"
+          categories = model.algorithms[:descriptors][:categories]
+          feature_ids = []
+          categories.each do |category|
+            Feature.where(category:category).each{|f| feature_ids << f.id.to_s}
+          end
           properties = model.substances.collect { |s| s.properties }
-          all_property_ids = properties.collect{|p| p.keys}.flatten.uniq
-          model.descriptor_ids = all_property_ids.select{|id| model.algorithms[:descriptors].include? Feature.find(id).category }
+          property_ids = properties.collect{|p| p.keys}.flatten.uniq
+          model.descriptor_ids = feature_ids & property_ids
           model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
         else
           bad_request_error "Descriptor method '#{descriptor_method}' not implemented."
@@ -180,18 +185,25 @@ module OpenTox
         when /tanimoto/ # binary features
           similarity_descriptors = substance.fingerprint algorithms[:descriptors][:type]
           # TODO this excludes descriptors only present in the query substance
+          # use for applicability domain?
           query_descriptors = descriptor_ids.collect{|id| similarity_descriptors.include? id}
         when /euclid|cosine/ # quantitative features
-          similarity_descriptors = descriptor_ids.collect_with_index{|id,i|
-            prop = substance.properties[id]
-            prop = prop.median if prop.is_a? Array # measured
-            (prop-descriptor_means[i])/descriptor_sds[i]
-          }
-          query_descriptors = descriptor_ids.collect_with_index{|id,i|
-            prop = substance.properties[id]
-            prop = prop.median if prop.is_a? Array # measured
-            substance.properties[id]
-          }
+          if algorithms[:descriptors][:method] == "calculate_properties" # calculate descriptors
+            features = descriptor_ids.collect{|id| Feature.find(id)}
+            query_descriptors = substance.calculate_properties(features)
+            similarity_descriptors = query_descriptors.collect_with_index{|v,i| (v-descriptor_means[i])/descriptor_sds[i]}
+          else
+            similarity_descriptors = descriptor_ids.collect_with_index{|id,i|
+              prop = substance.properties[id]
+              prop = prop.median if prop.is_a? Array # measured
+              (prop-descriptor_means[i])/descriptor_sds[i]
+            }
+            query_descriptors = descriptor_ids.collect_with_index{|id,i|
+              prop = substance.properties[id]
+              prop = prop.median if prop.is_a? Array # measured
+              substance.properties[id]
+            }
+            end
         else
           bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
         end
@@ -218,7 +230,7 @@ module OpenTox
               neighbor_descriptors = scaled_variables.collect{|v| v[i]}
             end
             sim = Algorithm.run algorithms[:similarity][:method], [similarity_descriptors, neighbor_descriptors, descriptor_weights]
-            if sim > algorithms[:similarity][:min]
+            if sim >= algorithms[:similarity][:min]
               neighbor_ids << s
               neighbor_similarities << sim
               neighbor_dependent_variables << dependent_variables[i]

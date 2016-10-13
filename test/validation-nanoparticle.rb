@@ -12,18 +12,6 @@ class NanoparticleTest  < MiniTest::Test
     @prediction_feature = @training_dataset.features.select{|f| f["name"] == 'log2(Net cell association)'}.first
   end
 
-  def test_nanoparticle_model
-    model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
-    nanoparticle = @training_dataset.nanoparticles[-34]
-    prediction = model.predict nanoparticle
-    refute_nil prediction[:value]
-    assert_includes nanoparticle.dataset_ids, @training_dataset.id
-    assert true, @prediction_feature.measured
-    model.delete
-  end
-
-  # validations
-
   def test_validate_default_nanoparticle_model
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
     cv = CrossValidation.create model
