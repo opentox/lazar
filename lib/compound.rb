@@ -75,11 +75,7 @@ module OpenTox
       fingerprints[type]
     end
 
-    def calculated_properties types=["PhysChem::OPENBABEL"]
-      descriptors = []
-      types.each do |t|
-        descriptors += PhysChem.descriptors OpenTox.const_get(t)
-      end
+    def calculate_properties descriptors=PhysChem::OPENBABEL
       # TODO: speedup java descriptors
       calculated_ids = properties.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
@@ -98,7 +94,8 @@ module OpenTox
         end
       end
       save
-      properties.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
+      descriptors.collect{|d| properties[d.id.to_s]}
+      #properties.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
     end
 
     def smarts_match smarts, count=false
@@ -303,8 +300,9 @@ module OpenTox
     # Calculate molecular weight of Compound with OB and store it in object
     # @return [Float] molecular weight
     def molecular_weight
-      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
-      calculated_properties[mw_feature.id.to_s]
+      mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW").id.to_s
+      calculate_properties unless properties[mw_feature]
+      properties[mw_feature]
     end
 
     private

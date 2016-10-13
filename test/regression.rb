@@ -44,7 +44,7 @@ class LazarRegressionTest < MiniTest::Test
   def test_local_physchem_regression
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
     algorithms = {
-      :descriptors => ["PhysChem::OPENBABEL"],
+      :descriptors => [PhysChem::OPENBABEL],
       :similarity => {
         :method => "Algorithm::Similarity.weighted_cosine",
         :min => 0.5

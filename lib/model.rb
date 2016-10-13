@@ -131,7 +131,7 @@ module OpenTox
           end
         else
           # parse independent_variables
-          if (model.algorithms[:descriptors] & ["PhysChem::OPENBABEL","PhysChem::CDK","PhysChem::JOELIB"]).empty?
+          if (model.algorithms[:descriptors] & [PhysChem::OPENBABEL,PhysChem::CDK,PhysChem::JOELIB]).empty?
             properties = model.substances.collect { |s| s.properties }
             all_property_ids = properties.collect{|p| p.keys}.flatten.uniq
             model.descriptor_ids = all_property_ids.select{|id| model.algorithms[:descriptors].include? Feature.find(id).category }
@@ -139,7 +139,7 @@ module OpenTox
 
           # calculate physchem properties
           else
-            properties = model.substances.collect { |s| s.calculated_properties(model.algorithms[:descriptors]) }
+            properties = model.substances.collect { |s| s.calculate_properties(model.algorithms[:descriptors]) }
             model.descriptor_ids = properties.collect{|p| p.keys}.flatten.uniq
             model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i]}}
           end

@@ -6,8 +6,6 @@ module OpenTox
     field :core, type: Hash, default: {}
     field :coating, type: Array, default: []
 
-    attr_accessor :scaled_values
- 
     def add_feature feature, value, dataset
       unless feature.name == "ATOMIC COMPOSITION" or feature.name == "FUNCTIONAL GROUP" # redundand
         case feature.category

@@ -49,7 +49,7 @@ class ModelTest < MiniTest::Test
 
   def test_physchem_regression
     algorithms = {
-      :descriptors => ["PhysChem::OPENBABEL"],
+      :descriptors => [PhysChem::OPENBABEL],
       :similarity => {
         :method => "Algorithm::Similarity.cosine",
       }
