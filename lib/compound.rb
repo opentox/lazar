@@ -254,7 +254,7 @@ module OpenTox
     end
 
     def db_neighbors min_sim: 0.1, dataset_id:
-      p fingerprints[DEFAULT_FINGERPRINT]
+      #p fingerprints[DEFAULT_FINGERPRINT]
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
 
       #qn = default_fingerprint_size

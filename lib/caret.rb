@@ -10,7 +10,6 @@ module OpenTox
         independent_variables.each_with_index { |values,i| remove << i if values.uniq.size == 1}
         remove.sort.reverse.each do |i|
           independent_variables.delete_at i
-          weights.delete_at i
           query_variables.delete_at i
         end
         if independent_variables.flatten.uniq == ["NA"] 
@@ -44,7 +43,9 @@ module OpenTox
             $logger.debug "R caret model creation error for:"
             $logger.debug dependent_variables
             $logger.debug independent_variables
-            return {:value => nil, :warning => "R caret model cration error."}
+            prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
+            prediction[:warning] = "R caret model creation error. Using weighted average of similar substances."
+            return prediction
           end
           begin
             R.eval "query <- data.frame(rbind(c(#{query_variables.join ','})))"
@@ -63,7 +64,9 @@ module OpenTox
           rescue => e
             $logger.debug "R caret prediction error for:"
             $logger.debug self.inspect
-            return nil
+            prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
+            prediction[:warning] = "R caret prediction error. Using weighted average of similar substances"
+            return prediction
           end
           if prediction.nil? or prediction[:value].nil?
             prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
