@@ -122,7 +122,6 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
     prediction = model.predict training_dataset.substances[10]
     refute_nil prediction[:value]
-    # TODO test predictin
   end
 
   def test_regression_with_feature_selection
@@ -138,6 +137,8 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
     assert_equal 0.1, model.algorithms[:similarity][:min]
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
+    prediction = model.predict training_dataset.substances[10]
+    refute_nil prediction[:value]
   end
 
   def test_regression_parameters

@@ -23,6 +23,7 @@ module OpenTox
       field :descriptor_means, type: Array, default:[]
       field :descriptor_sds, type: Array, default:[]
       field :scaled_variables, type: Array, default:[]
+      field :version, type: Hash, default:{}
       
       def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
@@ -35,6 +36,16 @@ module OpenTox
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
         model.name = "#{prediction_feature.name} (#{training_dataset.name})" 
+        # TODO: check if this works for gem version, add gem versioning?
+        dir = File.dirname(__FILE__)
+        commit = `cd #{dir}; git rev-parse HEAD`.chomp
+        branch = `cd #{dir}; git rev-parse --abbrev-ref HEAD`.chomp
+        url = `cd #{dir}; git config --get remote.origin.url`.chomp
+        if branch
+          model.version = {:url => url, :branch => branch, :commit => commit}
+        else
+          model.version = {:warning => "git is not installed"}
+        end
 
         # set defaults
         substance_classes = training_dataset.substances.collect{|s| s.class.to_s}.uniq

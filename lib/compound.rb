@@ -76,7 +76,6 @@ module OpenTox
     end
 
     def calculate_properties descriptors=PhysChem::OPENBABEL
-      # TODO: speedup java descriptors
       calculated_ids = properties.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
       new_ids = descriptors.collect{|d| d.id.to_s} - calculated_ids
@@ -95,7 +94,6 @@ module OpenTox
       end
       save
       descriptors.collect{|d| properties[d.id.to_s]}
-      #properties.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
     end
 
     def smarts_match smarts, count=false

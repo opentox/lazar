@@ -2,10 +2,17 @@ module OpenTox
   module Algorithm
     
     class Caret
-      # TODO classification
       # model list: https://topepo.github.io/caret/modelList.html
 
       def self.create_model_and_predict dependent_variables:, independent_variables:, weights:, method:, query_variables:
+        remove = []
+        # remove independent_variables with single values
+        independent_variables.each_with_index { |values,i| remove << i if values.uniq.size == 1}
+        remove.sort.reverse.each do |i|
+          independent_variables.delete_at i
+          weights.delete_at i
+          query_variables.delete_at i
+        end
         if independent_variables.flatten.uniq == ["NA"] 
           prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
           prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."

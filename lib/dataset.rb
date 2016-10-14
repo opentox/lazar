@@ -130,7 +130,6 @@ module OpenTox
     #end
     
     # Create a dataset from CSV file
-    # TODO: document structure
     def self.from_csv_file file, accept_empty_values=false
       source = file
       name = File.basename(file,".*")
