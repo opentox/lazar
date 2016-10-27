@@ -11,6 +11,8 @@ class ValidationClassificationTest < MiniTest::Test
     cv = ClassificationCrossValidation.create model
     assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7, this may occur due to an unfavorable training/test set split"
     assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) should be larger than accuracy (#{cv.accuracy})."
+    #p cv
+    #File.open("tmp.pdf","w+"){|f| f.puts cv.probability_plot}
   end
 
   # parameters

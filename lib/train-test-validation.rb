@@ -44,10 +44,24 @@ module OpenTox
 
     class ClassificationTrainTest < TrainTest
       include ClassificationStatistics
+      field :accept_values, type: Array
+      field :confusion_matrix, type: Array
+      field :weighted_confusion_matrix, type: Array
+      field :accuracy, type: Float
+      field :weighted_accuracy, type: Float
+      field :true_rate, type: Hash
+      field :predictivity, type: Hash
+      field :probability_plot_id, type: BSON::ObjectId
     end
 
     class RegressionTrainTest < TrainTest
       include RegressionStatistics
+      field :rmse, type: Float, default:0
+      field :mae, type: Float, default:0
+      field :r_squared, type: Float
+      field :within_prediction_interval, type: Integer, default:0
+      field :out_of_prediction_interval, type: Integer, default:0
+      field :correlation_plot_id, type: BSON::ObjectId
     end
 
   end

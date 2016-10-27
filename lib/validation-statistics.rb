@@ -65,43 +65,44 @@ module OpenTox
         }
       end
 
-      def confidence_plot
-        unless confidence_plot_id
-          tmpfile = "/tmp/#{id.to_s}_confidence.svg"
+      def probability_plot format: "pdf"
+        #unless probability_plot_id
+          tmpfile = "/tmp/#{id.to_s}_probability.#{format}"
           accuracies = []
-          confidences = []
+          probabilities = []
           correct_predictions = 0
           incorrect_predictions = 0
-          predictions.each do |p|
-            p[:measurements].each do |db_act|
-              if p[:value] 
-                p[:value] == db_act ? correct_predictions += 1 : incorrect_predictions += 1
-                accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
-                confidences << p[:confidence]
-
-              end
+          pp = []
+          predictions.values.select{|p| p["probabilities"]}.compact.each do |p|
+            p["measurements"].each do |m|
+              pp << [ p["probabilities"][p["value"]], p["value"] == m ]
             end
           end
+          pp.sort_by!{|p| 1-p.first}
+          pp.each do |p|
+            p[1] ? correct_predictions += 1 : incorrect_predictions += 1
+            accuracies << correct_predictions/(correct_predictions+incorrect_predictions).to_f
+            probabilities << p[0]
+          end
           R.assign "accuracy", accuracies
-          R.assign "confidence", confidences
-          R.eval "image = qplot(confidence,accuracy)+ylab('accumulated accuracy')+scale_x_reverse()"
+          R.assign "probability", probabilities
+          R.eval "image = qplot(probability,accuracy)+ylab('Accumulated accuracy')+xlab('Prediction probability')+ylim(c(0,1))+scale_x_reverse()+geom_line()"
           R.eval "ggsave(file='#{tmpfile}', plot=image)"
-          file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_confidence_plot.svg")
+          file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_probability_plot.svg")
           plot_id = $gridfs.insert_one(file)
-          update(:confidence_plot_id => plot_id)
-        end
-        $gridfs.find_one(_id: confidence_plot_id).data
+          update(:probability_plot_id => plot_id)
+        #end
+        $gridfs.find_one(_id: probability_plot_id).data
       end
     end
 
     module RegressionStatistics
 
       def statistics
-        # TODO: predictions within prediction_interval
         self.rmse = 0
         self.mae = 0
-        #self.within_prediction_interval = 0
-        #self.outside_prediction_interval = 0
+        self.within_prediction_interval = 0
+        self.out_of_prediction_interval = 0
         x = []
         y = []
         predictions.each do |cid,pred|
@@ -111,9 +112,13 @@ module OpenTox
             error = pred[:value]-pred[:measurements].median
             self.rmse += error**2
             self.mae += error.abs
-            #if pred[:prediction_interval]
-              #if pred[:measurements]
-            #end
+            if pred[:prediction_interval]
+              if pred[:measurements].median >= pred[:prediction_interval][0] and pred[:measurements].median <= pred[:prediction_interval][1]
+                self.within_prediction_interval += 1
+              else
+                self.out_of_prediction_interval += 1
+              end
+            end
           else
             warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
             $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
@@ -128,16 +133,23 @@ module OpenTox
         $logger.debug "R^2 #{r_squared}"
         $logger.debug "RMSE #{rmse}"
         $logger.debug "MAE #{mae}"
+        $logger.debug "#{percent_within_prediction_interval.round(2)}% measurements within prediction interval"
         save
         {
           :mae => mae,
           :rmse => rmse,
           :r_squared => r_squared,
+          :within_prediction_interval => within_prediction_interval,
+          :out_of_prediction_interval => out_of_prediction_interval,
         }
       end
 
+      def percent_within_prediction_interval
+        100*within_prediction_interval.to_f/(within_prediction_interval+out_of_prediction_interval)
+      end
+
       def correlation_plot format: "png"
-        unless correlation_plot_id
+        #unless correlation_plot_id
           tmpfile = "/tmp/#{id.to_s}_correlation.#{format}"
           x = []
           y = []
@@ -158,7 +170,7 @@ module OpenTox
           file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{id.to_s}_correlation_plot.#{format}")
           plot_id = $gridfs.insert_one(file)
           update(:correlation_plot_id => plot_id)
-        end
+        #end
         $gridfs.find_one(_id: correlation_plot_id).data
       end
 

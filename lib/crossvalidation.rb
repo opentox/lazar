@@ -64,14 +64,16 @@ module OpenTox
       field :weighted_accuracy, type: Float
       field :true_rate, type: Hash
       field :predictivity, type: Hash
-      field :confidence_plot_id, type: BSON::ObjectId
+      field :probability_plot_id, type: BSON::ObjectId
     end
 
     class RegressionCrossValidation < CrossValidation
       include RegressionStatistics
-      field :rmse, type: Float
-      field :mae, type: Float
+      field :rmse, type: Float, default:0
+      field :mae, type: Float, default:0
       field :r_squared, type: Float
+      field :within_prediction_interval, type: Integer, default:0
+      field :out_of_prediction_interval, type: Integer, default:0
       field :correlation_plot_id, type: BSON::ObjectId
     end
 
@@ -93,6 +95,7 @@ module OpenTox
         crossvalidation_ids.collect{|id| CrossValidation.find(id)}
       end
 
+=begin
       def correlation_plot format: "png"
         #unless correlation_plot_id
           feature = Feature.find(crossvalidations.first.model.prediction_feature)
@@ -104,16 +107,18 @@ module OpenTox
             x = []
             y = []
             cv.predictions.each do |sid,p|
-              x << p["value"]
-              y << p["measurements"].median
+              x << p["measurements"].median
+              y << p["value"]
             end
             R.assign "measurement", x
             R.assign "prediction", y
             R.eval "all = c(measurement,prediction)"
             R.eval "range = c(min(all), max(all))"
-            R.eval "image#{i} = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
+            R.eval "image#{i} = qplot(prediction,measurement,main='#{title} #{i}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
             R.eval "image#{i} = image#{i} + geom_abline(intercept=0, slope=1)"
             images << "image#{i}"
+            
+            R.eval "ggsave(file='/home/ist/lazar/test/tmp#{i}.pdf', plot=image#{i})"
           end
           R.eval "pdf('#{tmpfile}')"
           R.eval "grid.arrange(#{images.join ","},ncol=#{images.size})"
@@ -124,6 +129,7 @@ module OpenTox
         #end
       $gridfs.find_one(_id: correlation_plot_id).data
       end
+=end
     end
   end
 
