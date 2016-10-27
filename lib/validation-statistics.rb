@@ -66,7 +66,7 @@ module OpenTox
       end
 
       def probability_plot format: "pdf"
-        #unless probability_plot_id
+        unless probability_plot_id
           tmpfile = "/tmp/#{id.to_s}_probability.#{format}"
           accuracies = []
           probabilities = []
@@ -91,7 +91,7 @@ module OpenTox
           file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_probability_plot.svg")
           plot_id = $gridfs.insert_one(file)
           update(:probability_plot_id => plot_id)
-        #end
+        end
         $gridfs.find_one(_id: probability_plot_id).data
       end
     end
@@ -133,7 +133,7 @@ module OpenTox
         $logger.debug "R^2 #{r_squared}"
         $logger.debug "RMSE #{rmse}"
         $logger.debug "MAE #{mae}"
-        $logger.debug "#{percent_within_prediction_interval.round(2)}% measurements within prediction interval"
+        $logger.debug "#{percent_within_prediction_interval.round(2)}% of measurements within prediction interval"
         save
         {
           :mae => mae,
@@ -149,7 +149,7 @@ module OpenTox
       end
 
       def correlation_plot format: "png"
-        #unless correlation_plot_id
+        unless correlation_plot_id
           tmpfile = "/tmp/#{id.to_s}_correlation.#{format}"
           x = []
           y = []
@@ -170,7 +170,7 @@ module OpenTox
           file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{id.to_s}_correlation_plot.#{format}")
           plot_id = $gridfs.insert_one(file)
           update(:correlation_plot_id => plot_id)
-        #end
+        end
         $gridfs.find_one(_id: correlation_plot_id).data
       end
 
