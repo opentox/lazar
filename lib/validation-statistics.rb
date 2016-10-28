@@ -139,6 +139,7 @@ module OpenTox
           :mae => mae,
           :rmse => rmse,
           :r_squared => r_squared,
+          :r_squared_adjusted => r_squared_adjusted,
           :within_prediction_interval => within_prediction_interval,
           :out_of_prediction_interval => out_of_prediction_interval,
         }

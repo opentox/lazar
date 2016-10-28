@@ -95,7 +95,6 @@ module OpenTox
         crossvalidation_ids.collect{|id| CrossValidation.find(id)}
       end
 
-=begin
       def correlation_plot format: "png"
         #unless correlation_plot_id
           feature = Feature.find(crossvalidations.first.model.prediction_feature)
@@ -129,7 +128,6 @@ module OpenTox
         #end
       $gridfs.find_one(_id: correlation_plot_id).data
       end
-=end
     end
   end
 
