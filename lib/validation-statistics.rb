@@ -66,8 +66,13 @@ module OpenTox
       end
 
       def probability_plot format: "pdf"
-        unless probability_plot_id
-          tmpfile = "/tmp/#{id.to_s}_probability.#{format}"
+        #unless probability_plot_id
+
+          #tmpdir = File.join(ENV["HOME"], "tmp")
+          tmpdir = "/tmp"
+          #p tmpdir
+          FileUtils.mkdir_p tmpdir
+          tmpfile = File.join(tmpdir,"#{id.to_s}_probability.#{format}")
           accuracies = []
           probabilities = []
           correct_predictions = 0
@@ -91,7 +96,7 @@ module OpenTox
           file = Mongo::Grid::File.new(File.read(tmpfile), :filename => "#{self.id.to_s}_probability_plot.svg")
           plot_id = $gridfs.insert_one(file)
           update(:probability_plot_id => plot_id)
-        end
+        #end
         $gridfs.find_one(_id: probability_plot_id).data
       end
     end
@@ -139,7 +144,6 @@ module OpenTox
           :mae => mae,
           :rmse => rmse,
           :r_squared => r_squared,
-          :r_squared_adjusted => r_squared_adjusted,
           :within_prediction_interval => within_prediction_interval,
           :out_of_prediction_interval => out_of_prediction_interval,
         }
