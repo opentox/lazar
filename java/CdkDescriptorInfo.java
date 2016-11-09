@@ -1,11 +1,12 @@
 import java.util.*;
-import org.openscience.cdk.qsar.descriptors.molecular.*;
+import org.openscience.cdk.DefaultChemObjectBuilder;
 import org.openscience.cdk.qsar.*;
+//import org.openscience.cdk.qsar.descriptors.molecular.*;
 
 class CdkDescriptorInfo {
   public static void main(String[] args) {
 
-    DescriptorEngine engine = new DescriptorEngine(DescriptorEngine.MOLECULAR);
+    DescriptorEngine engine = new DescriptorEngine(IMolecularDescriptor.class,null);
 
     for (Iterator<IDescriptor> it = engine.getDescriptorInstances().iterator(); it.hasNext(); ) {
       IDescriptor descriptor = it.next();

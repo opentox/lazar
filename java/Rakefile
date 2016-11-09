@@ -1,7 +1,7 @@
 # Java class, classpath
 java_classes = [
-  ["CdkDescriptors", "cdk-1.4.19.jar"],
-  ["CdkDescriptorInfo", "cdk-1.4.19.jar"],
+  ["CdkDescriptors", "cdk-2.0-SNAPSHOT.jar"],
+  ["CdkDescriptorInfo", "cdk-2.0-SNAPSHOT.jar"],
   ["JoelibDescriptors", "joelib2.jar:."],
   ["JoelibDescriptorInfo", "joelib2.jar:."],
 ]
@@ -10,6 +10,6 @@ task :default => java_classes.collect{|c| "#{c.first}.class"}
 
 java_classes.each do |c|
   file "#{c.first}.class" => "#{c.first}.java" do
-    puts `javac -classpath #{c.last} #{c.first}.java`
+    puts `javac -Xlint:deprecation -classpath #{c.last} #{c.first}.java`
   end
 end
