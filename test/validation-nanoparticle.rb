@@ -15,6 +15,7 @@ class NanoparticleValidationTest  < MiniTest::Test
   def test_validate_default_nanoparticle_model
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
     cv = CrossValidation.create model
+    p cv
     p cv.rmse
     p cv.r_squared
     #File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}

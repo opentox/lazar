@@ -12,7 +12,9 @@ class DescriptorTest < MiniTest::Test
 
   def test_smarts
     c = OpenTox::Compound.from_smiles "N=C=C1CCC(=F=FO)C1"
-    File.open("tmp.png","w+"){|f| f.puts c.png}
+    File.open("/tmp/tmp.png","w+"){|f| f.puts c.png}
+    assert_match /^PNG/,`file -b /tmp/tmp.png`
+    File.delete "/tmp/tmp.png"
     s = Smarts.find_or_create_by(:smarts => "F=F")
     result = c.smarts_match [s]
     assert_equal [1], result
