@@ -19,6 +19,10 @@ module OpenTox
         ( fingerprints[0] & fingerprints[1]).size/(fingerprints[0]|fingerprints[1]).size.to_f
       end
 
+      #def self.weighted_tanimoto fingerprints
+        #( fingerprints[0] & fingerprints[1]).size/(fingerprints[0]|fingerprints[1]).size.to_f
+      #end
+
       def self.euclid scaled_properties
         sq = scaled_properties[0].zip(scaled_properties[1]).map{|a,b| (a - b) ** 2}
         Math.sqrt(sq.inject(0) {|s,c| s + c})

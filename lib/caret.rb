@@ -12,7 +12,7 @@ module OpenTox
           independent_variables.delete_at i
           query_variables.delete_at i
         end
-        if independent_variables.flatten.uniq == ["NA"] 
+        if independent_variables.flatten.uniq == ["NA"] or independent_variables.flatten.uniq == [] 
           prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
           prediction[:warning] = "No variables for regression model. Using weighted average of similar substances."
         elsif

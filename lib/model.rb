@@ -106,7 +106,7 @@ module OpenTox
           else
             model.algorithms[type] = parameters
           end
-        end
+        end if algorithms
 
         # parse dependent_variables from training dataset
         training_dataset.substances.each do |substance|
@@ -249,6 +249,7 @@ module OpenTox
         elsif neighbor_similarities.size == 1
           prediction.merge!({:value => dependent_variables.first, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting its experimental value.", :neighbors => [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]})
         else
+          query_descriptors.collect!{|d| d ? 1 : 0} if independent_variables[0][0].numeric?
           # call prediction algorithm
           result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
           prediction.merge! result
@@ -343,7 +344,7 @@ module OpenTox
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
-      field :leave_one_out_validation_id, type: BSON::ObjectId
+      #field :leave_one_out_validation_id, type: BSON::ObjectId
 
       def predict object
         model.predict object
@@ -398,42 +399,28 @@ module OpenTox
 
     class NanoPrediction < Prediction
 
-      def self.from_json_dump dir, category
-        Import::Enanomapper.import dir
-        training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-        unless training_dataset
-          Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
+      def self.create training_dataset: nil, prediction_feature:nil, algorithms: nil
+        
+        # find/import training_dataset
+        training_dataset ||= Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+        unless training_dataset # try to import from json dump
+          Import::Enanomapper.import
           training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+          unless training_dataset
+            Import::Enanomapper.mirror
+            Import::Enanomapper.import
+            training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+            bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
+          end
         end
-        prediction_model = self.new(
-          :endpoint => "log2(Net cell association)",
-          :source => "https://data.enanomapper.net/",
-          :species => "A549 human lung epithelial carcinoma cells",
-          :unit => "log2(ug/Mg)"
-        )
-        prediction_feature = Feature.where(name: "log2(Net cell association)", category: "TOX").first
-        model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset)
-        prediction_model[:model_id] = model.id
-        repeated_cv = Validation::RepeatedCrossValidation.create model
-        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
-        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
-        prediction_model.save
-        prediction_model
-      end
+        prediction_feature ||= Feature.where(name: "log2(Net cell association)", category: "TOX").first
 
-      def self.create dir: dir, algorithms: algorithms
-        training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-        unless training_dataset
-          Import::Enanomapper.import dir
-          training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-        end
         prediction_model = self.new(
-          :endpoint => "log2(Net cell association)",
-          :source => "https://data.enanomapper.net/",
+          :endpoint => prediction_feature.name,
+          :source => prediction_feature.source,
           :species => "A549 human lung epithelial carcinoma cells",
-          :unit => "log2(ug/Mg)"
+          :unit => prediction_feature.unit
         )
-        prediction_feature = Feature.where(name: "log2(Net cell association)", category: "TOX").first
         model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms)
         prediction_model[:model_id] = model.id
         repeated_cv = Validation::RepeatedCrossValidation.create model

@@ -113,4 +113,23 @@ class NanoparticleValidationTest  < MiniTest::Test
     refute_nil cv.rmse
   end
 
+  def test_nanoparticle_fingerprint_model_with_feature_selection
+    algorithms = {
+      :descriptors => {
+        :method => "fingerprint",
+        :type => "MP2D",
+      },
+      :similarity => {
+        :method => "Algorithm::Similarity.tanimoto",
+        :min => 0.1
+      },
+    }
+    model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
+    cv = CrossValidation.create model
+    p cv.rmse
+    p cv.r_squared
+    refute_nil cv.r_squared
+    refute_nil cv.rmse
+  end
+
 end

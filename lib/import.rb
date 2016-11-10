@@ -5,7 +5,12 @@ module OpenTox
     class Enanomapper
       include OpenTox
 
-      def self.mirror dir="."
+      def self.mirror dir=nil
+        # clean download dir
+        dir ||= File.join(File.dirname(__FILE__),"..","data","enm")
+        FileUtils.rm_rf dir
+        FileUtils.mkdir_p dir
+
         #get list of bundle URIs
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         File.open(File.join(dir,"bundles.json"),"w+"){|f| f.puts JSON.pretty_generate(bundles)}
