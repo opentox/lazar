@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "GI_GENERAL_INFORM_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "term": "http://www.bioassayontology.org/bao#BAO_0000015",
       "title": "4.1 Appearance"
     },
     "endpoint": "Appearance/physical state/colour.001",

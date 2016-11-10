@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "SURFACE_CHEMISTRY_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "term": "http://www.bioassayontology.org/bao#BAO_0000015",
       "title": "4.30 Nanomaterial surface chemistry"
     },
     "endpoint": "Description",

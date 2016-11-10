@@ -81,7 +81,6 @@ module OpenTox
               :method => "properties",
               :categories => ["P-CHEM"],
             },
-            #:descriptors => ["P-CHEM","Proteomics"],
             :similarity => {
               :method => "Algorithm::Similarity.weighted_cosine",
               :min => 0.5
@@ -140,10 +139,11 @@ module OpenTox
           model.algorithms[:descriptors].delete(:features)
           model.algorithms[:descriptors].delete(:type)
           model.substances.each_with_index do |s,i|
-            s.calculate_properties(features).each_with_index do |v,j|
+            props = s.calculate_properties(features)
+            props.each_with_index do |v,j|
               model.independent_variables[j] ||= []
               model.independent_variables[j][i] = v
-            end
+            end if props and !props.empty?
           end
         # parse independent_variables
         when "properties"
@@ -152,7 +152,10 @@ module OpenTox
           categories.each do |category|
             Feature.where(category:category).each{|f| feature_ids << f.id.to_s}
           end
-          properties = model.substances.collect { |s| s.properties }
+          #p feature_ids
+          #properties = Nanoparticle.all.collect { |s| p s.name; p s.id; p s.properties }
+          properties = model.substances.collect { |s| s.properties  }
+          #p properties
           property_ids = properties.collect{|p| p.keys}.flatten.uniq
           model.descriptor_ids = feature_ids & property_ids
           model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}

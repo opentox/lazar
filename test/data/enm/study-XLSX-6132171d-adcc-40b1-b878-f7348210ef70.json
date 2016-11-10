@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "ZETA_POTENTIAL_SECTION",
-      "term": "http://purl.bioontology.org/ontology/npo/NPO_1302",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_1302",
       "title": "4.29 Nanomaterial zeta potential"
     },
     "endpoint": "123",

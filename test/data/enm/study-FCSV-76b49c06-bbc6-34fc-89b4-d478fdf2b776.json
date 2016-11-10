@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "CRYSTALLITE_AND_GRAIN_SIZE_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "term": "http://www.bioassayontology.org/bao#BAO_0000015",
       "title": "4.26 Nanomaterial crystallite and grain size"
     },
     "endpoint": "DLS",

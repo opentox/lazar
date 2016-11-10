@@ -136,9 +136,6 @@ module OpenTox
     # @param inchi [String] smiles InChI string
     # @return [OpenTox::Compound] Compound
     def self.from_inchi inchi
-      # Temporary workaround for OpenBabels Inchi bug
-      # http://sourceforge.net/p/openbabel/bugs/957/
-      # bug has not been fixed in latest git/development version
       #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?

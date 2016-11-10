@@ -9,6 +9,12 @@ module OpenTox
         #get list of bundle URIs
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         File.open(File.join(dir,"bundles.json"),"w+"){|f| f.puts JSON.pretty_generate(bundles)}
+        # bundles
+          # id/summary
+          # id/compound
+          # id/substance
+          # id/property
+
         bundles.each do |bundle|
           $logger.debug bundle["title"]
           nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"]+"?media=application%2Fjson"))["dataEntry"]
@@ -32,32 +38,43 @@ module OpenTox
         t2 = 0
         datasets = {}
         JSON.parse(File.read(File.join(dir,"bundles.json"))).each do |bundle|
+          if bundle["id"] == 3
           datasets[bundle["URI"]] = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"])
+          end
         end
-        Dir[File.join(dir,"study*.json")].each do |s|
+        # TODO this is only for protein corona
+        Dir[File.join(dir,"study-F*.json")].each do |s|
           t = Time.now
           study = JSON.parse(File.read(s))
           np = JSON.parse(File.read(File.join(dir,"nanoparticle-#{study['owner']['substance']['uuid']}.json")))
-          core = {}
-          coating = []
+          core_id = nil
+          coating_ids = []
           np["composition"].each do |c|
+            uri = c["component"]["compound"]["URI"]
+            uri = CGI.escape File.join(uri,"&media=application/json")
+            data = JSON.parse(RestClientWrapper.get "https://data.enanomapper.net/query/compound/url/all?media=application/json&search=#{uri}")
+            smiles = data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23SMILESDefault"]
+            names = []
+            names << data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault"]
+            names << data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23IUPACNameDefault"]
+            if smiles
+              compound = Compound.find_or_create_by(:smiles => smiles)
+              compound.names = names.compact
+            else
+              compound = Compound.find_or_create_by(:names => names)
+            end
+            compound.save
             if c["relation"] == "HAS_CORE"
-              core = {
-                :uri => c["component"]["compound"]["URI"],
-                :name => c["component"]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault"]
-              }
+              core_id = compound.id.to_s
             elsif c["relation"] == "HAS_COATING"
-              coating << {
-                :uri => c["component"]["compound"]["URI"],
-                :name => c["component"]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault"]
-              }
+              coating_ids << compound.id.to_s
             end
           end if np["composition"]
           nanoparticle = Nanoparticle.find_or_create_by(
             :name => np["values"]["https://data.enanomapper.net/identifier/name"],
             :source => np["compound"]["URI"],
-            :core => core,
-            :coating => coating
+            :core_id => core_id,
+            :coating_ids => coating_ids
           )
           np["bundles"].keys.each do |bundle_uri|
             nanoparticle.dataset_ids << datasets[bundle_uri].id
@@ -104,6 +121,7 @@ module OpenTox
               nanoparticle.parse_ambit_value feature, effect["result"], dataset
             end
           end
+    p nanoparticle
           nanoparticle.save
         end
         datasets.each { |u,d| d.save }

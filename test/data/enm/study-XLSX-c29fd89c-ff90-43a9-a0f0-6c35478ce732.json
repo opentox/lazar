@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "ASPECT_RATIO_SHAPE_SECTION",
-      "term": "http://purl.bioontology.org/ontology/npo/NPO_274",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_274",
       "title": "4.27 Nanomaterial aspect ratio/shape"
     },
     "endpoint": "021",

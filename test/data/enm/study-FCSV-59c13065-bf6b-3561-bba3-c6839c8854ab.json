@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "PC_UNKNOWN_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "term": "http://www.bioassayontology.org/bao#BAO_0000015",
       "title": "4.99 Physico chemical properties (other)"
     },
     "endpoint": "Ellman depletion assay",

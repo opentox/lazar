@@ -18,7 +18,7 @@
     "topcategory": "TOX",
     "category": {
       "code": "BAO_0003009_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0003009",
+      "term": "http://www.bioassayontology.org/bao#BAO_0003009",
       "title": "BAO_0003009 Cell Viability Assay"
     },
     "endpoint": "081",

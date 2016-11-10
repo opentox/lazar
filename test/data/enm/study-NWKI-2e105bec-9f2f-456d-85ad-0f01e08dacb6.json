@@ -18,7 +18,7 @@
     "topcategory": "TOX",
     "category": {
       "code": "BAO_0002993_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0002993",
+      "term": "http://www.bioassayontology.org/bao#BAO_0002993",
       "title": "BAO_0002993 Cytotoxicity Assay"
     },
     "endpoint": "Concentration in cell",

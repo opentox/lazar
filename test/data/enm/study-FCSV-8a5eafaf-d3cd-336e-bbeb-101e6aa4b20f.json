@@ -18,7 +18,7 @@
     "topcategory": "TOX",
     "category": {
       "code": "UNKNOWN_TOXICITY_SECTION",
-      "term": "http://purl.obolibrary.org/obo/BAO_0000015",
+      "term": "http://www.bioassayontology.org/bao#BAO_0000015",
       "title": "7.99 Toxicity (other)"
     },
     "endpoint": "Bicinchoninic Acid (BCA) Assay",

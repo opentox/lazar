@@ -18,7 +18,7 @@
     "topcategory": "P-CHEM",
     "category": {
       "code": "SPECIFIC_SURFACE_AREA_SECTION",
-      "term": "http://purl.bioontology.org/ontology/npo/NPO_1235",
+      "term": "http://purl.bioontology.org/ontology/npo#NPO_1235",
       "title": "4.28 Nanomaterial specific surface area"
     },
     "endpoint": "Specific surface area.001",
