@@ -418,6 +418,28 @@ module OpenTox
         prediction_model
       end
 
+      def self.create dir: dir, algorithms: algorithms
+        training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+        unless training_dataset
+          Import::Enanomapper.import dir
+          training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+        end
+        prediction_model = self.new(
+          :endpoint => "log2(Net cell association)",
+          :source => "https://data.enanomapper.net/",
+          :species => "A549 human lung epithelial carcinoma cells",
+          :unit => "log2(ug/Mg)"
+        )
+        prediction_feature = Feature.where(name: "log2(Net cell association)", category: "TOX").first
+        model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms)
+        prediction_model[:model_id] = model.id
+        repeated_cv = Validation::RepeatedCrossValidation.create model
+        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
+        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
+        prediction_model.save
+        prediction_model
+      end
+
     end
 
   end
