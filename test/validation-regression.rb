@@ -86,7 +86,6 @@ class ValidationRegressionTest < MiniTest::Test
       #assert cv.r_squared > 0.34, "R^2 (#{cv.r_squared}) should be larger than 0.034"
       #assert_operator cv.accuracy, :>, 0.7, "model accuracy < 0.7, this may happen by chance due to an unfavorable training/test set split"
     end
-    p repeated_cv
     File.open("tmp.png","w+"){|f| f.puts repeated_cv.correlation_plot}
   end
 

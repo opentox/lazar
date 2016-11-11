@@ -13,7 +13,6 @@ class NanomaterialPredictionModelTest < MiniTest::Test
 
   def test_default_nanomaterial_prediction_model
     prediction_model = Model::NanoPrediction.create
-    p prediction_model
     [:endpoint,:species,:source].each do |p|
       refute_empty prediction_model[p]
     end

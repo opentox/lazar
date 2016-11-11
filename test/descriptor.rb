@@ -6,7 +6,6 @@ class DescriptorTest < MiniTest::Test
     # check available descriptors
     assert_equal 15,PhysChem.openbabel_descriptors.size,"incorrect number of Openbabel descriptors"
     assert_equal 45,PhysChem.joelib_descriptors.size,"incorrect number of Joelib descriptors"
-    p PhysChem.cdk_descriptors
     assert_equal 286,PhysChem.cdk_descriptors.size,"incorrect number of Cdk descriptors"
     assert_equal 346,PhysChem.descriptors.size,"incorrect number of physchem descriptors"
   end

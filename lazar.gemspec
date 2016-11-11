@@ -24,5 +24,4 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rserve-client', '~> 0.3'
   s.add_runtime_dependency 'mongoid', '~> 5.0'
   s.add_runtime_dependency 'openbabel', '~> 2.3', '>= 2.3.2.2'
-
 end

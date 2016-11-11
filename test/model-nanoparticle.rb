@@ -108,7 +108,6 @@ class NanoparticleModelTest  < MiniTest::Test
       },
     }
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature, algorithms: algorithms
-    p model
     refute_empty model.dependent_variables
     refute_empty model.descriptor_ids
     refute_empty model.independent_variables

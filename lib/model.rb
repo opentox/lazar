@@ -152,10 +152,7 @@ module OpenTox
           categories.each do |category|
             Feature.where(category:category).each{|f| feature_ids << f.id.to_s}
           end
-          #p feature_ids
-          #properties = Nanoparticle.all.collect { |s| p s.name; p s.id; p s.properties }
           properties = model.substances.collect { |s| s.properties  }
-          #p properties
           property_ids = properties.collect{|p| p.keys}.flatten.uniq
           model.descriptor_ids = feature_ids & property_ids
           model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
@@ -223,10 +220,10 @@ module OpenTox
             prediction[:measurements] << dependent_variables[i]
             prediction[:warning] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
           else
-            next if substance.is_a? Nanoparticle and substance.core != Nanoparticle.find(s).core
             if fingerprints?
               neighbor_descriptors = fingerprints[i]
             else
+              next if substance.is_a? Nanoparticle and substance.core != Nanoparticle.find(s).core # necessary for nanoparticle properties predictions
               neighbor_descriptors = scaled_variables.collect{|v| v[i]}
             end
             sim = Algorithm.run algorithms[:similarity][:method], [similarity_descriptors, neighbor_descriptors, descriptor_weights]
@@ -344,7 +341,6 @@ module OpenTox
       field :unit, type: String
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
-      #field :leave_one_out_validation_id, type: BSON::ObjectId
 
       def predict object
         model.predict object
@@ -370,10 +366,6 @@ module OpenTox
         repeated_crossvalidation.crossvalidations
       end
 
-      def leave_one_out_validation
-        Validation::LeaveOneOut.find leave_one_out_validation_id
-      end
-
       def regression?
         model.is_a? LazarRegression
       end
@@ -390,7 +382,6 @@ module OpenTox
         model = Lazar.create training_dataset: training_dataset
         prediction_model[:model_id] = model.id
         prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
-        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
         prediction_model.save
         prediction_model
       end
@@ -406,12 +397,7 @@ module OpenTox
         unless training_dataset # try to import from json dump
           Import::Enanomapper.import
           training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-          unless training_dataset
-            Import::Enanomapper.mirror
-            Import::Enanomapper.import
-            training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-            bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
-          end
+          bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
         end
         prediction_feature ||= Feature.where(name: "log2(Net cell association)", category: "TOX").first
 
@@ -424,8 +410,7 @@ module OpenTox
         model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms)
         prediction_model[:model_id] = model.id
         repeated_cv = Validation::RepeatedCrossValidation.create model
-        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
-        #prediction_model[:leave_one_out_validation_id] = Validation::LeaveOneOut.create(model).id
+        prediction_model[:repeated_crossvalidation_id] = repeated_cv.id
         prediction_model.save
         prediction_model
       end
