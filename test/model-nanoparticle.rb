@@ -5,10 +5,6 @@ class NanoparticleModelTest  < MiniTest::Test
 
   def setup
     @training_dataset = Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-    unless @training_dataset
-      Import::Enanomapper.import File.join(File.dirname(__FILE__),"data","enm")
-      @training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-    end
     @prediction_feature = @training_dataset.features.select{|f| f["name"] == 'log2(Net cell association)'}.first
   end
 
@@ -50,6 +46,7 @@ class NanoparticleModelTest  < MiniTest::Test
     refute_empty model.independent_variables
     assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
+    assert_nil model.algorithms[:descriptors][:categories]
     nanoparticle = @training_dataset.nanoparticles[-34]
     assert_includes nanoparticle.dataset_ids, @training_dataset.id
     prediction = model.predict nanoparticle

@@ -11,7 +11,8 @@ class NanoparticleValidationTest  < MiniTest::Test
   def test_validate_default_nanoparticle_model
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature
     cv = CrossValidation.create model
-    #File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot}
+    p cv.id
+    File.open("tmp.pdf","w+"){|f| f.puts cv.correlation_plot format:"pdf"}
     refute_nil cv.r_squared
     refute_nil cv.rmse
   end
@@ -30,6 +31,8 @@ class NanoparticleValidationTest  < MiniTest::Test
     model = Model::Lazar.create prediction_feature: @prediction_feature, training_dataset: @training_dataset, algorithms: algorithms
     assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
     cv = CrossValidation.create model
+    p cv.id
+    File.open("tmp2.pdf","w+"){|f| f.puts cv.correlation_plot format:"pdf"}
     refute_nil cv.r_squared
     refute_nil cv.rmse
   end

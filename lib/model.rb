@@ -102,6 +102,7 @@ module OpenTox
             parameters.each do |p,v|
               model.algorithms[type] ||= {}
               model.algorithms[type][p] = v
+              model.algorithms[:descriptors].delete :categories if type == :descriptors and p == :type
             end
           else
             model.algorithms[type] = parameters
@@ -246,7 +247,7 @@ module OpenTox
         elsif neighbor_similarities.size == 1
           prediction.merge!({:value => dependent_variables.first, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting its experimental value.", :neighbors => [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]})
         else
-          query_descriptors.collect!{|d| d ? 1 : 0} if independent_variables[0][0].numeric?
+          query_descriptors.collect!{|d| d ? 1 : 0} if algorithms[:feature_selection] and algorithms[:descriptors][:method] == "fingerprint"
           # call prediction algorithm
           result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
           prediction.merge! result
@@ -329,7 +330,7 @@ module OpenTox
     class LazarRegression < Lazar
     end
 
-    class Prediction
+    class Validation
 
       include OpenTox
       include Mongoid::Document
@@ -377,20 +378,16 @@ module OpenTox
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
-        prediction_model = self.new JSON.parse(File.read(metadata_file))
+        model_validation = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
         model = Lazar.create training_dataset: training_dataset
-        prediction_model[:model_id] = model.id
-        prediction_model[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
-        prediction_model.save
-        prediction_model
+        model_validation[:model_id] = model.id
+        model_validation[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
+        model_validation.save
+        model_validation
       end
 
-    end
-
-    class NanoPrediction < Prediction
-
-      def self.create training_dataset: nil, prediction_feature:nil, algorithms: nil
+      def self.from_enanomapper training_dataset: nil, prediction_feature:nil, algorithms: nil
         
         # find/import training_dataset
         training_dataset ||= Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
@@ -401,18 +398,18 @@ module OpenTox
         end
         prediction_feature ||= Feature.where(name: "log2(Net cell association)", category: "TOX").first
 
-        prediction_model = self.new(
+        model_validation = self.new(
           :endpoint => prediction_feature.name,
           :source => prediction_feature.source,
           :species => "A549 human lung epithelial carcinoma cells",
           :unit => prediction_feature.unit
         )
         model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms)
-        prediction_model[:model_id] = model.id
+        model_validation[:model_id] = model.id
         repeated_cv = Validation::RepeatedCrossValidation.create model
-        prediction_model[:repeated_crossvalidation_id] = repeated_cv.id
-        prediction_model.save
-        prediction_model
+        model_validation[:repeated_crossvalidation_id] = repeated_cv.id
+        model_validation.save
+        model_validation
       end
 
     end

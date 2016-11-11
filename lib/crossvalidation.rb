@@ -6,6 +6,7 @@ module OpenTox
       field :folds, type: Integer, default: 10
 
       def self.create model, n=10
+        $logger.debug model.algorithms
         klass = ClassificationCrossValidation if model.is_a? Model::LazarClassification
         klass = RegressionCrossValidation if model.is_a? Model::LazarRegression
         bad_request_error "Unknown model class #{model.class}." unless klass
