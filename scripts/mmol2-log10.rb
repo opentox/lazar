@@ -9,16 +9,17 @@ CSV.open(newfile, "wb") do |csv|
   CSV.read(ARGV[0]).each do |line|
     type,mmol = line
     if i == 1
-      csv << [type, "-log10(#{mmol})"]
       @type = type
+      csv << ["SMILES", "-log10(#{mmol})"]
     else
       if mmol.numeric?
         if @type =~ /smiles/i
           c = Compound.from_smiles type
         elsif @type =~ /inchi/i
           c = Compound.from_inchi type
+          type = c.smiles
         else
-          p "Unknown type '#{@type}' at line #{i}."
+          p "Unknown type '#{type}' at line 1."
         end
         mmol = -Math.log10(mmol.to_f)
         csv << [type, mmol]
