@@ -355,6 +355,10 @@ module OpenTox
         Lazar.find model_id
       end
 
+      def algorithms
+        model.algorithms
+      end
+
       def prediction_feature
         model.prediction_feature
       end
@@ -404,7 +408,7 @@ module OpenTox
           :species => "A549 human lung epithelial carcinoma cells",
           :unit => prediction_feature.unit
         )
-        model = Model::LazarRegression.create(prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms)
+        model = LazarRegression.create prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms
         model_validation[:model_id] = model.id
         repeated_cv = Validation::RepeatedCrossValidation.create model
         model_validation[:repeated_crossvalidation_id] = repeated_cv.id
