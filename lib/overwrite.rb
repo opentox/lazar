@@ -28,6 +28,11 @@ class Float
   def signif(n)
     Float("%.#{n}g" % self)
   end
+
+  # converts -10 logarithmized values back
+  def delog10
+    10**(-1*self)
+  end
 end
 
 module Enumerable
