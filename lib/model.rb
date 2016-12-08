@@ -364,7 +364,7 @@ module OpenTox
       end
 
       def repeated_crossvalidation
-        Validation::RepeatedCrossValidation.find repeated_crossvalidation_id
+        OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id
       end
 
       def crossvalidations
@@ -386,7 +386,7 @@ module OpenTox
         training_dataset = Dataset.from_csv_file file
         model = Lazar.create training_dataset: training_dataset
         model_validation[:model_id] = model.id
-        model_validation[:repeated_crossvalidation_id] = Validation::RepeatedCrossValidation.create(model).id
+        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id
         model_validation.save
         model_validation
       end
@@ -410,7 +410,7 @@ module OpenTox
         )
         model = LazarRegression.create prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms
         model_validation[:model_id] = model.id
-        repeated_cv = Validation::RepeatedCrossValidation.create model
+        repeated_cv = OpenTox::Validation::RepeatedCrossValidation.create model
         model_validation[:repeated_crossvalidation_id] = repeated_cv.id
         model_validation.save
         model_validation
