@@ -364,7 +364,7 @@ module OpenTox
       end
 
       def repeated_crossvalidation
-        OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id
+        OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id # full class name required
       end
 
       def crossvalidations
@@ -386,7 +386,7 @@ module OpenTox
         training_dataset = Dataset.from_csv_file file
         model = Lazar.create training_dataset: training_dataset
         model_validation[:model_id] = model.id
-        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id
+        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id # full class name required
         model_validation.save
         model_validation
       end
