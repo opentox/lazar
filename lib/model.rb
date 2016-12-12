@@ -395,7 +395,7 @@ module OpenTox
         
         # find/import training_dataset
         training_dataset ||= Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-        unless training_dataset # try to import from json dump
+        unless training_dataset # try to import 
           Import::Enanomapper.import
           training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
           bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
@@ -410,7 +410,7 @@ module OpenTox
         )
         model = LazarRegression.create prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms
         model_validation[:model_id] = model.id
-        repeated_cv = OpenTox::Validation::RepeatedCrossValidation.create model
+        repeated_cv = OpenTox::Validation::RepeatedCrossValidation.create model, 10, 5
         model_validation[:repeated_crossvalidation_id] = repeated_cv.id
         model_validation.save
         model_validation
