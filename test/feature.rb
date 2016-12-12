@@ -32,10 +32,9 @@ class FeatureTest < MiniTest::Test
   def test_duplicated_features
     metadata = {
       :name => "feature duplication test",
-      :nominal => true,
     }
-    feature = NumericBioAssay.find_or_create_by metadata
-    dup_feature = NumericBioAssay.find_or_create_by metadata
+    feature = NumericFeature.find_or_create_by metadata
+    dup_feature = NumericFeature.find_or_create_by metadata
     assert_kind_of Feature, feature
     assert !feature.id.nil?, "No Feature ID in #{feature.inspect}"
     assert !feature.id.nil?, "No Feature ID in #{dup_feature.inspect}"

@@ -2,7 +2,8 @@ module OpenTox
 
   module Model
 
-    class Model
+    class Lazar 
+
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
@@ -10,64 +11,247 @@ module OpenTox
 
       field :name, type: String
       field :creator, type: String, default: __FILE__
-      # datasets
+      field :algorithms, type: Hash, default:{}
       field :training_dataset_id, type: BSON::ObjectId
-      # algorithms
-      field :prediction_algorithm, type: String
-      # prediction feature
+      field :substance_ids, type: Array, default:[]
       field :prediction_feature_id, type: BSON::ObjectId
+      field :dependent_variables, type: Array, default:[]
+      field :descriptor_ids, type:Array, default:[]
+      field :independent_variables, type: Array, default:[]
+      field :fingerprints, type: Array, default:[]
+      field :descriptor_weights, type: Array, default:[]
+      field :descriptor_means, type: Array, default:[]
+      field :descriptor_sds, type: Array, default:[]
+      field :scaled_variables, type: Array, default:[]
+      field :version, type: Hash, default:{}
+      
+      def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
+        bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
+        prediction_feature = training_dataset.features.first unless prediction_feature
+        # TODO: prediction_feature without training_dataset: use all available data
 
-      def training_dataset
-        Dataset.find(training_dataset_id)
-      end
-    end
+        # guess model type
+        prediction_feature.numeric? ?  model = LazarRegression.new : model = LazarClassification.new
 
-    class Lazar < Model
-
-      # algorithms
-      field :neighbor_algorithm, type: String
-      field :neighbor_algorithm_parameters, type: Hash, default: {}
-
-      # Create a lazar model from a training_dataset and a feature_dataset
-      # @param [OpenTox::Dataset] training_dataset
-      # @return [OpenTox::Model::Lazar] Regression or classification model
-      def initialize training_dataset, params={}
-
-        super params
-
-        # TODO document convention
-        prediction_feature = training_dataset.features.first
-        # set defaults for empty parameters
-        self.prediction_feature_id ||= prediction_feature.id
-        self.training_dataset_id ||= training_dataset.id
-        self.name ||= "#{training_dataset.name} #{prediction_feature.name}" 
-        self.neighbor_algorithm_parameters ||= {}
-        self.neighbor_algorithm_parameters[:training_dataset_id] = training_dataset.id
-        save
-        self
-      end
-
-      def predict_compound compound
-        prediction_feature = Feature.find prediction_feature_id
-        neighbors = compound.send(neighbor_algorithm, neighbor_algorithm_parameters)
-        # remove neighbors without prediction_feature
-        # check for database activities (neighbors may include query compound)
-        database_activities = nil
-        prediction = {}
-        if neighbors.collect{|n| n["_id"]}.include? compound.id
-
-          database_activities = neighbors.select{|n| n["_id"] == compound.id}.first["features"][prediction_feature.id.to_s].uniq
-          prediction[:database_activities] = database_activities
-          prediction[:warning] = "#{database_activities.size} compounds have been removed from neighbors, because they have the same structure as the query compound."
-          neighbors.delete_if{|n| n["_id"] == compound.id}
-        end
-        neighbors.delete_if{|n| n['features'].empty? or n['features'][prediction_feature.id.to_s] == [nil] }
-        if neighbors.empty?
-          prediction.merge!({:value => nil,:confidence => nil,:warning => "Could not find similar compounds with experimental data in the training dataset.",:neighbors => []})
+        model.prediction_feature_id = prediction_feature.id
+        model.training_dataset_id = training_dataset.id
+        model.name = "#{prediction_feature.name} (#{training_dataset.name})" 
+        # TODO: check if this works for gem version, add gem versioning?
+        dir = File.dirname(__FILE__)
+        commit = `cd #{dir}; git rev-parse HEAD`.chomp
+        branch = `cd #{dir}; git rev-parse --abbrev-ref HEAD`.chomp
+        url = `cd #{dir}; git config --get remote.origin.url`.chomp
+        if branch
+          model.version = {:url => url, :branch => branch, :commit => commit}
         else
-          prediction.merge!(Algorithm.run(prediction_algorithm, compound, {:neighbors => neighbors,:training_dataset_id=> training_dataset_id,:prediction_feature_id => prediction_feature.id}))
-          prediction[:neighbors] = neighbors
-          prediction[:neighbors] ||= []
+          model.version = {:warning => "git is not installed"}
+        end
+
+        # set defaults
+        substance_classes = training_dataset.substances.collect{|s| s.class.to_s}.uniq
+        bad_request_error "Cannot create models for mixed substance classes '#{substance_classes.join ', '}'." unless substance_classes.size == 1
+
+        if substance_classes.first == "OpenTox::Compound"
+
+          model.algorithms = {
+            :descriptors => {
+              :method => "fingerprint",
+              :type => "MP2D",
+            },
+            :similarity => {
+              :method => "Algorithm::Similarity.tanimoto",
+              :min => 0.1
+            },
+            :feature_selection => nil
+          }
+
+          if model.class == LazarClassification
+            model.algorithms[:prediction] = {
+                :method => "Algorithm::Classification.weighted_majority_vote",
+            }
+          elsif model.class == LazarRegression
+            model.algorithms[:prediction] = {
+              :method => "Algorithm::Caret.pls",
+            }
+          end
+
+        elsif substance_classes.first == "OpenTox::Nanoparticle"
+          model.algorithms = {
+            :descriptors => {
+              :method => "properties",
+              :categories => ["P-CHEM"],
+            },
+            :similarity => {
+              :method => "Algorithm::Similarity.weighted_cosine",
+              :min => 0.5
+            },
+            :prediction => {
+              :method => "Algorithm::Caret.rf",
+            },
+            :feature_selection => {
+              :method => "Algorithm::FeatureSelection.correlation_filter",
+            },
+          }
+        else
+          bad_request_error "Cannot create models for #{substance_classes.first}."
+        end
+        
+        # overwrite defaults with explicit parameters
+        algorithms.each do |type,parameters|
+          if parameters and parameters.is_a? Hash
+            parameters.each do |p,v|
+              model.algorithms[type] ||= {}
+              model.algorithms[type][p] = v
+              model.algorithms[:descriptors].delete :categories if type == :descriptors and p == :type
+            end
+          else
+            model.algorithms[type] = parameters
+          end
+        end if algorithms
+
+        # parse dependent_variables from training dataset
+        training_dataset.substances.each do |substance|
+          values = training_dataset.values(substance,model.prediction_feature_id)
+          values.each do |v|
+            model.substance_ids << substance.id.to_s
+            model.dependent_variables << v
+          end if values
+        end
+
+        descriptor_method = model.algorithms[:descriptors][:method]
+        case descriptor_method
+        # parse fingerprints
+        when "fingerprint"
+          type = model.algorithms[:descriptors][:type]
+          model.substances.each_with_index do |s,i|
+            model.fingerprints[i] ||= [] 
+            model.fingerprints[i] += s.fingerprint(type)
+            model.fingerprints[i].uniq!
+          end
+          model.descriptor_ids = model.fingerprints.flatten.uniq
+          model.descriptor_ids.each do |d|
+            # resulting model may break BSON size limit (e.g. f Kazius dataset)
+            model.independent_variables << model.substance_ids.collect_with_index{|s,i| model.fingerprints[i].include? d} if model.algorithms[:prediction][:method].match /Caret/
+          end
+        # calculate physchem properties
+        when "calculate_properties"
+          features = model.algorithms[:descriptors][:features]
+          model.descriptor_ids = features.collect{|f| f.id.to_s}
+          model.algorithms[:descriptors].delete(:features)
+          model.algorithms[:descriptors].delete(:type)
+          model.substances.each_with_index do |s,i|
+            props = s.calculate_properties(features)
+            props.each_with_index do |v,j|
+              model.independent_variables[j] ||= []
+              model.independent_variables[j][i] = v
+            end if props and !props.empty?
+          end
+        # parse independent_variables
+        when "properties"
+          categories = model.algorithms[:descriptors][:categories]
+          feature_ids = []
+          categories.each do |category|
+            Feature.where(category:category).each{|f| feature_ids << f.id.to_s}
+          end
+          properties = model.substances.collect { |s| s.properties  }
+          property_ids = properties.collect{|p| p.keys}.flatten.uniq
+          model.descriptor_ids = feature_ids & property_ids
+          model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
+        else
+          bad_request_error "Descriptor method '#{descriptor_method}' not implemented."
+        end
+        
+        if model.algorithms[:feature_selection] and model.algorithms[:feature_selection][:method]
+          model = Algorithm.run model.algorithms[:feature_selection][:method], model
+        end
+
+        # scale independent_variables
+        unless model.fingerprints?
+          model.independent_variables.each_with_index do |var,i|
+            model.descriptor_means[i] = var.mean
+            model.descriptor_sds[i] =  var.standard_deviation
+            model.scaled_variables << var.collect{|v| v ? (v-model.descriptor_means[i])/model.descriptor_sds[i] : nil}
+          end
+        end
+        model.save
+        model
+      end
+
+      def predict_substance substance
+        
+        case algorithms[:similarity][:method]
+        when /tanimoto/ # binary features
+          similarity_descriptors = substance.fingerprint algorithms[:descriptors][:type]
+          # TODO this excludes descriptors only present in the query substance
+          # use for applicability domain?
+          query_descriptors = descriptor_ids.collect{|id| similarity_descriptors.include? id}
+        when /euclid|cosine/ # quantitative features
+          if algorithms[:descriptors][:method] == "calculate_properties" # calculate descriptors
+            features = descriptor_ids.collect{|id| Feature.find(id)}
+            query_descriptors = substance.calculate_properties(features)
+            similarity_descriptors = query_descriptors.collect_with_index{|v,i| (v-descriptor_means[i])/descriptor_sds[i]}
+          else
+            similarity_descriptors = []
+            query_descriptors = []
+            descriptor_ids.each_with_index do |id,i|
+              prop = substance.properties[id]
+              prop = prop.median if prop.is_a? Array # measured
+              if prop
+                similarity_descriptors[i] = (prop-descriptor_means[i])/descriptor_sds[i]
+                query_descriptors[i] = prop
+              end
+            end
+          end
+        else
+          bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
+        end
+        
+        prediction = {}
+        neighbor_ids = []
+        neighbor_similarities = []
+        neighbor_dependent_variables = []
+        neighbor_independent_variables = []
+
+        prediction = {}
+        # find neighbors
+        substance_ids.each_with_index do |s,i|
+          # handle query substance
+          if substance.id.to_s == s
+            prediction[:measurements] ||= []
+            prediction[:measurements] << dependent_variables[i]
+            prediction[:warning] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
+          else
+            if fingerprints?
+              neighbor_descriptors = fingerprints[i]
+            else
+              next if substance.is_a? Nanoparticle and substance.core != Nanoparticle.find(s).core # necessary for nanoparticle properties predictions
+              neighbor_descriptors = scaled_variables.collect{|v| v[i]}
+            end
+            sim = Algorithm.run algorithms[:similarity][:method], [similarity_descriptors, neighbor_descriptors, descriptor_weights]
+            if sim >= algorithms[:similarity][:min]
+              neighbor_ids << s
+              neighbor_similarities << sim
+              neighbor_dependent_variables << dependent_variables[i]
+              independent_variables.each_with_index do |c,j|
+                neighbor_independent_variables[j] ||= []
+                neighbor_independent_variables[j] << independent_variables[j][i]
+              end
+            end
+          end
+        end
+
+        measurements = nil
+        
+        if neighbor_similarities.empty?
+          prediction.merge!({:value => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
+        elsif neighbor_similarities.size == 1
+          prediction.merge!({:value => dependent_variables.first, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting its experimental value.", :neighbors => [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]})
+        else
+          query_descriptors.collect!{|d| d ? 1 : 0} if algorithms[:feature_selection] and algorithms[:descriptors][:method] == "fingerprint"
+          # call prediction algorithm
+          result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
+          prediction.merge! result
+          prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
         end
         prediction
       end
@@ -77,103 +261,81 @@ module OpenTox
         training_dataset = Dataset.find training_dataset_id
 
         # parse data
-        compounds = []
-        case object.class.to_s
-        when "OpenTox::Compound"
-          compounds = [object] 
-        when "Array"
-          compounds = object
-        when "OpenTox::Dataset"
-          compounds = object.compounds
+        substances = []
+        if object.is_a? Substance
+          substances = [object] 
+        elsif object.is_a? Array
+          substances = object
+        elsif object.is_a? Dataset
+          substances = object.substances
         else 
-          bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Compounds or an OpenTox::Dataset as parameter."
+          bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Substances or an OpenTox::Dataset as parameter."
         end
 
         # make predictions
-        predictions = []
-        predictions = compounds.collect{|c| predict_compound c}
+        predictions = {}
+        substances.each do |c|
+          predictions[c.id.to_s] = predict_substance c
+          predictions[c.id.to_s][:prediction_feature_id] = prediction_feature_id 
+        end
 
         # serialize result
-        case object.class.to_s
-        when "OpenTox::Compound"
-          prediction = predictions.first
+        if object.is_a? Substance
+          prediction = predictions[substances.first.id.to_s]
           prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
           return prediction
-        when "Array"
+        elsif object.is_a? Array
           return predictions
-        when "OpenTox::Dataset"
+        elsif object.is_a? Dataset
           # prepare prediction dataset
           measurement_feature = Feature.find prediction_feature_id
 
-          prediction_feature = OpenTox::NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
-          prediction_dataset = LazarPrediction.new(
+          prediction_feature = NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
+          prediction_dataset = LazarPrediction.create(
             :name => "Lazar prediction for #{prediction_feature.name}",
             :creator =>  __FILE__,
-            :prediction_feature_id => prediction_feature.id
-
+            :prediction_feature_id => prediction_feature.id,
+            :predictions => predictions
           )
-          confidence_feature = OpenTox::NumericFeature.find_or_create_by( "name" => "Model RMSE" )
-          warning_feature = OpenTox::NominalFeature.find_or_create_by("name" => "Warnings")
-          prediction_dataset.features = [ prediction_feature, confidence_feature, measurement_feature, warning_feature ]
-          prediction_dataset.compounds = compounds
-          prediction_dataset.data_entries = predictions.collect{|p| [p[:value], p[:rmse] , p[:dataset_activities].to_s, p[:warning]]}
-          prediction_dataset.save
           return prediction_dataset
         end
 
       end
-      
-      def training_activities
-        i = training_dataset.feature_ids.index prediction_feature_id
-        training_dataset.data_entries.collect{|de| de[i]}
+
+      def training_dataset
+        Dataset.find(training_dataset_id)
+      end
+
+      def prediction_feature
+        Feature.find(prediction_feature_id)
+      end
+
+      def descriptors
+        descriptor_ids.collect{|id| Feature.find(id)}
+      end
+
+      def substances
+        substance_ids.collect{|id| Substance.find(id)}
+      end
+
+      def fingerprints?
+        algorithms[:descriptors][:method] == "fingerprint" ? true : false
       end
 
     end
 
     class LazarClassification < Lazar
-      
-      def self.create training_dataset, params={}
-        model = self.new training_dataset, params
-        model.prediction_algorithm = "OpenTox::Algorithm::Classification.weighted_majority_vote" unless model.prediction_algorithm
-        model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.neighbor_algorithm_parameters ||= {}
-        {
-          :type => "MP2D",
-          :training_dataset_id => training_dataset.id,
-          :min_sim => 0.1
-        }.each do |key,value|
-          model.neighbor_algorithm_parameters[key] ||= value
-        end
-        model.save
-        model
-      end
     end
 
     class LazarRegression < Lazar
-
-      def self.create training_dataset, params={}
-        model = self.new training_dataset, params
-        model.neighbor_algorithm ||= "fingerprint_neighbors"
-        model.prediction_algorithm ||= "OpenTox::Algorithm::Regression.local_fingerprint_regression" 
-        model.neighbor_algorithm_parameters ||= {}
-        {
-          :type => "MP2D",
-          :training_dataset_id => training_dataset.id,
-          :min_sim => 0.1
-        }.each do |key,value|
-          model.neighbor_algorithm_parameters[key] ||= value
-        end
-        model.save
-        model
-      end
     end
 
-    class Prediction
+    class Validation
+
       include OpenTox
       include Mongoid::Document
       include Mongoid::Timestamps
 
-      # TODO field Validations
       field :endpoint, type: String
       field :species, type: String
       field :source, type: String
@@ -182,7 +344,7 @@ module OpenTox
       field :repeated_crossvalidation_id, type: BSON::ObjectId
 
       def predict object
-        Lazar.find(model_id).predict object
+        model.predict object
       end
 
       def training_dataset
@@ -193,8 +355,17 @@ module OpenTox
         Lazar.find model_id
       end
 
+      def algorithms
+        model.algorithms
+      end
+
+      def prediction_feature
+        model.prediction_feature
+      end
+
       def repeated_crossvalidation
-        RepeatedCrossValidation.find repeated_crossvalidation_id
+        # full class name required
+        OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id
       end
 
       def crossvalidations
@@ -202,29 +373,51 @@ module OpenTox
       end
 
       def regression?
-        training_dataset.features.first.numeric?
+        model.is_a? LazarRegression
       end
 
       def classification?
-        training_dataset.features.first.nominal?
+        model.is_a? LazarClassification
       end
 
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
-        prediction_model = self.new JSON.parse(File.read(metadata_file))
+        model_validation = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
-        model = nil
-        if training_dataset.features.first.nominal?
-          model = LazarClassification.create training_dataset
-        elsif training_dataset.features.first.numeric?
-          model = LazarRegression.create training_dataset
-        end
-        prediction_model[:model_id] = model.id
-        prediction_model[:repeated_crossvalidation_id] = RepeatedCrossValidation.create(model).id
-        prediction_model.save
-        prediction_model
+        model = Lazar.create training_dataset: training_dataset
+        model_validation[:model_id] = model.id
+        # full class name required
+        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id
+        model_validation.save
+        model_validation
       end
+
+      def self.from_enanomapper training_dataset: nil, prediction_feature:nil, algorithms: nil
+        
+        # find/import training_dataset
+        training_dataset ||= Dataset.where(:name => "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+        unless training_dataset # try to import from json dump
+          Import::Enanomapper.import
+          training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
+          bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
+        end
+        prediction_feature ||= Feature.where(name: "log2(Net cell association)", category: "TOX").first
+
+        model_validation = self.new(
+          :endpoint => prediction_feature.name,
+          :source => prediction_feature.source,
+          :species => "A549 human lung epithelial carcinoma cells",
+          :unit => prediction_feature.unit
+        )
+        model = LazarRegression.create prediction_feature: prediction_feature, training_dataset: training_dataset, algorithms: algorithms
+        model_validation[:model_id] = model.id
+        repeated_cv = Validation::RepeatedCrossValidation.create model
+        model_validation[:repeated_crossvalidation_id] = repeated_cv.id
+        model_validation.save
+        model_validation
+      end
+
     end
 
   end

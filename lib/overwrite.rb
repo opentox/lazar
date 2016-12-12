@@ -28,6 +28,11 @@ class Float
   def signif(n)
     Float("%.#{n}g" % self)
   end
+
+  # converts -10 logarithmized values back
+  def delog10
+    10**(-1*self)
+  end
 end
 
 module Enumerable
@@ -101,19 +106,35 @@ class Array
   end
 
   def mean
-    self.inject{ |sum, el| sum + el }.to_f / self.size
+    self.compact.inject{ |sum, el| sum + el }.to_f / self.compact.size
   end
 
   def sample_variance
     m = self.mean
-    sum = self.inject(0){|accum, i| accum +(i-m)**2 }
-    sum/(self.length - 1).to_f
+    sum = self.compact.inject(0){|accum, i| accum +(i-m)**2 }
+    sum/(self.compact.length - 1).to_f
   end
 
   def standard_deviation
     Math.sqrt(self.sample_variance)
   end
 
+  def for_R
+    if self.first.is_a?(String) 
+      #"\"#{self.collect{|v| v.sub('[','').sub(']','')}.join(" ")}\"" # quote and remove square brackets
+      "NA"
+    else
+      self.median
+    end
+  end
+
+  def collect_with_index
+    result = []
+    self.each_with_index do |elt, idx|
+      result << yield(elt, idx)
+    end
+    result
+  end
 end
 
 module URI

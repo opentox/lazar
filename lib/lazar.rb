@@ -48,6 +48,7 @@ NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
 R.eval "
 suppressPackageStartupMessages({
+  library(labeling,lib=\"#{rlib}\")
   library(iterators,lib=\"#{rlib}\")
   library(foreach,lib=\"#{rlib}\")
   library(ggplot2,lib=\"#{rlib}\")
@@ -56,12 +57,14 @@ suppressPackageStartupMessages({
   library(pls,lib=\"#{rlib}\")
   library(caret,lib=\"#{rlib}\")
   library(doMC,lib=\"#{rlib}\")
+  library(randomForest,lib=\"#{rlib}\")
+  library(plyr,lib=\"#{rlib}\")
   registerDoMC(#{NR_CORES})
 })
 "
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
@@ -70,15 +73,22 @@ CLASSES = ["Feature","Compound","Dataset","Validation","CrossValidation","LeaveO
   "opentox.rb",
   "feature.rb",
   "physchem.rb",
+  "substance.rb",
   "compound.rb",
+  "nanoparticle.rb",
   "dataset.rb",
   "algorithm.rb",
+  "similarity.rb",
+  "feature_selection.rb",
   "model.rb",
   "classification.rb",
   "regression.rb",
+  "caret.rb",
+  "validation-statistics.rb",
   "validation.rb",
-  "crossvalidation.rb",
+  "train-test-validation.rb",
   "leave-one-out-validation.rb",
-  "experiment.rb",
+  "crossvalidation.rb",
+  #"experiment.rb",
+  "import.rb",
 ].each{ |f| require_relative f }
-OpenTox::PhysChem.descriptors # load descriptor features

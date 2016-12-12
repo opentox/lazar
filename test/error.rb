@@ -8,8 +8,8 @@ class ErrorTest < MiniTest::Test
   end
 
   def test_error_methods
-    assert_raises OpenTox::ResourceNotFoundError do
-      resource_not_found_error "This is a test"
+    assert_raises OpenTox::NotFoundError do
+      not_found_error "This is a test"
     end
   end
 

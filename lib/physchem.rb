@@ -14,7 +14,7 @@ module OpenTox
     JMOL_JAR = File.join(JAVA_DIR,"Jmol.jar")
 
     obexclude = ["cansmi","cansmiNS","formula","InChI","InChIKey","s","smarts","title","L5"]
-    OBDESCRIPTORS = Hash[OpenBabel::OBDescriptor.list_as_string("descriptors").split("\n").collect do |d|
+    OPENBABEL = Hash[OpenBabel::OBDescriptor.list_as_string("descriptors").split("\n").collect do |d|
       name,description = d.split(/\s+/,2)
       ["Openbabel."+name,description] unless obexclude.include? name
     end.compact.sort{|a,b| a[0] <=> b[0]}]
@@ -25,24 +25,24 @@ module OpenTox
       prefix="Cdk."+d[:java_class].split('.').last.sub(/Descriptor/,'')
       d[:names].each { |name| cdkdescriptors[prefix+"."+name] = d[:description] }
     end
-    CDKDESCRIPTORS = cdkdescriptors
+    CDK = cdkdescriptors
 
     # exclude Hashcode (not a physchem property) and GlobalTopologicalChargeIndex (Joelib bug)
     joelibexclude = ["MoleculeHashcode","GlobalTopologicalChargeIndex"]
     # strip Joelib messages from stdout
-    JOELIBDESCRIPTORS = Hash[YAML.load(`java -classpath #{JOELIB_JAR}:#{LOG4J_JAR}:#{JAVA_DIR}  JoelibDescriptorInfo | sed '0,/---/d'`).collect do |d|
+    JOELIB = Hash[YAML.load(`java -classpath #{JOELIB_JAR}:#{LOG4J_JAR}:#{JAVA_DIR}  JoelibDescriptorInfo | sed '0,/---/d'`).collect do |d|
       name = d[:java_class].sub(/^joelib2.feature.types./,'')
       ["Joelib."+name, "JOELIb does not provide meaningful descriptions, see java/JoelibDescriptors.java for details."] unless joelibexclude.include? name
     end.compact.sort{|a,b| a[0] <=> b[0]}] 
 
-    DESCRIPTORS = OBDESCRIPTORS.merge(CDKDESCRIPTORS.merge(JOELIBDESCRIPTORS))
+    DESCRIPTORS = OPENBABEL.merge(CDK.merge(JOELIB))
 
     require_relative "unique_descriptors.rb"
 
     def self.descriptors desc=DESCRIPTORS
       desc.collect do |name,description|
         lib,desc = name.split('.',2)
-        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
       end
     end
 
@@ -54,26 +54,26 @@ module OpenTox
           CDK_DESCRIPTIONS.select{|d| desc == d[:java_class].split('.').last.sub('Descriptor','') }.first[:names].each do |n|
             dname = "#{name}.#{n}"
             description = DESCRIPTORS[dname]
-            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
           end
         else
           description = DESCRIPTORS[name]
-          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true, :numeric => true, :nominal => false)
+          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
         end
       end
       udesc
     end
 
     def self.openbabel_descriptors
-      descriptors OBDESCRIPTORS
+      descriptors OPENBABEL
     end
 
     def self.cdk_descriptors
-      descriptors CDKDESCRIPTORS
+      descriptors CDK
     end
 
     def self.joelib_descriptors
-      descriptors JOELIBDESCRIPTORS
+      descriptors JOELIB
     end
 
     def calculate compound
@@ -131,3 +131,4 @@ module OpenTox
   end
 
 end
+OpenTox::PhysChem.descriptors # load descriptor features

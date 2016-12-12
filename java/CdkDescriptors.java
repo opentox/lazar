@@ -1,10 +1,10 @@
 import java.util.*;
 import java.io.*;
 import org.openscience.cdk.DefaultChemObjectBuilder;
-import org.openscience.cdk.interfaces.IMolecule;
-import org.openscience.cdk.io.iterator.IteratingMDLReader;
+import org.openscience.cdk.IImplementationSpecification;
+import org.openscience.cdk.interfaces.IAtomContainer;
+import org.openscience.cdk.io.iterator.IteratingSDFReader;
 import org.openscience.cdk.qsar.*;
-import org.openscience.cdk.qsar.DescriptorValue;
 import org.openscience.cdk.aromaticity.CDKHueckelAromaticityDetector;
 import org.openscience.cdk.tools.manipulator.AtomContainerManipulator;
 import org.openscience.cdk.exception.NoSuchAtomTypeException;
@@ -17,8 +17,8 @@ class CdkDescriptors {
 	System.exit(1);
     }
     if (! new File(args[0]).exists()){
-	System.err.println("file not found "+args[0]);
-	System.exit(1);
+      System.err.println("file not found "+args[0]);
+      System.exit(1);
     }
 
     // command line descriptor params can be either "descriptorName" or "descriptorValueName"
@@ -34,19 +34,19 @@ class CdkDescriptors {
     for (int i =1; i < args.length; i++) {
       String descriptorName;
       if (args[i].indexOf(".")!=-1) {
-          descriptorValueNames.add(args[i]);
-	  descriptorName = args[i].substring(0,args[i].indexOf("."));
+        descriptorValueNames.add(args[i]);
+        descriptorName = args[i].substring(0,args[i].indexOf("."));
       }
       else {
-	  descriptorNames.add(args[i]);
-          descriptorName = args[i];
+        descriptorNames.add(args[i]);
+        descriptorName = args[i];
       }
       classNames.add(getDescriptorClassName(descriptorName));
     }
 
-    engine = new DescriptorEngine(new ArrayList<String>(classNames));
+    engine = new DescriptorEngine(new ArrayList<String>(classNames),null);
     List<IDescriptor> instances =  engine.instantiateDescriptors(new ArrayList<String>(classNames));
-    List<DescriptorSpecification> specs = engine.initializeSpecifications(instances);
+    List<IImplementationSpecification> specs = engine.initializeSpecifications(instances);
     engine.setDescriptorInstances(instances);
     engine.setDescriptorSpecifications(specs);
 
@@ -54,13 +54,13 @@ class CdkDescriptors {
       BufferedReader br = new BufferedReader(new FileReader(args[0]));
       PrintWriter yaml = new PrintWriter(new FileWriter(args[0]+"cdk.yaml"));
       // parse 3d sdf from file and calculate descriptors
-      IteratingMDLReader reader = new IteratingMDLReader( br, DefaultChemObjectBuilder.getInstance());
+      IteratingSDFReader reader = new IteratingSDFReader( br, DefaultChemObjectBuilder.getInstance());
       int c = 0;
       while (reader.hasNext()) {
         try {
           System.out.println("computing "+(args.length-1)+" descriptors for compound "+(++c));
-          IMolecule molecule = (IMolecule)reader.next();
-          molecule = (IMolecule) AtomContainerManipulator.removeHydrogens(molecule);
+          IAtomContainer molecule = (IAtomContainer)reader.next();
+          molecule = (IAtomContainer) AtomContainerManipulator.removeHydrogens(molecule);
           try {
             AtomContainerManipulator.percieveAtomTypesAndConfigureAtoms(molecule);
           }
@@ -110,21 +110,21 @@ class CdkDescriptors {
      * problem: Descriptor is not always at the end of the class (APolDescriptor), but may be in the middle (AutocorrelationDescriptorPolarizability)
      * this method makes a class-lookup using trial and error */
     static String getDescriptorClassName(String descriptorName) {
-	String split = splitCamelCase(descriptorName)+" "; // space mark possible positions for 'Descriptor'
-	for(int i = split.length()-1; i>0; i--) {
-	    if (split.charAt(i)==' ') { // iterate over all spaces, starting with the trailing one
-		String test = split.substring(0,i)+"Descriptor"+split.substring(i+1,split.length()); // replace current space with 'Descriptor' ..
-		test = test.replaceAll("\\s",""); // .. and remove other spaces
-		String className = "org.openscience.cdk.qsar.descriptors.molecular." + test;
-		try {
-		    Class.forName(className);
-		    return className;
-		} catch (ClassNotFoundException e) {}
-	    }
+      String split = splitCamelCase(descriptorName)+" "; // space mark possible positions for 'Descriptor'
+      for(int i = split.length()-1; i>0; i--) {
+        if (split.charAt(i)==' ') { // iterate over all spaces, starting with the trailing one
+          String test = split.substring(0,i)+"Descriptor"+split.substring(i+1,split.length()); // replace current space with 'Descriptor' ..
+          test = test.replaceAll("\\s",""); // .. and remove other spaces
+          String className = "org.openscience.cdk.qsar.descriptors.molecular." + test;
+          try {
+              Class.forName(className);
+              return className;
+          } catch (ClassNotFoundException e) {}
         }
-	System.err.println("Descriptor not found: "+descriptorName);
-	System.exit(1);
-	return null;
+      }
+      System.err.println("Descriptor not found: "+descriptorName);
+      System.exit(1);
+      return null;
     }
 
     /** inserts space in between camel words */

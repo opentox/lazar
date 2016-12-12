@@ -1,11 +1,9 @@
-CACTUS_URI="http://cactus.nci.nih.gov/chemical/structure/"
+CACTUS_URI="https://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
 
-  class Compound
+  class Compound < Substance
     require_relative "unique_descriptors.rb"
-    include OpenTox
-
     DEFAULT_FINGERPRINT = "MP2D"
 
     field :inchi, type: String
@@ -19,9 +17,6 @@ module OpenTox
     field :sdf_id, type: BSON::ObjectId
     field :fingerprints, type: Hash, default: {}
     field :default_fingerprint_size, type: Integer
-    field :physchem_descriptors, type: Hash, default: {}
-    field :dataset_ids, type: Array, default: []
-    field :features, type: Hash, default: {}
 
     index({smiles: 1}, {unique: true})
 
@@ -80,9 +75,8 @@ module OpenTox
       fingerprints[type]
     end
 
-    def physchem descriptors=PhysChem.openbabel_descriptors
-      # TODO: speedup java descriptors
-      calculated_ids = physchem_descriptors.keys
+    def calculate_properties descriptors=PhysChem::OPENBABEL
+      calculated_ids = properties.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
       new_ids = descriptors.collect{|d| d.id.to_s} - calculated_ids
       descs = {}
@@ -95,11 +89,11 @@ module OpenTox
       # avoid recalculating Cdk features with multiple values
       descs.keys.uniq.each do |k|
         descs[k].send(k[0].downcase,k[1],self).each do |n,v|
-          physchem_descriptors[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
+          properties[algos[n].id.to_s] = v # BSON::ObjectId instances are not allowed as keys in a BSON document.
         end
       end
       save
-      physchem_descriptors.select{|id,v| descriptors.collect{|d| d.id.to_s}.include? id}
+      descriptors.collect{|d| properties[d.id.to_s]}
     end
 
     def smarts_match smarts, count=false
@@ -142,9 +136,6 @@ module OpenTox
     # @param inchi [String] smiles InChI string
     # @return [OpenTox::Compound] Compound
     def self.from_inchi inchi
-      # Temporary workaround for OpenBabels Inchi bug
-      # http://sourceforge.net/p/openbabel/bugs/957/
-      # bug has not been fixed in latest git/development version
       #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?
@@ -246,7 +237,7 @@ module OpenTox
 
     # @return [String] PubChem Compound Identifier (CID), derieved via restcall to pubchem
     def cid
-      pug_uri = "http://pubchem.ncbi.nlm.nih.gov/rest/pug/"
+      pug_uri = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
       update(:cid => RestClientWrapper.post(File.join(pug_uri, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
@@ -254,70 +245,13 @@ module OpenTox
     # @return [String] ChEMBL database compound id, derieved via restcall to chembl
     def chemblid
       # https://www.ebi.ac.uk/chembldb/ws#individualCompoundByInChiKey
-      uri = "http://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
+      uri = "https://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
       update(:chemblid => JSON.parse(RestClientWrapper.get(uri))["compounds"].first["chemblId"]) unless self["chemblid"] 
       self["chemblid"]
     end
 
-    def fingerprint_count_neighbors params
-      # TODO fix
-      neighbors = []
-      query_fingerprint = self.fingerprint params[:type]
-      training_dataset = Dataset.find(params[:training_dataset_id]).compounds.each do |compound|
-        unless self == compound
-          candidate_fingerprint = compound.fingerprint params[:type]
-          features = (query_fingerprint + candidate_fingerprint).uniq
-          min_sum = 0
-          max_sum = 0
-          features.each do |f|
-            min,max = [query_fingerprint.count(f),candidate_fingerprint.count(f)].minmax
-            min_sum += min
-            max_sum += max
-          end
-          max_sum == 0 ? sim = 0 : sim = min_sum/max_sum.to_f
-          neighbors << [compound.id, sim] if sim and sim >= params[:min_sim]
-        end
-      end
-      neighbors.sort{|a,b| b.last <=> a.last}
-    end
-
-    def fingerprint_neighbors params
-      bad_request_error "Incorrect parameters '#{params}' for Compound#fingerprint_neighbors. Please provide :type, :training_dataset_id, :min_sim." unless params[:type] and params[:training_dataset_id] and params[:min_sim]
-      neighbors = []
-      if params[:type] == DEFAULT_FINGERPRINT
-        neighbors = db_neighbors params
-      else 
-        query_fingerprint = self.fingerprint params[:type]
-        training_dataset = Dataset.find(params[:training_dataset_id])
-        prediction_feature = training_dataset.features.first
-        training_dataset.compounds.each do |compound|
-          candidate_fingerprint = compound.fingerprint params[:type]
-          sim = (query_fingerprint & candidate_fingerprint).size/(query_fingerprint | candidate_fingerprint).size.to_f
-          feature_values = training_dataset.values(compound,prediction_feature)
-          neighbors << {"_id" => compound.id, "features" => {prediction_feature.id.to_s => feature_values}, "tanimoto" => sim} if sim >= params[:min_sim]
-        end
-        neighbors.sort!{|a,b| b["tanimoto"] <=> a["tanimoto"]}
-      end
-      neighbors
-    end
-
-    def physchem_neighbors params
-      feature_dataset = Dataset.find params[:feature_dataset_id]
-      query_fingerprint = Algorithm.run params[:feature_calculation_algorithm], self, params[:descriptors]
-      neighbors = []
-      feature_dataset.data_entries.each_with_index do |candidate_fingerprint, i|
-        # TODO implement pearson and cosine similarity separatly
-        R.assign "x", query_fingerprint
-        R.assign "y", candidate_fingerprint
-        sim = R.eval("x %*% y / sqrt(x%*%x * y%*%y)").to_ruby.first
-        if sim >= params[:min_sim]
-          neighbors << [feature_dataset.compound_ids[i],sim] # use compound_ids, instantiation of Compounds is too time consuming
-        end
-      end
-      neighbors
-    end
-
-    def db_neighbors params
+    def db_neighbors min_sim: 0.1, dataset_id:
+      #p fingerprints[DEFAULT_FINGERPRINT]
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
 
       #qn = default_fingerprint_size
@@ -329,20 +263,20 @@ module OpenTox
         #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
         #{'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
         {'$project' => {
-          'tanimoto' => {'$let' => {
+          'similarity' => {'$let' => {
             'vars' => {'common' => {'$size' => {'$setIntersection' => ["$fingerprints.#{DEFAULT_FINGERPRINT}", fingerprints[DEFAULT_FINGERPRINT]]}}},
-            #'vars' => {'common' => {'$size' => {'$setIntersection' => ["$default_fingerprint", default_fingerprint]}}},
             'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
           }},
           '_id' => 1,
-          'features' => 1,
+          #'measurements' => 1,
           'dataset_ids' => 1
         }},
-        {'$match' =>  {'tanimoto' => {'$gte' => params[:min_sim]}}},
-        {'$sort' => {'tanimoto' => -1}}
+        {'$match' =>  {'similarity' => {'$gte' => min_sim}}},
+        {'$sort' => {'similarity' => -1}}
       ]
-      
-      $mongo["compounds"].aggregate(aggregate).select{|r| r["dataset_ids"].include? params[:training_dataset_id]}
+
+      # TODO move into aggregate pipeline, see http://stackoverflow.com/questions/30537317/mongodb-aggregation-match-if-value-in-array
+      $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? dataset_id}
         
     end
     
@@ -353,7 +287,7 @@ module OpenTox
     end
 
     # Convert mg to mmol
-    # @return [Float] value in mg
+    # @return [Float] value in mmol
     def mg_to_mmol mg
       mg.to_f/molecular_weight
     end
@@ -362,7 +296,7 @@ module OpenTox
     # @return [Float] molecular weight
     def molecular_weight
       mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")
-      physchem([mw_feature])[mw_feature.id.to_s]
+      calculate_properties([mw_feature]).first
     end
 
     private

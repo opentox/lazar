@@ -3,32 +3,24 @@ module OpenTox
     
     class Classification
 
-      def self.weighted_majority_vote compound, params
-        neighbors = params[:neighbors]
-        weighted_sum = {}
-        sim_sum = 0.0
-        confidence = 0.0
-        neighbors.each do |row|
-          sim = row["tanimoto"]
-          row["features"][params[:prediction_feature_id].to_s].each do |act|
-            weighted_sum[act] ||= 0
-            weighted_sum[act] += sim
-          end
+      def self.weighted_majority_vote dependent_variables:, independent_variables:nil, weights:, query_variables:
+        class_weights = {}
+        dependent_variables.each_with_index do |v,i|
+          class_weights[v] ||= []
+          class_weights[v] << weights[i] unless v.nil?
         end
-        case weighted_sum.size
-        when 1
-          return {:value => weighted_sum.keys.first, :confidence => weighted_sum.values.first/neighbors.size.abs}
-        when 2
-          sim_sum = weighted_sum[weighted_sum.keys[0]]
-          sim_sum -= weighted_sum[weighted_sum.keys[1]]
-          sim_sum > 0 ? prediction = weighted_sum.keys[0] : prediction = weighted_sum.keys[1] 
-          confidence = (sim_sum/neighbors.size).abs 
-          return {:value => prediction,:confidence => confidence}
-        else
-          bad_request_error "Cannot predict more than 2 classes, multinomial classifications is not yet implemented. Received classes were: '#{weighted.sum.keys}'"
+        probabilities = {}
+        class_weights.each do |a,w|
+          probabilities[a] = w.sum/weights.sum
         end
+        probabilities = probabilities.collect{|a,p| [a,weights.max*p]}.to_h
+        p_max = probabilities.collect{|a,p| p}.max
+        prediction = probabilities.key(p_max)
+        {:value => prediction,:probabilities => probabilities}
       end
+
     end
+
   end
 end
 
