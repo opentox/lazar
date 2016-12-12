@@ -6,12 +6,12 @@ module OpenTox
       include OpenTox
 
       # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
-      def self.import dir="."
+      def self.import
         datasets = {}
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         bundles.each do |bundle|
-          datasets[bundle["URI"]] = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"])
-          $logger.debug bundle["title"]
+          datasets[bundle["URI"]] = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"].strip)
+          $logger.debug bundle["title"].strip
           nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"]+"?media=application%2Fjson"))["dataEntry"]
           nanoparticles.each_with_index do |np,n|
             core_id = nil
@@ -29,7 +29,7 @@ module OpenTox
                 compound.name = names.first
                 compound.names = names.compact
               else
-                compound = Compound.find_or_create_by(:name => names.first,:names => names)
+                compound = Compound.find_or_create_by(:name => names.first,:names => names.compact)
               end
               compound.save
               if c["relation"] == "HAS_CORE"
@@ -78,6 +78,24 @@ module OpenTox
                     category = "P-CHEM"
                     warnings = ["Category changed from TOX to P-CHEM"]
                   end
+                  if bundle["title"].match /MODENA/ # fix MODENA endpoint names
+                    case study["protocol"]["category"]["term"]
+                    when /BAO_0003009/
+                      warnings = ["Original name was '#{name}'"]
+                      name = "Cell Viability Assay " + name
+                      unless name.match(/SLOPE/)
+                      end
+                    when /BAO_0010001/
+                      warnings = ["Original name was '#{name}'"]
+                      name = "ATP Assay " + name
+                    when /NPO_1709/
+                      warnings = ["Original name was '#{name}'"]
+                      name = "LDH Release Assay " + name
+                    when /NPO_1911/
+                      warnings = ["Original name was '#{name}'"]
+                      name = "MTT Assay " + name
+                    end
+                  end
                   feature = klass.find_or_create_by(
                     :name => name,
                     :unit => unit,
@@ -94,6 +112,7 @@ module OpenTox
             nanoparticle.save
             print "#{n}, "
           end
+          puts
         end
         datasets.each { |u,d| d.save }
       end
@@ -119,4 +138,3 @@ module OpenTox
   end
 
 end
-
