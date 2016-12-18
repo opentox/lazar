@@ -78,24 +78,6 @@ module OpenTox
                     category = "P-CHEM"
                     warnings = ["Category changed from TOX to P-CHEM"]
                   end
-                  if bundle["title"].match /MODENA/ # fix MODENA endpoint names
-                    case study["protocol"]["category"]["term"]
-                    when /BAO_0003009/
-                      warnings = ["Original name was '#{name}'"]
-                      name = "Cell Viability Assay " + name
-                      unless name.match(/SLOPE/)
-                      end
-                    when /BAO_0010001/
-                      warnings = ["Original name was '#{name}'"]
-                      name = "ATP Assay " + name
-                    when /NPO_1709/
-                      warnings = ["Original name was '#{name}'"]
-                      name = "LDH Release Assay " + name
-                    when /NPO_1911/
-                      warnings = ["Original name was '#{name}'"]
-                      name = "MTT Assay " + name
-                    end
-                  end
                   feature = klass.find_or_create_by(
                     :name => name,
                     :unit => unit,
