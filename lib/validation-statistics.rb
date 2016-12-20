@@ -6,8 +6,6 @@ module OpenTox
         self.accept_values = model.prediction_feature.accept_values
         self.confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
         self.weighted_confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
-        true_rate = {}
-        predictivity = {}
         nr_instances = 0
         predictions.each do |cid,pred|
           # TODO
@@ -38,11 +36,11 @@ module OpenTox
             end
           end
         end
-        true_rate = {}
-        predictivity = {}
+        self.true_rate = {}
+        self.predictivity = {}
         accept_values.each_with_index do |v,i|
-          true_rate[v] = confusion_matrix[i][i]/confusion_matrix[i].reduce(:+).to_f
-          predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
+          self.true_rate[v] = confusion_matrix[i][i]/confusion_matrix[i].reduce(:+).to_f
+          self.predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
         end
         confidence_sum = 0
         weighted_confusion_matrix.each do |r|
@@ -60,8 +58,8 @@ module OpenTox
           :weighted_confusion_matrix => weighted_confusion_matrix,
           :accuracy => accuracy,
           :weighted_accuracy => weighted_accuracy,
-          :true_rate => true_rate,
-          :predictivity => predictivity,
+          :true_rate => self.true_rate,
+          :predictivity => self.predictivity,
         }
       end
 
