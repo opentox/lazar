@@ -40,6 +40,12 @@ module OpenTox
           properties[feature.id.to_s] << value
           properties[feature.id.to_s].uniq!
         when "TOX"
+          if feature.name.match("Cell Viability Assay") and !feature.name.match("SLOPE") # -log10 transformation
+            value = -Math.log10(value)
+            feature.unit = "-log10(#{feature.unit})" unless feature.unit.match "log10"
+            feature.warnings += ["-log10 transformed values"]  unless feature.warnings.include? "-log10 transformed values"
+            feature.save
+          end
           dataset.add self, feature, value
         else
           warn "Unknown feature type '#{feature.category}'. Value '#{value}' not inserted."
