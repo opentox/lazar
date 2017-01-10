@@ -9,6 +9,8 @@ module OpenTox
       include Mongoid::Timestamps
       store_in collection: "models"
 
+      attr_writer :independent_variables # store in GridFS to avoid Mongo database size limit problems
+
       field :name, type: String
       field :creator, type: String, default: __FILE__
       field :algorithms, type: Hash, default:{}
@@ -17,7 +19,7 @@ module OpenTox
       field :prediction_feature_id, type: BSON::ObjectId
       field :dependent_variables, type: Array, default:[]
       field :descriptor_ids, type:Array, default:[]
-      field :independent_variables, type: Array, default:[]
+      field :independent_variables_id, type: BSON::ObjectId
       field :fingerprints, type: Array, default:[]
       field :descriptor_weights, type: Array, default:[]
       field :descriptor_means, type: Array, default:[]
@@ -119,6 +121,7 @@ module OpenTox
         end
 
         descriptor_method = model.algorithms[:descriptors][:method]
+        model.independent_variables = []
         case descriptor_method
         # parse fingerprints
         when "fingerprint"
@@ -179,6 +182,7 @@ module OpenTox
 
       def predict_substance substance
         
+        @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
         when /tanimoto/ # binary features
           similarity_descriptors = substance.fingerprint algorithms[:descriptors][:type]
@@ -234,7 +238,7 @@ module OpenTox
               neighbor_dependent_variables << dependent_variables[i]
               independent_variables.each_with_index do |c,j|
                 neighbor_independent_variables[j] ||= []
-                neighbor_independent_variables[j] << independent_variables[j][i]
+                neighbor_independent_variables[j] << @independent_variables[j][i]
               end
             end
           end
@@ -300,6 +304,17 @@ module OpenTox
           return prediction_dataset
         end
 
+      end
+
+      def save # store independent_variables in GridFS to avoid Mongo database size limit problems
+        file = Mongo::Grid::File.new(Marshal.dump(@independent_variables), :filename => "#{id}.independent_variables")
+        self.independent_variables_id = $gridfs.insert_one(file)
+        super
+      end
+
+      def independent_variables 
+        @independent_variables ||= Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
+        @independent_variables
       end
 
       def training_dataset

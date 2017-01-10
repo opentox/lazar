@@ -209,7 +209,6 @@ module OpenTox
        update(:svg_id => $gridfs.insert_one(file))
       end
       $gridfs.find_one(_id: self.svg_id).data
-
     end
 
     # Get png image
@@ -223,7 +222,6 @@ module OpenTox
        update(:png_id => $gridfs.insert_one(file))
       end
       Base64.decode64($gridfs.find_one(_id: self.png_id).data)
-
     end
 
     # Get all known compound names. Relies on an external service for name lookups.
