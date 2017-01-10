@@ -180,6 +180,9 @@ module OpenTox
         model
       end
 
+      # Predict a substance 
+      # @param [OpenTox::Substance]
+      # @return [Hash]
       def predict_substance substance
         
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
@@ -260,6 +263,9 @@ module OpenTox
         prediction
       end
 
+      # Predict a substance (compound or nanoparticle), an array of substances or a dataset
+      # @param [OpenTox::Compound, OpenTox::Nanoparticle, Array<OpenTox::Substance>, OpenTox::Dataset]
+      # @return [Hash, Array<Hash>, OpenTox::Dataset]
       def predict object
 
         training_dataset = Dataset.find training_dataset_id
@@ -345,6 +351,7 @@ module OpenTox
     class LazarRegression < Lazar
     end
 
+    # Convenience class for generating and validating lazar models in a single step and predicting substances (compounds and nanoparticles), arrays of substances and datasets
     class Validation
 
       include OpenTox
@@ -358,6 +365,9 @@ module OpenTox
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
 
+      # Predict a substance (compound or nanoparticle), an array of substances or a dataset
+      # @param [OpenTox::Compound, OpenTox::Nanoparticle, Array<OpenTox::Substance>, OpenTox::Dataset]
+      # @return [Hash, Array<Hash>, OpenTox::Dataset]
       def predict object
         model.predict object
       end
@@ -394,6 +404,10 @@ module OpenTox
         model.is_a? LazarClassification
       end
 
+      # Create and validate a lazar model from a csv file with training data and a json file with metadata
+      #
+      # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at [Github](https://github.com/opentox/lazar-public-data).
+      # @return [OpenTox::Model::Validation] lazar model with three independent 10-fold crossvalidations
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
