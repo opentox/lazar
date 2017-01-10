@@ -41,6 +41,8 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
 
   `validated_model = Model::Validation.create_from_csv_file EPAFHM_log10.csv`
 
+  This command will create a `lazar` model and validate it with three independent 10-fold crossvalidations.
+
 #### Inspect crossvalidation results
 
   `validated_model.crossvalidations`
