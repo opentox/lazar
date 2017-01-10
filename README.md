@@ -31,8 +31,7 @@ Tutorial
 
 Execute the following commands either from an interactive Ruby shell or a Ruby script:
 
-Create and use `lazar` models for small molecules
-.................................................
+### Create and use `lazar` models for small molecules
 
 #### Create a training dataset
 
@@ -60,8 +59,7 @@ Create and use `lazar` models for small molecules
 
   You can pass algorithms parameters to the `Model::Validation.create_from_csv_file` command. The [API documentation](http://rdoc.info/gems/lazar) provides detailed instructions.
 
-Create and use `lazar` nanoparticle models
-........................................
+### Create and use `lazar` nanoparticle models
 
 #### Create and validate a `nano-lazar` model from eNanoMapper with default algorithms and parameters
 
