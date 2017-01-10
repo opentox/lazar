@@ -27,6 +27,11 @@ module OpenTox
       field :scaled_variables, type: Array, default:[]
       field :version, type: Hash, default:{}
       
+      # Create a lazar model
+      # @param [OpenTox::Dataset, nil] training_dataset
+      # @param [OpenTox::Feature, nil] prediction_feature
+      # @param [Hash] algorithms
+      # @return [OpenTox::Model::Lazar]
       def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
         prediction_feature = training_dataset.features.first unless prediction_feature
@@ -318,23 +323,33 @@ module OpenTox
         super
       end
 
+      # Get independent variables
+      # @return [Array<Array>]
       def independent_variables 
         @independent_variables ||= Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         @independent_variables
       end
 
+      # Get training dataset
+      # @return [OpenTox::Dataset]
       def training_dataset
         Dataset.find(training_dataset_id)
       end
 
+      # Get prediction feature
+      # @return [OpenTox::Feature]
       def prediction_feature
         Feature.find(prediction_feature_id)
       end
 
+      # Get training descriptors
+      # @return [Array<OpenTox::Feature>]
       def descriptors
         descriptor_ids.collect{|id| Feature.find(id)}
       end
 
+      # Get training substances
+      # @return [Array<OpenTox::Substance>]
       def substances
         substance_ids.collect{|id| Substance.find(id)}
       end
@@ -345,9 +360,11 @@ module OpenTox
 
     end
 
+    # Classification model
     class LazarClassification < Lazar
     end
 
+    # Regression model
     class LazarRegression < Lazar
     end
 
@@ -372,26 +389,38 @@ module OpenTox
         model.predict object
       end
 
+      # Get training dataset
+      # @return [OpenTox::Dataset]
       def training_dataset
         model.training_dataset
       end
 
+      # Get lazar model
+      # @return [OpenTox::Model::Lazar]
       def model
         Lazar.find model_id
       end
 
+      # Get algorithms
+      # @return [Hash]
       def algorithms
         model.algorithms
       end
 
+      # Get prediction feature
+      # @return [OpenTox::Feature]
       def prediction_feature
         model.prediction_feature
       end
 
+      # Get repeated crossvalidations
+      # @return [OpenTox::Validation::RepeatedCrossValidation]
       def repeated_crossvalidation
         OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id # full class name required
       end
 
+      # Get crossvalidations
+      # @return [Array<OpenTox::CrossValidation]
       def crossvalidations
         repeated_crossvalidation.crossvalidations
       end
@@ -405,8 +434,7 @@ module OpenTox
       end
 
       # Create and validate a lazar model from a csv file with training data and a json file with metadata
-      #
-      # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at [Github](https://github.com/opentox/lazar-public-data).
+      # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at https://github.com/opentox/lazar-public-data.
       # @return [OpenTox::Model::Validation] lazar model with three independent 10-fold crossvalidations
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
@@ -420,6 +448,11 @@ module OpenTox
         model_validation
       end
 
+      # Create and validate a nano-lazar model, import data from eNanoMapper if necessary
+      # @param [OpenTox::Dataset, nil] training_dataset
+      # @param [OpenTox::Feature, nil] prediction_feature
+      # @param [Hash, nil] algorithms
+      # @return [OpenTox::Model::Validation] lazar model with five independent 10-fold crossvalidations
       def self.from_enanomapper training_dataset: nil, prediction_feature:nil, algorithms: nil
         
         # find/import training_dataset
