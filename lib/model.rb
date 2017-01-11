@@ -320,7 +320,9 @@ module OpenTox
 
       end
 
-      def save # store independent_variables in GridFS to avoid Mongo database size limit problems
+      # Save the model
+      #   Stores independent_variables in GridFS to avoid Mongo database size limit problems
+      def save
         file = Mongo::Grid::File.new(Marshal.dump(@independent_variables), :filename => "#{id}.independent_variables")
         self.independent_variables_id = $gridfs.insert_one(file)
         super
@@ -357,6 +359,8 @@ module OpenTox
         substance_ids.collect{|id| Substance.find(id)}
       end
 
+      # Are fingerprints used as descriptors
+      # @return [TrueClass, FalseClass]
       def fingerprints?
         algorithms[:descriptors][:method] == "fingerprint" ? true : false
       end
@@ -428,10 +432,14 @@ module OpenTox
         repeated_crossvalidation.crossvalidations
       end
 
+      # Is it a regression model
+      # @return [TrueClass, FalseClass]
       def regression?
         model.is_a? LazarRegression
       end
 
+      # Is it a classification model
+      # @return [TrueClass, FalseClass]
       def classification?
         model.is_a? LazarClassification
       end
@@ -452,7 +460,7 @@ module OpenTox
       end
 
       # Create and validate a nano-lazar model, import data from eNanoMapper if necessary
-      # nano-lazar methods are described in detail in https://github.com/enanomapper/nano-lazar-paper/blob/master/nano-lazar.pdf
+      #   nano-lazar methods are described in detail in https://github.com/enanomapper/nano-lazar-paper/blob/master/nano-lazar.pdf
       # @param [OpenTox::Dataset, nil] training_dataset
       # @param [OpenTox::Feature, nil] prediction_feature
       # @param [Hash, nil] algorithms

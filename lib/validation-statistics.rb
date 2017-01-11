@@ -1,7 +1,10 @@
 module OpenTox
   module Validation
+    # Statistical evaluation of classification validations
     module ClassificationStatistics
 
+      # Get statistics
+      # @return [Hash]
       def statistics 
         self.accept_values = model.prediction_feature.accept_values
         self.confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
@@ -63,6 +66,9 @@ module OpenTox
         }
       end
 
+      # Plot accuracy vs prediction probability
+      # @param [String,nil] format
+      # @return [Blob]
       def probability_plot format: "pdf"
         #unless probability_plot_id
 
@@ -99,8 +105,11 @@ module OpenTox
       end
     end
 
+    # Statistical evaluation of regression validations
     module RegressionStatistics
 
+      # Get statistics
+      # @return [Hash]
       def statistics
         self.rmse = 0
         self.mae = 0
@@ -147,10 +156,15 @@ module OpenTox
         }
       end
 
+      # Get percentage of measurements within the prediction interval
+      # @return [Float]
       def percent_within_prediction_interval
         100*within_prediction_interval.to_f/(within_prediction_interval+out_of_prediction_interval)
       end
 
+      # Plot predicted vs measured values
+      # @param [String,nil] format
+      # @return [Blob]
       def correlation_plot format: "png"
         unless correlation_plot_id
           tmpfile = "/tmp/#{id.to_s}_correlation.#{format}"
@@ -177,6 +191,11 @@ module OpenTox
         $gridfs.find_one(_id: correlation_plot_id).data
       end
 
+      # Get predictions with the largest difference between predicted and measured values
+      # @params [Fixnum] number of predictions
+      # @params [TrueClass,FalseClass,nil] include neighbors
+      # @params [TrueClass,FalseClass,nil] show common descriptors
+      # @return [Hash]
       def worst_predictions n: 5, show_neigbors: true, show_common_descriptors: false
         worst_predictions = predictions.sort_by{|sid,p| -(p["value"] - p["measurements"].median).abs}[0,n]
         worst_predictions.collect do |p|
