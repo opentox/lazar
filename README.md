@@ -87,7 +87,7 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
 
 #### Experiment with other datasets, endpoints and algorithms
 
-  You can pass training_dataset, prediction_feature and algorithms parameters to the `Model::Validation.create_from_enanomapper` command. The [API documentation](http://rdoc.info/gems/lazar) provides detailed instructions.
+  You can pass training_dataset, prediction_feature and algorithms parameters to the `Model::Validation.create_from_enanomapper` command. The [API documentation](http://rdoc.info/gems/lazar) provides detailed instructions. Detailed documentation and validation results can be found in this [publication](https://github.com/enanomapper/nano-lazar-paper/blob/master/nano-lazar.pdf).
 
 Documentation
 -------------

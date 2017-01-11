@@ -28,11 +28,14 @@ module OpenTox
       field :version, type: Hash, default:{}
       
       # Create a lazar model
-      # @param [OpenTox::Dataset, nil] training_dataset
+      # @param [OpenTox::Dataset] training_dataset
       # @param [OpenTox::Feature, nil] prediction_feature
-      # @param [Hash] algorithms
+      #   By default the first feature of the training dataset will be predicted, specify a prediction_feature if you want to predict another feature
+      # @param [Hash, nil] algorithms
+      #   Default algorithms will be used, if no algorithms parameter is provided. The algorithms hash has the following keys: :descriptors (specifies the descriptors to be used for similarity calculations and local QSAR models), :similarity (similarity algorithm and threshold), :feature_selection (feature selection algorithm), :prediction (local QSAR algorithm). Default parameters are used for unspecified keys. 
+      #
       # @return [OpenTox::Model::Lazar]
-      def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
+      def self.create prediction_feature:nil, training_dataset:, algorithms:{}
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
         prediction_feature = training_dataset.features.first unless prediction_feature
         # TODO: prediction_feature without training_dataset: use all available data
@@ -185,7 +188,7 @@ module OpenTox
         model
       end
 
-      # Predict a substance 
+      # Predict a substance (compound or nanoparticle)
       # @param [OpenTox::Substance]
       # @return [Hash]
       def predict_substance substance
@@ -449,6 +452,7 @@ module OpenTox
       end
 
       # Create and validate a nano-lazar model, import data from eNanoMapper if necessary
+      # nano-lazar methods are described in detail in https://github.com/enanomapper/nano-lazar-paper/blob/master/nano-lazar.pdf
       # @param [OpenTox::Dataset, nil] training_dataset
       # @param [OpenTox::Feature, nil] prediction_feature
       # @param [Hash, nil] algorithms
