@@ -1,12 +1,14 @@
 module OpenTox
 
+  # Import data from external databases
   module Import
 
     class Enanomapper
       include OpenTox
 
-      # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
+      # Import from eNanoMapper
       def self.import
+        # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
         datasets = {}
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         bundles.each do |bundle|

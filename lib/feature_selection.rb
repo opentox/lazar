@@ -1,13 +1,16 @@
 module OpenTox
   module Algorithm
     
+    # Feature selection algorithms
     class FeatureSelection
 
+      # Select features correlated to the models prediction feature
+      # @param [OpenTox::Model::Lazar]
       def self.correlation_filter model
         relevant_features = {}
         R.assign "dependent", model.dependent_variables.collect{|v| to_r(v)}
         model.descriptor_weights = []
-        selected_variables = []
+        selected_variables = [] 
         selected_descriptor_ids = []
         model.independent_variables.each_with_index do |v,i|
           v.collect!{|n| to_r(n)}
