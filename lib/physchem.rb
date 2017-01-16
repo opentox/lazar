@@ -39,6 +39,9 @@ module OpenTox
 
     require_relative "unique_descriptors.rb"
 
+    # Get descriptor features
+    # @param [Hash]
+    # @return [Array<OpenTox::PhysChem>]
     def self.descriptors desc=DESCRIPTORS
       desc.collect do |name,description|
         lib,desc = name.split('.',2)
@@ -46,6 +49,8 @@ module OpenTox
       end
     end
 
+    # Get unique descriptor features
+    # @return [Array<OpenTox::PhysChem>]
     def self.unique_descriptors
       udesc = []
       UNIQUEDESCRIPTORS.each do |name|
@@ -64,23 +69,28 @@ module OpenTox
       udesc
     end
 
+    # Get OpenBabel descriptor features
+    # @return [Array<OpenTox::PhysChem>]
     def self.openbabel_descriptors
       descriptors OPENBABEL
     end
 
+    # Get CDK descriptor features
+    # @return [Array<OpenTox::PhysChem>]
     def self.cdk_descriptors
       descriptors CDK
     end
 
+    # Get JOELIB descriptor features
+    # @return [Array<OpenTox::PhysChem>]
     def self.joelib_descriptors
       descriptors JOELIB
     end
 
-    def calculate compound
-      result = send library.downcase,descriptor,compound
-      result[self.name]
-    end
-
+    # Calculate OpenBabel descriptors
+    # @param [String] descriptor type
+    # @param [OpenTox::Compound]
+    # @return [Hash]
     def openbabel descriptor, compound
       obdescriptor = OpenBabel::OBDescriptor.find_type descriptor
       obmol = OpenBabel::OBMol.new
@@ -90,10 +100,18 @@ module OpenTox
       {"#{library.capitalize}.#{descriptor}" => fix_value(obdescriptor.predict(obmol))}
     end
 
+    # Calculate CDK descriptors
+    # @param [String] descriptor type
+    # @param [OpenTox::Compound]
+    # @return [Hash]
     def cdk descriptor, compound
       java_descriptor "cdk", descriptor, compound
     end
 
+    # Calculate JOELIB descriptors
+    # @param [String] descriptor type
+    # @param [OpenTox::Compound]
+    # @return [Hash]
     def joelib descriptor, compound
       java_descriptor "joelib", descriptor, compound
     end

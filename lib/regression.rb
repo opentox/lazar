@@ -1,8 +1,13 @@
 module OpenTox
   module Algorithm
     
+    # Regression algorithms
     class Regression
 
+      # Weighted average
+      # @param [Array<TrueClass,FalseClass>] dependent_variables
+      # @param [Array<Float>] weights
+      # @return [Hash]
       def self.weighted_average dependent_variables:, independent_variables:nil, weights:, query_variables:nil
         # TODO: prediction_interval
         weighted_sum = 0.0

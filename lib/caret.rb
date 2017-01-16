@@ -1,9 +1,17 @@
 module OpenTox
   module Algorithm
     
+    # Ruby interface for the R caret package
+    # Caret model list: https://topepo.github.io/caret/modelList.html
     class Caret
-      # model list: https://topepo.github.io/caret/modelList.html
 
+      # Create a local R caret model and make a prediction
+      # @param [Array<Float,Bool>] dependent_variables
+      # @param [Array<Array<Float,Bool>>] independent_variables
+      # @param [Array<Float>] weights
+      # @param [String] Caret method
+      # @param [Array<Float,Bool>] query_variables
+      # @return [Hash]
       def self.create_model_and_predict dependent_variables:, independent_variables:, weights:, method:, query_variables:
         remove = []
         # remove independent_variables with single values
@@ -77,12 +85,13 @@ module OpenTox
 
       end
 
-      # call caret methods dynamically, e.g. Caret.pls
+      # Call caret methods dynamically, e.g. Caret.pls
       def self.method_missing(sym, *args, &block)
         args.first[:method] = sym.to_s
         self.create_model_and_predict args.first
       end
 
+      # Convert Ruby values to R values
       def self.to_r v
         return "F" if v == false
         return "T" if v == true

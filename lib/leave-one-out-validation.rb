@@ -2,8 +2,12 @@ module OpenTox
 
   module Validation
 
+    # Leave one out validation
     class LeaveOneOut < Validation
 
+      # Create a leave one out validation
+      # @param [OpenTox::Model::Lazar]
+      # @return [OpenTox::Validation::LeaveOneOut]
       def self.create model
         bad_request_error "Cannot create leave one out validation for models with supervised feature selection. Please use crossvalidation instead." if model.algorithms[:feature_selection]
         $logger.debug "#{model.name}: LOO validation started"
@@ -32,6 +36,7 @@ module OpenTox
 
     end
 
+    # Leave one out validation for classification models
     class ClassificationLeaveOneOut < LeaveOneOut
       include ClassificationStatistics
       field :accept_values, type: Array
@@ -44,6 +49,7 @@ module OpenTox
       field :confidence_plot_id, type: BSON::ObjectId
     end
     
+    # Leave one out validation for regression models
     class RegressionLeaveOneOut  < LeaveOneOut
       include RegressionStatistics
       field :rmse, type: Float, default: 0

@@ -9,6 +9,8 @@ module OpenTox
       include Mongoid::Timestamps
       store_in collection: "models"
 
+      attr_writer :independent_variables # store in GridFS to avoid Mongo database size limit problems
+
       field :name, type: String
       field :creator, type: String, default: __FILE__
       field :algorithms, type: Hash, default:{}
@@ -17,7 +19,7 @@ module OpenTox
       field :prediction_feature_id, type: BSON::ObjectId
       field :dependent_variables, type: Array, default:[]
       field :descriptor_ids, type:Array, default:[]
-      field :independent_variables, type: Array, default:[]
+      field :independent_variables_id, type: BSON::ObjectId
       field :fingerprints, type: Array, default:[]
       field :descriptor_weights, type: Array, default:[]
       field :descriptor_means, type: Array, default:[]
@@ -25,7 +27,15 @@ module OpenTox
       field :scaled_variables, type: Array, default:[]
       field :version, type: Hash, default:{}
       
-      def self.create prediction_feature:nil, training_dataset:nil, algorithms:{}
+      # Create a lazar model
+      # @param [OpenTox::Dataset] training_dataset
+      # @param [OpenTox::Feature, nil] prediction_feature
+      #   By default the first feature of the training dataset will be predicted, specify a prediction_feature if you want to predict another feature
+      # @param [Hash, nil] algorithms
+      #   Default algorithms will be used, if no algorithms parameter is provided. The algorithms hash has the following keys: :descriptors (specifies the descriptors to be used for similarity calculations and local QSAR models), :similarity (similarity algorithm and threshold), :feature_selection (feature selection algorithm), :prediction (local QSAR algorithm). Default parameters are used for unspecified keys. 
+      #
+      # @return [OpenTox::Model::Lazar]
+      def self.create prediction_feature:nil, training_dataset:, algorithms:{}
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
         prediction_feature = training_dataset.features.first unless prediction_feature
         # TODO: prediction_feature without training_dataset: use all available data
@@ -119,6 +129,7 @@ module OpenTox
         end
 
         descriptor_method = model.algorithms[:descriptors][:method]
+        model.independent_variables = []
         case descriptor_method
         # parse fingerprints
         when "fingerprint"
@@ -177,8 +188,12 @@ module OpenTox
         model
       end
 
+      # Predict a substance (compound or nanoparticle)
+      # @param [OpenTox::Substance]
+      # @return [Hash]
       def predict_substance substance
         
+        @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
         when /tanimoto/ # binary features
           similarity_descriptors = substance.fingerprint algorithms[:descriptors][:type]
@@ -234,7 +249,7 @@ module OpenTox
               neighbor_dependent_variables << dependent_variables[i]
               independent_variables.each_with_index do |c,j|
                 neighbor_independent_variables[j] ||= []
-                neighbor_independent_variables[j] << independent_variables[j][i]
+                neighbor_independent_variables[j] << @independent_variables[j][i]
               end
             end
           end
@@ -256,6 +271,9 @@ module OpenTox
         prediction
       end
 
+      # Predict a substance (compound or nanoparticle), an array of substances or a dataset
+      # @param [OpenTox::Compound, OpenTox::Nanoparticle, Array<OpenTox::Substance>, OpenTox::Dataset]
+      # @return [Hash, Array<Hash>, OpenTox::Dataset]
       def predict object
 
         training_dataset = Dataset.find training_dataset_id
@@ -302,34 +320,62 @@ module OpenTox
 
       end
 
+      # Save the model
+      #   Stores independent_variables in GridFS to avoid Mongo database size limit problems
+      def save
+        file = Mongo::Grid::File.new(Marshal.dump(@independent_variables), :filename => "#{id}.independent_variables")
+        self.independent_variables_id = $gridfs.insert_one(file)
+        super
+      end
+
+      # Get independent variables
+      # @return [Array<Array>]
+      def independent_variables 
+        @independent_variables ||= Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
+        @independent_variables
+      end
+
+      # Get training dataset
+      # @return [OpenTox::Dataset]
       def training_dataset
         Dataset.find(training_dataset_id)
       end
 
+      # Get prediction feature
+      # @return [OpenTox::Feature]
       def prediction_feature
         Feature.find(prediction_feature_id)
       end
 
+      # Get training descriptors
+      # @return [Array<OpenTox::Feature>]
       def descriptors
         descriptor_ids.collect{|id| Feature.find(id)}
       end
 
+      # Get training substances
+      # @return [Array<OpenTox::Substance>]
       def substances
         substance_ids.collect{|id| Substance.find(id)}
       end
 
+      # Are fingerprints used as descriptors
+      # @return [TrueClass, FalseClass]
       def fingerprints?
         algorithms[:descriptors][:method] == "fingerprint" ? true : false
       end
 
     end
 
+    # Classification model
     class LazarClassification < Lazar
     end
 
+    # Regression model
     class LazarRegression < Lazar
     end
 
+    # Convenience class for generating and validating lazar models in a single step and predicting substances (compounds and nanoparticles), arrays of substances and datasets
     class Validation
 
       include OpenTox
@@ -343,42 +389,64 @@ module OpenTox
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
 
+      # Predict a substance (compound or nanoparticle), an array of substances or a dataset
+      # @param [OpenTox::Compound, OpenTox::Nanoparticle, Array<OpenTox::Substance>, OpenTox::Dataset]
+      # @return [Hash, Array<Hash>, OpenTox::Dataset]
       def predict object
         model.predict object
       end
 
+      # Get training dataset
+      # @return [OpenTox::Dataset]
       def training_dataset
         model.training_dataset
       end
 
+      # Get lazar model
+      # @return [OpenTox::Model::Lazar]
       def model
         Lazar.find model_id
       end
 
+      # Get algorithms
+      # @return [Hash]
       def algorithms
         model.algorithms
       end
 
+      # Get prediction feature
+      # @return [OpenTox::Feature]
       def prediction_feature
         model.prediction_feature
       end
 
+      # Get repeated crossvalidations
+      # @return [OpenTox::Validation::RepeatedCrossValidation]
       def repeated_crossvalidation
         OpenTox::Validation::RepeatedCrossValidation.find repeated_crossvalidation_id # full class name required
       end
 
+      # Get crossvalidations
+      # @return [Array<OpenTox::CrossValidation]
       def crossvalidations
         repeated_crossvalidation.crossvalidations
       end
 
+      # Is it a regression model
+      # @return [TrueClass, FalseClass]
       def regression?
         model.is_a? LazarRegression
       end
 
+      # Is it a classification model
+      # @return [TrueClass, FalseClass]
       def classification?
         model.is_a? LazarClassification
       end
 
+      # Create and validate a lazar model from a csv file with training data and a json file with metadata
+      # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at https://github.com/opentox/lazar-public-data.
+      # @return [OpenTox::Model::Validation] lazar model with three independent 10-fold crossvalidations
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
@@ -391,6 +459,12 @@ module OpenTox
         model_validation
       end
 
+      # Create and validate a nano-lazar model, import data from eNanoMapper if necessary
+      #   nano-lazar methods are described in detail in https://github.com/enanomapper/nano-lazar-paper/blob/master/nano-lazar.pdf
+      # @param [OpenTox::Dataset, nil] training_dataset
+      # @param [OpenTox::Feature, nil] prediction_feature
+      # @param [Hash, nil] algorithms
+      # @return [OpenTox::Model::Validation] lazar model with five independent 10-fold crossvalidations
       def self.from_enanomapper training_dataset: nil, prediction_feature:nil, algorithms: nil
         
         # find/import training_dataset

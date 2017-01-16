@@ -8,6 +8,13 @@ class NanoparticleModelTest  < MiniTest::Test
     @prediction_feature = @training_dataset.features.select{|f| f["name"] == 'log2(Net cell association)'}.first
   end
 
+  def test_core_coating_source_uris
+    @training_dataset.nanoparticles.each do |np|
+      refute_nil np.core.source
+      np.coating.each{|c| refute_nil c.source}
+    end
+  end
+
   def test_nanoparticle_model
     assert true, @prediction_feature.measured
     model = Model::Lazar.create training_dataset: @training_dataset, prediction_feature: @prediction_feature

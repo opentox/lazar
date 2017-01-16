@@ -2,6 +2,7 @@ module OpenTox
 
   module Validation
 
+    # Base validation class
     class Validation
       include OpenTox
       include Mongoid::Document
@@ -14,6 +15,8 @@ module OpenTox
       field :predictions, type: Hash, default: {}
       field :finished_at, type: Time 
 
+      # Get model
+      # @return [OpenTox::Model::Lazar]
       def model
         Model::Lazar.find model_id
       end

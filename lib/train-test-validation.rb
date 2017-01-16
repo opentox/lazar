@@ -2,11 +2,17 @@ module OpenTox
 
   module Validation
 
+    # Training test set validation
     class TrainTest < Validation
 
       field :training_dataset_id, type: BSON::ObjectId
       field :test_dataset_id, type: BSON::ObjectId
 
+      # Create a training test set validation
+      # @param [OpenTox::Model::Lazar]
+      # @param [OpenTox::Dataset] training dataset
+      # @param [OpenTox::Dataset] test dataset
+      # @return [OpenTox::Validation::TrainTest]
       def self.create model, training_set, test_set
         
         validation_model = model.class.create prediction_feature: model.prediction_feature, training_dataset: training_set, algorithms: model.algorithms
@@ -32,16 +38,21 @@ module OpenTox
         validation
       end
 
+      # Get test dataset
+      # @return [OpenTox::Dataset]
       def test_dataset
         Dataset.find test_dataset_id
       end
 
+      # Get training dataset
+      # @return [OpenTox::Dataset]
       def training_dataset
         Dataset.find training_dataset_id
       end
 
     end
 
+    # Training test set validation for classification models
     class ClassificationTrainTest < TrainTest
       include ClassificationStatistics
       field :accept_values, type: Array
@@ -54,6 +65,7 @@ module OpenTox
       field :probability_plot_id, type: BSON::ObjectId
     end
 
+    # Training test set validation for regression models
     class RegressionTrainTest < TrainTest
       include RegressionStatistics
       field :rmse, type: Float, default:0

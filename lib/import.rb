@@ -1,12 +1,14 @@
 module OpenTox
 
+  # Import data from external databases
   module Import
 
     class Enanomapper
       include OpenTox
 
-      # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
+      # Import from eNanoMapper
       def self.import
+        # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
         datasets = {}
         bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
         bundles.each do |bundle|
@@ -20,6 +22,7 @@ module OpenTox
               uri = c["component"]["compound"]["URI"]
               uri = CGI.escape File.join(uri,"&media=application/json")
               data = JSON.parse(RestClientWrapper.get "https://data.enanomapper.net/query/compound/url/all?media=application/json&search=#{uri}")
+              source = data["dataEntry"][0]["compound"]["URI"]
               smiles = data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23SMILESDefault"]
               names = []
               names << data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23ChemicalNameDefault"]
@@ -31,6 +34,7 @@ module OpenTox
               else
                 compound = Compound.find_or_create_by(:name => names.first,:names => names.compact)
               end
+              compound.source = source
               compound.save
               if c["relation"] == "HAS_CORE"
                 core_id = compound.id.to_s

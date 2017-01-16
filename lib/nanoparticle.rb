@@ -1,25 +1,36 @@
 module OpenTox
 
+  # Nanoparticles
   class Nanoparticle < Substance
     include OpenTox
 
     field :core_id, type: String, default: nil
     field :coating_ids, type: Array, default: []
 
+    # Get core compound
+    # @return [OpenTox::Compound]
     def core
       Compound.find core_id
     end
 
+    # Get coatings
+    # @return [Array<OpenTox::Compound>]
     def coating
       coating_ids.collect{|i| Compound.find i }
     end
 
+    # Get nanoparticle fingerprint (union of core and coating fingerprints)
+    # @param [String] fingerprint type
+    # @return [Array<String>] 
     def fingerprint type=DEFAULT_FINGERPRINT
       core_fp = core.fingerprint type
       coating_fp = coating.collect{|c| c.fingerprint type}.flatten.uniq.compact
       (core_fp.empty? or coating_fp.empty?) ? [] : (core_fp+coating_fp).uniq.compact
     end
 
+    # Calculate physchem properties
+    # @param [Array<Hash>] list of descriptors
+    # @return [Array<Float>]
     def calculate_properties descriptors=PhysChem::OPENBABEL
       if core.smiles and !coating.collect{|c| c.smiles}.compact.empty?
         core_prop = core.calculate_properties descriptors
@@ -28,6 +39,10 @@ module OpenTox
       end
     end
 
+    # Add (measured) feature values
+    # @param [OpenTox::Feature]
+    # @param [TrueClass,FalseClass,Float] 
+    # @param [OpenTox::Dataset]
     def add_feature feature, value, dataset
       unless feature.name == "ATOMIC COMPOSITION" or feature.name == "FUNCTIONAL GROUP" # redundand
         case feature.category
@@ -55,6 +70,10 @@ module OpenTox
       end
     end
 
+    # Parse values from Ambit database
+    # @param [OpenTox::Feature]
+    # @param [TrueClass,FalseClass,Float]
+    # @param [OpenTox::Dataset]
     def parse_ambit_value feature, v, dataset
       # TODO add study id to warnings
       v.delete "unit"

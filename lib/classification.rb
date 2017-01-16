@@ -1,9 +1,14 @@
 module OpenTox
   module Algorithm
     
+    # Classification algorithms
     class Classification
 
-      def self.weighted_majority_vote dependent_variables:, independent_variables:nil, weights:, query_variables:
+      # Weighted majority vote
+      # @param [Array<TrueClass,FalseClass>] dependent_variables
+      # @param [Array<Float>] weights
+      # @return [Hash]
+      def self.weighted_majority_vote dependent_variables:, independent_variables:nil, weights:, query_variables:nil
         class_weights = {}
         dependent_variables.each_with_index do |v,i|
           class_weights[v] ||= []
