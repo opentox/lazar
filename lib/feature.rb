@@ -8,10 +8,14 @@ module OpenTox
     field :unit, type: String
     field :conditions, type: Hash
 
+    # Is it a nominal feature
+    # @return [TrueClass,FalseClass]
     def nominal?
       self.class == NominalFeature
     end
 
+    # Is it a numeric feature
+    # @return [TrueClass,FalseClass]
     def numeric?
       self.class == NumericFeature
     end
@@ -30,6 +34,9 @@ module OpenTox
   class Smarts < NominalFeature
     field :smarts, type: String 
     index "smarts" => 1
+    # Create feature from SMARTS string
+    # @param [String]
+    # @return [OpenTox::Feature]
     def self.from_smarts smarts
       self.find_or_create_by :smarts => smarts
     end

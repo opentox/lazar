@@ -1,5 +1,6 @@
 module OpenTox
   
+  # Adjustments to the rest-client gem for OpenTox
   class RestClientWrapper
     
     attr_accessor :request, :response

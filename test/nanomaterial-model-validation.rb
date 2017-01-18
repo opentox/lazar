@@ -8,7 +8,7 @@ class NanomaterialValidationModelTest < MiniTest::Test
   end
 
   def test_default_nanomaterial_validation_model
-    validation_model = Model::NanoValidation.create
+    validation_model = Model::Validation.from_enanomapper
     [:endpoint,:species,:source].each do |p|
       refute_empty validation_model[p]
     end
@@ -39,7 +39,7 @@ class NanomaterialValidationModelTest < MiniTest::Test
       :prediction => { :method => "OpenTox::Algorithm::Regression.weighted_average" },
       :feature_selection => nil
     }
-    validation_model = Model::NanoValidation.create algorithms: algorithms
+    validation_model = Model::Validation.from_enanomapper algorithms: algorithms
     assert validation_model.regression?
     refute validation_model.classification?
     validation_model.crossvalidations.each do |cv|
@@ -50,6 +50,5 @@ class NanomaterialValidationModelTest < MiniTest::Test
     assert_includes nanoparticle.dataset_ids, @training_dataset.id
     prediction = validation_model.predict nanoparticle
     refute_nil prediction[:value]
-    assert_includes prediction[:prediction_interval][0]..prediction[:prediction_interval][1], prediction[:measurements].median, "This assertion assures that measured values are within the prediction interval. It may fail in 5% of the predictions."
   end
 end

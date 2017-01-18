@@ -2,6 +2,7 @@ CACTUS_URI="https://cactus.nci.nih.gov/chemical/structure/"
 
 module OpenTox
 
+  # Small molecules with defined chemical structures
   class Compound < Substance
     require_relative "unique_descriptors.rb"
     DEFAULT_FINGERPRINT = "MP2D"
@@ -28,6 +29,9 @@ module OpenTox
       compound
     end
 
+    # Create chemical fingerprint
+    # @param [String] fingerprint type
+    # @return [Array<String>] 
     def fingerprint type=DEFAULT_FINGERPRINT
       unless fingerprints[type]
         return [] unless self.smiles
@@ -75,6 +79,9 @@ module OpenTox
       fingerprints[type]
     end
 
+    # Calculate physchem properties
+    # @param [Array<Hash>] list of descriptors
+    # @return [Array<Float>]
     def calculate_properties descriptors=PhysChem::OPENBABEL
       calculated_ids = properties.keys
       # BSON::ObjectId instances are not allowed as keys in a BSON document.
@@ -96,6 +103,10 @@ module OpenTox
       descriptors.collect{|d| properties[d.id.to_s]}
     end
 
+    # Match a SMARTS substructure
+    # @param [String] smarts
+    # @param [TrueClass,FalseClass] count matches or return true/false
+    # @return [TrueClass,FalseClass,Fixnum] 
     def smarts_match smarts, count=false
       obconversion = OpenBabel::OBConversion.new
       obmol = OpenBabel::OBMol.new
@@ -116,8 +127,8 @@ module OpenTox
     # Create a compound from smiles string
     # @example
     #   compound = OpenTox::Compound.from_smiles("c1ccccc1")
-    # @param [String] smiles Smiles string
-    # @return [OpenTox::Compound] Compound
+    # @param [String] smiles 
+    # @return [OpenTox::Compound]
     def self.from_smiles smiles
       if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
         $logger.warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
@@ -132,9 +143,9 @@ module OpenTox
       end
     end
 
-    # Create a compound from inchi string
-    # @param inchi [String] smiles InChI string
-    # @return [OpenTox::Compound] Compound
+    # Create a compound from InChI string
+    # @param [String] InChI 
+    # @return [OpenTox::Compound] 
     def self.from_inchi inchi
       #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
@@ -145,9 +156,9 @@ module OpenTox
       end
     end
 
-    # Create a compound from sdf string
-    # @param sdf [String] smiles SDF string
-    # @return [OpenTox::Compound] Compound
+    # Create a compound from SDF 
+    # @param [String] SDF 
+    # @return [OpenTox::Compound] 
     def self.from_sdf sdf
       # do not store sdf because it might be 2D
       Compound.from_smiles obconversion(sdf,"sdf","can")
@@ -156,40 +167,38 @@ module OpenTox
     # Create a compound from name. Relies on an external service for name lookups.
     # @example
     #   compound = OpenTox::Compound.from_name("Benzene")
-    # @param name [String] can be also an InChI/InChiKey, CAS number, etc
-    # @return [OpenTox::Compound] Compound
+    # @param [String] name, can be also an InChI/InChiKey, CAS number, etc
+    # @return [OpenTox::Compound]
     def self.from_name name
       Compound.from_smiles RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"smiles"))
     end
 
     # Get InChI
-    # @return [String] InChI string
+    # @return [String] 
     def inchi
       unless self["inchi"]
-
         result = obconversion(smiles,"smi","inchi")
-        #result = `echo "#{self.smiles}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -ismi - -oinchi`.chomp
         update(:inchi => result.chomp) if result and !result.empty?
       end
       self["inchi"]
     end
 
     # Get InChIKey
-    # @return [String] InChIKey string
+    # @return [String]
     def inchikey
       update(:inchikey => obconversion(smiles,"smi","inchikey")) unless self["inchikey"]
       self["inchikey"]
     end
 
     # Get (canonical) smiles
-    # @return [String] Smiles string
+    # @return [String]
     def smiles
       update(:smiles => obconversion(self["smiles"],"smi","can")) unless self["smiles"] 
       self["smiles"]
     end
 
-    # Get sdf
-    # @return [String] SDF string
+    # Get SDF
+    # @return [String]
     def sdf
       if self.sdf_id.nil? 
         sdf = obconversion(smiles,"smi","sdf")
@@ -209,7 +218,6 @@ module OpenTox
        update(:svg_id => $gridfs.insert_one(file))
       end
       $gridfs.find_one(_id: self.svg_id).data
-
     end
 
     # Get png image
@@ -223,26 +231,27 @@ module OpenTox
        update(:png_id => $gridfs.insert_one(file))
       end
       Base64.decode64($gridfs.find_one(_id: self.png_id).data)
-
     end
 
     # Get all known compound names. Relies on an external service for name lookups.
     # @example
     #   names = compound.names
-    # @return [String] Compound names
+    # @return [Array<String>] 
     def names
       update(:names => RestClientWrapper.get("#{CACTUS_URI}#{inchi}/names").split("\n")) unless self["names"] 
       self["names"]
     end
 
-    # @return [String] PubChem Compound Identifier (CID), derieved via restcall to pubchem
+    # Get PubChem Compound Identifier (CID), obtained via REST call to PubChem
+    # @return [String] 
     def cid
       pug_uri = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
       update(:cid => RestClientWrapper.post(File.join(pug_uri, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
 
-    # @return [String] ChEMBL database compound id, derieved via restcall to chembl
+    # Get ChEMBL database compound id, obtained via REST call to ChEMBL
+    # @return [String] 
     def chemblid
       # https://www.ebi.ac.uk/chembldb/ws#individualCompoundByInChiKey
       uri = "https://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
@@ -292,7 +301,7 @@ module OpenTox
       mg.to_f/molecular_weight
     end
     
-    # Calculate molecular weight of Compound with OB and store it in object
+    # Calculate molecular weight of Compound with OB and store it in compound object
     # @return [Float] molecular weight
     def molecular_weight
       mw_feature = PhysChem.find_or_create_by(:name => "Openbabel.MW")

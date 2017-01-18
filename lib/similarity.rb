@@ -2,6 +2,10 @@ module OpenTox
   module Algorithm
 
     class Vector
+      # Get dot product 
+      # @param [Vector]
+      # @param [Vector]
+      # @return [Numeric]
       def self.dot_product(a, b)
         products = a.zip(b).map{|a, b| a * b}
         products.inject(0) {|s,p| s + p}
@@ -15,6 +19,9 @@ module OpenTox
 
     class Similarity
 
+      # Get Tanimoto similarity
+      # @param [Array<Array<Float>>]
+      # @return [Float]
       def self.tanimoto fingerprints
         ( fingerprints[0] & fingerprints[1]).size/(fingerprints[0]|fingerprints[1]).size.to_f
       end
@@ -23,18 +30,28 @@ module OpenTox
         #( fingerprints[0] & fingerprints[1]).size/(fingerprints[0]|fingerprints[1]).size.to_f
       #end
 
+      # Get Euclidean distance 
+      # @param [Array<Array<Float>>]
+      # @return [Float]
       def self.euclid scaled_properties
         sq = scaled_properties[0].zip(scaled_properties[1]).map{|a,b| (a - b) ** 2}
         Math.sqrt(sq.inject(0) {|s,c| s + c})
       end
 
-      # http://stackoverflow.com/questions/1838806/euclidean-distance-vs-pearson-correlation-vs-cosine-similarity
+      # Get cosine similarity
+      #   http://stackoverflow.com/questions/1838806/euclidean-distance-vs-pearson-correlation-vs-cosine-similarity
+      # @param [Array<Array<Float>>]
+      # @return [Float]
       def self.cosine scaled_properties
         scaled_properties = remove_nils scaled_properties
         Algorithm::Vector.dot_product(scaled_properties[0], scaled_properties[1]) / (Algorithm::Vector.magnitude(scaled_properties[0]) * Algorithm::Vector.magnitude(scaled_properties[1]))
       end
 
-      def self.weighted_cosine scaled_properties # [a,b,weights]
+      # Get weighted cosine similarity
+      #   http://stackoverflow.com/questions/1838806/euclidean-distance-vs-pearson-correlation-vs-cosine-similarity
+      # @param [Array<Array<Float>>] [a,b,weights]
+      # @return [Float]
+      def self.weighted_cosine scaled_properties 
         a,b,w = remove_nils scaled_properties
         return cosine(scaled_properties) if w.uniq.size == 1
         dot_product = 0
@@ -48,6 +65,9 @@ module OpenTox
         dot_product/(Math.sqrt(magnitude_a)*Math.sqrt(magnitude_b))
       end
 
+      # Remove nil values
+      # @param [Array<Array<Float>>] [a,b,weights]
+      # @return [Array<Array<Float>>] [a,b,weights]
       def self.remove_nils scaled_properties
         a =[]; b = []; w = []
         (0..scaled_properties.first.size-1).each do |i|

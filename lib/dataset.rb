@@ -3,32 +3,43 @@ require 'tempfile'
 
 module OpenTox
 
+  # Collection of substances and features
   class Dataset
 
     field :data_entries, type: Hash, default: {}
 
     # Readers
 
+    # Get all compounds
+    # @return [Array<OpenTox::Compound>]
     def compounds
       substances.select{|s| s.is_a? Compound}
     end
 
+    # Get all nanoparticles
+    # @return [Array<OpenTox::Nanoparticle>]
     def nanoparticles
       substances.select{|s| s.is_a? Nanoparticle}
     end
 
     # Get all substances
+    # @return [Array<OpenTox::Substance>]
     def substances
       @substances ||= data_entries.keys.collect{|id| OpenTox::Substance.find id}.uniq
       @substances
     end
 
     # Get all features
+    # @return [Array<OpenTox::Feature>]
     def features
       @features ||= data_entries.collect{|sid,data| data.keys.collect{|id| OpenTox::Feature.find(id)}}.flatten.uniq
       @features
     end
 
+    # Get all values for a given substance and feature
+    # @param [OpenTox::Substance,BSON::ObjectId,String] substance or substance id
+    # @param [OpenTox::Feature,BSON::ObjectId,String] feature or feature id
+    # @return [TrueClass,FalseClass,Float]
     def values substance,feature
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
@@ -41,6 +52,10 @@ module OpenTox
 
     # Writers
 
+    # Add a value for a given substance and feature
+    # @param [OpenTox::Substance,BSON::ObjectId,String] substance or substance id
+    # @param [OpenTox::Feature,BSON::ObjectId,String] feature or feature id
+    # @param [TrueClass,FalseClass,Float]
     def add(substance,feature,value)
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
@@ -87,7 +102,7 @@ module OpenTox
 
     # Serialisation
     
-    # converts dataset to csv format including compound smiles as first column, other column headers are feature names
+    # Convert dataset to csv format including compound smiles as first column, other column headers are feature names
     # @return [String]
     def to_csv(inchi=false)
       CSV.generate() do |csv| 
@@ -130,6 +145,9 @@ module OpenTox
     #end
     
     # Create a dataset from CSV file
+    # @param [File] 
+    # @param [TrueClass,FalseClass] accept or reject empty values
+    # @return [OpenTox::Dataset]
     def self.from_csv_file file, accept_empty_values=false
       source = file
       name = File.basename(file,".*")
@@ -145,8 +163,10 @@ module OpenTox
       dataset
     end
 
-    # parse data in tabular format (e.g. from csv)
-    # does a lot of guesswork in order to determine feature types
+    # Parse data in tabular format (e.g. from csv)
+    #   does a lot of guesswork in order to determine feature types
+    # @param [Array<Array>] 
+    # @param [TrueClass,FalseClass] accept or reject empty values
     def parse_table table, accept_empty_values
 
       # features
@@ -225,6 +245,7 @@ module OpenTox
       save
     end
 
+    # Delete dataset
     def delete
       compounds.each{|c| c.dataset_ids.delete id.to_s}
       super
@@ -238,14 +259,20 @@ module OpenTox
     field :prediction_feature_id, type: BSON::ObjectId
     field :predictions, type: Hash, default: {}
 
+    # Get prediction feature
+    # @return [OpenTox::Feature]
     def prediction_feature
       Feature.find prediction_feature_id
     end
 
+    # Get all compounds
+    # @return [Array<OpenTox::Compound>]
     def compounds
       substances.select{|s| s.is_a? Compound}
     end
 
+    # Get all substances
+    # @return [Array<OpenTox::Substance>]
     def substances
       predictions.keys.collect{|id| Substance.find id}
     end
