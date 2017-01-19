@@ -57,20 +57,20 @@ class FeatureTest < MiniTest::Test
   def test_physchem_description
     assert_equal 346, PhysChem.descriptors.size
     assert_equal 15, PhysChem.openbabel_descriptors.size
-    assert_equal 295, PhysChem.cdk_descriptors.size
+    assert_equal 286, PhysChem.cdk_descriptors.size
     assert_equal 45, PhysChem.joelib_descriptors.size
-    assert_equal 310, PhysChem.unique_descriptors.size
+    assert_equal 309, PhysChem.unique_descriptors.size
   end
 
   def test_physchem
     assert_equal 346, PhysChem.descriptors.size
     c = Compound.from_smiles "CC(=O)CC(C)C"
     logP = PhysChem.find_or_create_by :name => "Openbabel.logP"
-    assert_equal 1.6215, logP.calculate(c)
+    assert_equal 1.6215, c.calculate_properties([logP]).first
     jlogP = PhysChem.find_or_create_by :name => "Joelib.LogP"
-    assert_equal 3.5951, jlogP.calculate(c)
+    assert_equal 3.5951, c.calculate_properties([jlogP]).first
     alogP = PhysChem.find_or_create_by :name => "Cdk.ALOGP.ALogP"
-    assert_equal 0.35380000000000034, alogP.calculate(c)
+    assert_equal 0.35380000000000034, c.calculate_properties([alogP]).first
   end
 
 end
