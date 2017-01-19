@@ -48,6 +48,7 @@ UNIQUEDESCRIPTORS = [
   #"Cdk.HBondAcceptorCount", #Descriptor that calculates the number of hydrogen bond acceptors.
   #"Cdk.HBondDonorCount", #Descriptor that calculates the number of hydrogen bond donors.
   "Cdk.HybridizationRatio", #Characterizes molecular complexity in terms of carbon hybridization states.
+  # TODO check why the next descriptor is not present in the CDK_DESCRIPTIONS variable.
   #"Cdk.IPMolecularLearning", #Descriptor that evaluates the ionization potential.
   "Cdk.KappaShapeIndices", #Descriptor that calculates Kier and Hall kappa molecular shape indices.
   "Cdk.KierHallSmarts", #Counts the number of occurrences of the E-state fragments
