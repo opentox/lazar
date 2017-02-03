@@ -67,23 +67,23 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
   - weighted majority vote predictions
 
   ```
-    algorithms = {
-      :descriptors => { # descriptor algorithm
-        :method => "fingerprint", # fingerprint descriptors
-        :type => "MP2D" # fingerprint type, e.g. FP4, MACCS
-      },
-      :similarity => { # similarity algorithm
-        :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.1 # similarity threshold for neighbors
-      },
-      :feature_selection => nil, # no feature selection
-      :prediction => { # local modelling algorithm
-        :method => "Algorithm::Classification.weighted_majority_vote",
-      },
-    }
+algorithms = {
+  :descriptors => { # descriptor algorithm
+    :method => "fingerprint", # fingerprint descriptors
+    :type => "MP2D" # fingerprint type, e.g. FP4, MACCS
+  },
+  :similarity => { # similarity algorithm
+    :method => "Algorithm::Similarity.tanimoto",
+    :min => 0.1 # similarity threshold for neighbors
+  },
+  :feature_selection => nil, # no feature selection
+  :prediction => { # local modelling algorithm
+    :method => "Algorithm::Classification.weighted_majority_vote",
+  },
+}
 
-    training_dataset = Dataset.from_csv_file "hamster_carcinogenicity.csv"
-    model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
+training_dataset = Dataset.from_csv_file "hamster_carcinogenicity.csv"
+model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
   ```
 
   The next example creates a regression model with
@@ -94,27 +94,27 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
   - local partial least squares models from the R caret package
 
   ```
-    algorithms = {
-      :descriptors => { # descriptor algorithm
-        :method => "calculate_properties",
-        :features => PhysChem.openbabel_descriptors,
-      },
-      :similarity => { # similarity algorithm
-        :method => "Algorithm::Similarity.weighted_cosine",
-        :min => 0.5
-      },
-      :feature_selection => { # feature selection algorithm
-        :method => "Algorithm::FeatureSelection.correlation_filter",
-      },
-      :prediction => { # local modelling algorithm
-        :method => "Algorithm::Caret.pls",
-      },
-    }
-    training_dataset = Dataset.from_csv_file "EPAFHM_log10.csv"
-    model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
+algorithms = {
+  :descriptors => { # descriptor algorithm
+    :method => "calculate_properties",
+    :features => PhysChem.openbabel_descriptors,
+  },
+  :similarity => { # similarity algorithm
+    :method => "Algorithm::Similarity.weighted_cosine",
+    :min => 0.5
+  },
+  :feature_selection => { # feature selection algorithm
+    :method => "Algorithm::FeatureSelection.correlation_filter",
+  },
+  :prediction => { # local modelling algorithm
+    :method => "Algorithm::Caret.pls",
+  },
+}
+training_dataset = Dataset.from_csv_file "EPAFHM_log10.csv"
+model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
     ```
 
-    Please consult the [API documentation](http://rdoc.info/gems/lazar) and [source code](https:://github.com/opentox/lazar) for up to date information about implemented algorithms:
+Please consult the [API documentation](http://rdoc.info/gems/lazar) and [source code](https:://github.com/opentox/lazar) for up to date information about implemented algorithms:
 
 - Descriptor algorithms
   - [Compounds](http://www.rubydoc.info/gems/lazar/OpenTox/Compound)
@@ -127,7 +127,7 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
   - [R caret](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Caret)
 
 
-    You can find more working examples in the `lazar` `model-*.rb` and `validation-*.rb` [tests](https://github.com/opentox/lazar/tree/master/test).
+You can find more working examples in the `lazar` `model-*.rb` and `validation-*.rb` [tests](https://github.com/opentox/lazar/tree/master/test).
 
 ### Create and use `lazar` nanoparticle models
 
@@ -163,23 +163,23 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
   - Caret random forests
 
 ```
-          algorithms = {
-            :descriptors => {
-              :method => "properties",
-              :categories => ["P-CHEM"],
-            },
-            :similarity => {
-              :method => "Algorithm::Similarity.weighted_cosine",
-              :min => 0.5
-            },
-            :feature_selection => {
-              :method => "Algorithm::FeatureSelection.correlation_filter",
-            },
-            :prediction => {
-              :method => "Algorithm::Caret.rf",
-            },
-          }
-          validation_model = Model::Validation.from_enanomapper algorithms: algorithms
+algorithms = {
+  :descriptors => {
+    :method => "properties",
+    :categories => ["P-CHEM"],
+  },
+  :similarity => {
+    :method => "Algorithm::Similarity.weighted_cosine",
+    :min => 0.5
+  },
+  :feature_selection => {
+    :method => "Algorithm::FeatureSelection.correlation_filter",
+  },
+  :prediction => {
+    :method => "Algorithm::Caret.rf",
+  },
+}
+validation_model = Model::Validation.from_enanomapper algorithms: algorithms
 ```
 
 
