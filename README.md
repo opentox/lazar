@@ -63,7 +63,7 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
 
   - MP2D fingerprint descriptors
   - Tanimoto similarity with a threshold of 0.1
-  - no feature selction
+  - no feature selection
   - weighted majority vote predictions
 
   ```
@@ -113,17 +113,18 @@ Execute the following commands either from an interactive Ruby shell or a Ruby s
     training_dataset = Dataset.from_csv_file "EPAFHM_log10.csv"
     model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
     ```
+
     Please consult the [API documentation](http://rdoc.info/gems/lazar) and [source code](https:://github.com/opentox/lazar) for up to date information about implemented algorithms:
 
-    - Descriptor algorithms
-      - [Compounds](http://www.rubydoc.info/gems/lazar/OpenTox/Compound)
-      - [Nanoparticles](http://www.rubydoc.info/gems/lazar/OpenTox/Nanoparticle)
-    - [Similarity algorithms](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Similarity)
-    - [Feature selection algorithms](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/FeatureSelection)
-    - Local models
-      - [Classification](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Classification)
-      - [Regression](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Regression)
-      - [R caret](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Caret)
+- Descriptor algorithms
+  - [Compounds](http://www.rubydoc.info/gems/lazar/OpenTox/Compound)
+  - [Nanoparticles](http://www.rubydoc.info/gems/lazar/OpenTox/Nanoparticle)
+- [Similarity algorithms](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Similarity)
+- [Feature selection algorithms](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/FeatureSelection)
+- Local models
+  - [Classification](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Classification)
+  - [Regression](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Regression)
+  - [R caret](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Caret)
 
 
     You can find more working examples in the `lazar` `model-*.rb` and `validation-*.rb` [tests](https://github.com/opentox/lazar/tree/master/test).
