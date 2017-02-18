@@ -179,8 +179,12 @@ module OpenTox
           R.assign "prediction", y
           R.eval "all = c(measurement,prediction)"
           R.eval "range = c(min(all), max(all))"
-          title = feature.name
-          title += "[#{feature.unit}]" if feature.unit and !feature.unit.blank?
+          if feature.name.match /Net cell association/ # ad hoc fix for awkward units
+            title = "log2(Net cell association [mL/ug(Mg)])"
+          else
+            title = feature.name
+            title += " [#{feature.unit}]" if feature.unit and !feature.unit.blank?
+          end
           R.eval "image = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
           R.eval "image = image + geom_abline(intercept=0, slope=1)"
           R.eval "ggsave(file='#{tmpfile}', plot=image)"
