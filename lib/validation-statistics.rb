@@ -179,8 +179,12 @@ module OpenTox
           R.assign "prediction", y
           R.eval "all = c(measurement,prediction)"
           R.eval "range = c(min(all), max(all))"
-          title = feature.name
-          title += "[#{feature.unit}]" if feature.unit and !feature.unit.blank?
+          if feature.name.match /Net cell association/ # ad hoc fix for awkward units
+            title = "log2(Net cell association [mL/ug(Mg)])"
+          else
+            title = feature.name
+            title += " [#{feature.unit}]" if feature.unit and !feature.unit.blank?
+          end
           R.eval "image = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
           R.eval "image = image + geom_abline(intercept=0, slope=1)"
           R.eval "ggsave(file='#{tmpfile}', plot=image)"
@@ -191,51 +195,21 @@ module OpenTox
         $gridfs.find_one(_id: correlation_plot_id).data
       end
 
-      # Get predictions with the largest difference between predicted and measured values
-      # @params [Fixnum] number of predictions
-      # @params [TrueClass,FalseClass,nil] include neighbors
-      # @params [TrueClass,FalseClass,nil] show common descriptors
+      # Get predictions with measurements outside of the prediction interval
       # @return [Hash]
-      def worst_predictions n: 5, show_neigbors: true, show_common_descriptors: false
-        worst_predictions = predictions.sort_by{|sid,p| -(p["value"] - p["measurements"].median).abs}[0,n]
-        worst_predictions.collect do |p|
-          substance = Substance.find(p.first)
-          prediction = p[1]
-          if show_neigbors
-            neighbors = prediction["neighbors"].collect do |n|
-              common_descriptors = []
-              if show_common_descriptors
-                common_descriptors = n["common_descriptors"].collect do |d|
-                  f=Feature.find(d)
-                  {
-                    :id => f.id.to_s,
-                    :name => "#{f.name} (#{f.conditions})",
-                    :p_value => d[:p_value],
-                    :r_squared => d[:r_squared],
-                  }
-                end
-              else
-                common_descriptors = n["common_descriptors"].size
-              end
-              {
-                :name => Substance.find(n["_id"]).name,
-                :id => n["_id"].to_s,
-                :common_descriptors => common_descriptors
-              }
-            end
-          else
-            neighbors = prediction["neighbors"].size
+      def worst_predictions
+        worst_predictions = predictions.select do |sid,p|
+          p["prediction_interval"] and p["value"] and (p["measurements"].max < p["prediction_interval"][0] or p["measurements"].min > p["prediction_interval"][1])
+        end.compact.to_h
+        worst_predictions.each do |sid,p|
+          p["error"] = (p["value"] - p["measurements"].median).abs
+          if p["measurements"].max < p["prediction_interval"][0]
+            p["distance_prediction_interval"] = (p["measurements"].max - p["prediction_interval"][0]).abs
+          elsif p["measurements"].min > p["prediction_interval"][1]
+            p["distance_prediction_interval"] = (p["measurements"].min - p["prediction_interval"][1]).abs
           end
-          {
-            :id => substance.id.to_s,
-            :name => substance.name,
-            :feature => Feature.find(prediction["prediction_feature_id"]).name,
-            :error => (prediction["value"] - prediction["measurements"].median).abs,
-            :prediction => prediction["value"],
-            :measurements => prediction["measurements"],
-            :neighbors => neighbors
-          }
         end
+        worst_predictions.sort_by{|sid,p| p["distance_prediction_interval"] }.to_h
       end
     end
   end
