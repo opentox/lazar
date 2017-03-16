@@ -57,7 +57,7 @@ module OpenTox
           model.version = {:warning => "git is not installed"}
         end
 
-        # set defaults
+        # set defaults#
         substance_classes = training_dataset.substances.collect{|s| s.class.to_s}.uniq
         bad_request_error "Cannot create models for mixed substance classes '#{substance_classes.join ', '}'." unless substance_classes.size == 1
 
@@ -70,7 +70,7 @@ module OpenTox
             },
             :similarity => {
               :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.1
+              :min => 0.5,
             },
             :feature_selection => nil
           }
@@ -81,7 +81,7 @@ module OpenTox
             }
           elsif model.class == LazarRegression
             model.algorithms[:prediction] = {
-              :method => "Algorithm::Caret.pls",
+              :method => "Algorithm::Caret.rf",
             }
           end
 
@@ -93,7 +93,7 @@ module OpenTox
             },
             :similarity => {
               :method => "Algorithm::Similarity.weighted_cosine",
-              :min => 0.5
+              :min => 0.5,
             },
             :prediction => {
               :method => "Algorithm::Caret.rf",
@@ -191,7 +191,7 @@ module OpenTox
       # Predict a substance (compound or nanoparticle)
       # @param [OpenTox::Substance]
       # @return [Hash]
-      def predict_substance substance
+      def predict_substance substance, threshold = self.algorithms[:similarity][:min]
         
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
@@ -221,20 +221,19 @@ module OpenTox
           bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
         end
         
-        prediction = {}
+        prediction = {:warnings => [], :measurements => []}
+        prediction[:warnings] << "Similarity threshold #{threshold} < #{algorithms[:similarity][:min]}, prediction may be out of applicability domain." if threshold < algorithms[:similarity][:min]
         neighbor_ids = []
         neighbor_similarities = []
         neighbor_dependent_variables = []
         neighbor_independent_variables = []
 
-        prediction = {}
         # find neighbors
         substance_ids.each_with_index do |s,i|
           # handle query substance
           if substance.id.to_s == s
-            prediction[:measurements] ||= []
             prediction[:measurements] << dependent_variables[i]
-            prediction[:warning] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
+            prediction[:info] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
           else
             if fingerprints?
               neighbor_descriptors = fingerprints[i]
@@ -243,7 +242,7 @@ module OpenTox
               neighbor_descriptors = scaled_variables.collect{|v| v[i]}
             end
             sim = Algorithm.run algorithms[:similarity][:method], [similarity_descriptors, neighbor_descriptors, descriptor_weights]
-            if sim >= algorithms[:similarity][:min]
+            if sim >= threshold
               neighbor_ids << s
               neighbor_similarities << sim
               neighbor_dependent_variables << dependent_variables[i]
@@ -258,17 +257,27 @@ module OpenTox
         measurements = nil
         
         if neighbor_similarities.empty?
-          prediction.merge!({:value => nil,:warning => "Could not find similar substances with experimental data in the training dataset.",:neighbors => []})
+          prediction[:value] = nil
+          prediction[:warnings] << "Could not find similar substances with experimental data in the training dataset."
         elsif neighbor_similarities.size == 1
-          prediction.merge!({:value => dependent_variables.first, :probabilities => nil, :warning => "Only one similar compound in the training set. Predicting its experimental value.", :neighbors => [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]})
+          prediction[:value] = nil
+          prediction[:warnings] << "Cannot create prediction: Only one similar compound in the training set."
+          prediction[:neighbors] = [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]
         else
           query_descriptors.collect!{|d| d ? 1 : 0} if algorithms[:feature_selection] and algorithms[:descriptors][:method] == "fingerprint"
           # call prediction algorithm
           result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
           prediction.merge! result
           prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
+          #if neighbor_similarities.max < algorithms[:similarity][:warn_min]
+            #prediction[:warnings] << "Closest neighbor has similarity < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
+          #end
         end
-        prediction
+        if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min]
+          prediction
+        else # try again with a lower threshold
+          predict_substance substance, 0.2
+        end
       end
 
       # Predict a substance (compound or nanoparticle), an array of substances or a dataset

@@ -17,7 +17,7 @@ module OpenTox
           sim_sum += weights[i]
         end if dependent_variables
         sim_sum == 0 ? prediction = nil : prediction = weighted_sum/sim_sum
-        {:value => prediction}
+        {:value => prediction, :warnings => ["Weighted average prediction, no prediction interval available."]}
       end
 
     end
