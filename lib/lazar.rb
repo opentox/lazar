@@ -16,16 +16,19 @@ raise "Incorrect lazar environment variable LAZAR_ENV '#{ENV["LAZAR_ENV"]}', ple
 
 ENV["MONGOID_ENV"] = ENV["LAZAR_ENV"] 
 ENV["RACK_ENV"] = ENV["LAZAR_ENV"] # should set sinatra environment
+# search for a central mongo database in use
+# http://opentox.github.io/installation/2017/03/07/use-central-mongodb-in-docker-environment
+CENTRAL_MONGO_IP = `grep -oP '^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*mongodb)' /etc/hosts`.chomp
 Mongoid.load_configuration({
   :clients => {
     :default => {
       :database => ENV["LAZAR_ENV"],
-      :hosts => ["localhost:27017"],
+      :hosts => (CENTRAL_MONGO_IP.blank? ? ["localhost:27017"] : ["#{CENTRAL_MONGO_IP}:27017"]),
     }
   }
 })
 Mongoid.raise_not_found_error = false # return nil if no document is found
-$mongo = Mongo::Client.new("mongodb://127.0.0.1:27017/#{ENV['LAZAR_ENV']}")
+$mongo = Mongo::Client.new("mongodb://#{(CENTRAL_MONGO_IP.blank? ? "127.0.0.1" : CENTRAL_MONGO_IP)}:27017/#{ENV['LAZAR_ENV']}")
 $gridfs = $mongo.database.fs
 
 # Logger setup
