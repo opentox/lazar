@@ -273,7 +273,7 @@ module OpenTox
             #prediction[:warnings] << "Closest neighbor has similarity < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
           #end
         end
-        if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min]
+        if prediction[:warnings].empty? or threshold <= algorithms[:similarity][:min]
           prediction
         else # try again with a lower threshold
           predict_substance substance, 0.2
@@ -309,7 +309,7 @@ module OpenTox
         # serialize result
         if object.is_a? Substance
           prediction = predictions[substances.first.id.to_s]
-          prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} # sort according to similarity
+          prediction[:neighbors].sort!{|a,b| b[1] <=> a[1]} if prediction[:neighbors]# sort according to similarity
           return prediction
         elsif object.is_a? Array
           return predictions
