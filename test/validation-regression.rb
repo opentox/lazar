@@ -84,7 +84,7 @@ class ValidationRegressionTest < MiniTest::Test
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
       assert cv.r_squared > 0.34, "R^2 (#{cv.r_squared}) should be larger than 0.034"
-      assert_operator cv.accuracy, :>, 0.7, "model accuracy < 0.7, this may happen by chance due to an unfavorable training/test set split"
+      assert cv.rmse < 0.5, "RMSE (#{cv.rmse}) should be smaller than 0.5"
     end
   end
 
