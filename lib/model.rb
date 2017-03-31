@@ -68,10 +68,6 @@ module OpenTox
               :method => "fingerprint",
               :type => "MP2D",
             },
-            :similarity => {
-              :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.5,
-            },
             :feature_selection => nil
           }
 
@@ -79,9 +75,17 @@ module OpenTox
             model.algorithms[:prediction] = {
                 :method => "Algorithm::Classification.weighted_majority_vote",
             }
+            model.algorithms[:similarity] = {
+              :method => "Algorithm::Similarity.tanimoto",
+              :min => 0.1,
+            }
           elsif model.class == LazarRegression
             model.algorithms[:prediction] = {
               :method => "Algorithm::Caret.rf",
+            }
+            model.algorithms[:similarity] = {
+              :method => "Algorithm::Similarity.tanimoto",
+              :min => 0.5,
             }
           end
 
