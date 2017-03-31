@@ -47,7 +47,7 @@ class ValidationClassificationTest < MiniTest::Test
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::Lazar.create training_dataset: dataset
     loo = ClassificationLeaveOneOut.create model
-    assert_equal 14, loo.nr_unpredicted
+    assert_equal 24, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
     assert loo.accuracy > 0.77
     assert loo.weighted_accuracy > loo.accuracy, "Weighted accuracy (#{loo.weighted_accuracy}) should be larger than accuracy (#{loo.accuracy})."

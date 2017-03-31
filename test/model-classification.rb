@@ -46,12 +46,14 @@ class LazarClassificationTest < MiniTest::Test
     assert_equal compound_dataset.compounds, prediction_dataset.compounds
 
     cid = prediction_dataset.compounds[7].id.to_s
-    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warning]
+    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warnings][0]
+    expectations = ["Cannot create prediction: Only one similar compound in the training set.",
+    "Could not find similar substances with experimental data in the training dataset."]
     prediction_dataset.predictions.each do |cid,pred|
-      assert_equal "Could not find similar substances with experimental data in the training dataset.", pred[:warning] if pred[:value].nil?
+      assert_includes expectations, pred[:warnings][0] if pred[:value].nil?
     end
     cid = Compound.from_smiles("CCOC(=O)N").id.to_s
-    assert_match "excluded", prediction_dataset.predictions[cid][:warning]
+    assert_match "excluded", prediction_dataset.predictions[cid][:info]
     # cleanup
     [training_dataset,model,compound_dataset,prediction_dataset].each{|o| o.delete}
   end
