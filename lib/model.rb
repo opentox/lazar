@@ -145,7 +145,6 @@ module OpenTox
           end
           model.descriptor_ids = model.fingerprints.flatten.uniq
           model.descriptor_ids.each do |d|
-            # resulting model may break BSON size limit (e.g. f Kazius dataset)
             model.independent_variables << model.substance_ids.collect_with_index{|s,i| model.fingerprints[i].include? d} if model.algorithms[:prediction][:method].match /Caret/
           end
         # calculate physchem properties
