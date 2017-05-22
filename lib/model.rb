@@ -276,7 +276,7 @@ module OpenTox
             #prediction[:warnings] << "Closest neighbor has similarity < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
           #end
         end
-        if prediction[:warnings].empty? or threshold <= algorithms[:similarity][:min]
+        if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min] or threshold <= 0.2
           prediction
         else # try again with a lower threshold
           predict_substance substance, 0.2
