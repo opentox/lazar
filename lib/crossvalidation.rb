@@ -90,6 +90,7 @@ module OpenTox
       field :within_prediction_interval, type: Integer, default:0
       field :out_of_prediction_interval, type: Integer, default:0
       field :correlation_plot_id, type: BSON::ObjectId
+      field :warnings, type: Array
     end
 
     # Independent repeated crossvalidations

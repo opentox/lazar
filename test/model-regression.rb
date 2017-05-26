@@ -10,21 +10,21 @@ class LazarRegressionTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.1
+        :min => 0.5
       },
       :prediction => {
-        :method => "Algorithm::Caret.pls",
+        :method => "Algorithm::Caret.rf",
       },
       :feature_selection => nil,
     }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset
     assert_kind_of Model::LazarRegression, model
     assert_equal algorithms, model.algorithms
-    substance = training_dataset.substances[10]
+    substance = training_dataset.substances[145]
     prediction = model.predict substance
     assert_includes prediction[:prediction_interval][0]..prediction[:prediction_interval][1], prediction[:measurements].median, "This assertion assures that measured values are within the prediction interval. It may fail in 5% of the predictions."
-    substance = Compound.from_smiles "NC(=O)OCCC"
+    substance = Compound.from_smiles "c1ccc(cc1)Oc1ccccc1"
     prediction = model.predict substance
     refute_nil prediction[:value]
     refute_nil prediction[:prediction_interval]
@@ -59,8 +59,8 @@ class LazarRegressionTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: training_dataset, algorithms: algorithms
     compound = Compound.from_smiles "CCCSCCSCC"
     prediction = model.predict compound
-    assert_equal 4, prediction[:neighbors].size
-    assert_equal 1.37, prediction[:value].round(2)
+    assert_equal 3, prediction[:neighbors].size
+    assert prediction[:value].round(2) > 1.37, "Prediction value (#{prediction[:value].round(2)}) should be larger than 1.37."
   end
 
   def test_local_physchem_regression
@@ -112,12 +112,12 @@ class LazarRegressionTest < MiniTest::Test
         :method => "Algorithm::Similarity.cosine",
       }
     }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.cosine", model.algorithms[:similarity][:method]
-    assert_equal 0.1, model.algorithms[:similarity][:min]
+    assert_equal 0.5, model.algorithms[:similarity][:min]
     algorithms[:descriptors].delete :features
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
     prediction = model.predict training_dataset.substances[10]
@@ -130,14 +130,14 @@ class LazarRegressionTest < MiniTest::Test
         :method => "Algorithm::FeatureSelection.correlation_filter",
       },
     }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
-    assert_equal "Algorithm::Caret.pls", model.algorithms[:prediction][:method]
+    assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
-    assert_equal 0.1, model.algorithms[:similarity][:min]
+    assert_equal 0.5, model.algorithms[:similarity][:min]
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
-    prediction = model.predict training_dataset.substances[10]
+    prediction = model.predict training_dataset.substances[145]
     refute_nil prediction[:value]
   end
 

@@ -111,6 +111,7 @@ module OpenTox
       # Get statistics
       # @return [Hash]
       def statistics
+        self.warnings = []
         self.rmse = 0
         self.mae = 0
         self.within_prediction_interval = 0
@@ -132,8 +133,10 @@ module OpenTox
               end
             end
           else
-            warnings << "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
-            $logger.debug "No training activities for #{Compound.find(compound_id).smiles} in training dataset #{model.training_dataset_id}."
+            trd_id = model.training_dataset_id
+            smiles = Compound.find(cid).smiles
+            self.warnings << "No training activities for #{smiles} in training dataset #{trd_id}."
+            $logger.debug "No training activities for #{smiles} in training dataset #{trd_id}."
           end
         end
         R.assign "measurement", x
@@ -146,6 +149,7 @@ module OpenTox
         $logger.debug "RMSE #{rmse}"
         $logger.debug "MAE #{mae}"
         $logger.debug "#{percent_within_prediction_interval.round(2)}% of measurements within prediction interval"
+        $logger.debug "#{warnings}"
         save
         {
           :mae => mae,

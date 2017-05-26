@@ -160,7 +160,7 @@ class DatasetTest < MiniTest::Test
         if v.numeric?
           assert_equal v.to_f, serialized[inchi][i].to_f
         else
-          assert_equal v, serialized[inchi][i]
+          assert_equal v.to_s, serialized[inchi][i].to_s
         end
       end
 
