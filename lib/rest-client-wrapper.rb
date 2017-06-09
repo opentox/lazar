@@ -26,6 +26,7 @@ module OpenTox
 
       define_singleton_method method do |uri,payload={},headers={},waiting_task=nil|
 
+        uri = Addressable::URI.encode(uri)
         # check input
         bad_request_error "Headers are not a hash: #{headers.inspect} for #{uri}." unless headers==nil or headers.is_a?(Hash) 
         headers[:subjectid] ||= @@subjectid

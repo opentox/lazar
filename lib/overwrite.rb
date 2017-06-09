@@ -197,7 +197,7 @@ module URI
   # @param [String]
   # @return [TrueClass,FalseClass]
   def self.valid? uri
-    u = URI.parse(uri)
+    u = Addressable::URI.parse(uri)
     u.scheme!=nil and u.host!=nil
   rescue URI::InvalidURIError
     false

@@ -20,6 +20,7 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_runtime_dependency 'bundler'
   s.add_runtime_dependency 'rest-client'
+  s.add_runtime_dependency 'addressable'
   s.add_runtime_dependency 'nokogiri'
   s.add_runtime_dependency 'rserve-client'
   s.add_runtime_dependency 'mongoid'

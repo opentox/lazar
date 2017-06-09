@@ -1,6 +1,7 @@
 require 'rubygems'
 require "bundler/setup"
 require "rest-client"
+require 'addressable'
 require 'yaml'
 require 'json'
 require 'logger'
