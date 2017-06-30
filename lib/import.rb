@@ -10,18 +10,17 @@ module OpenTox
       def self.import
         # time critical step: JSON parsing (>99%), Oj brings only minor speed gains (~1%)
         datasets = {}
-        bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle?media=application%2Fjson'))["dataset"]
+        bundles = JSON.parse(RestClientWrapper.get('https://data.enanomapper.net/bundle', {}, {accept: :json}))["dataset"]
         bundles.each do |bundle|
           datasets[bundle["URI"]] = Dataset.find_or_create_by(:source => bundle["URI"],:name => bundle["title"].strip)
           $logger.debug bundle["title"].strip
-          nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"]+"?media=application%2Fjson"))["dataEntry"]
+          nanoparticles = JSON.parse(RestClientWrapper.get(bundle["dataset"], {}, {accept: :json}))["dataEntry"]
           nanoparticles.each_with_index do |np,n|
             core_id = nil
             coating_ids = []
             np["composition"].each do |c|
               uri = c["component"]["compound"]["URI"]
-              uri = CGI.escape File.join(uri,"&media=application/json")
-              data = JSON.parse(RestClientWrapper.get "https://data.enanomapper.net/query/compound/url/all?media=application/json&search=#{uri}")
+              data = JSON.parse(RestClientWrapper.get("https://data.enanomapper.net/query/compound/url/all?search=#{uri}", {}, {accept: :json}))
               source = data["dataEntry"][0]["compound"]["URI"]
               smiles = data["dataEntry"][0]["values"]["https://data.enanomapper.net/feature/http%3A%2F%2Fwww.opentox.org%2Fapi%2F1.1%23SMILESDefault"]
               names = []
@@ -52,7 +51,7 @@ module OpenTox
               nanoparticle.dataset_ids << datasets[bundle_uri].id
             end
 
-            studies = JSON.parse(RestClientWrapper.get(File.join(np["compound"]["URI"],"study")))["study"]
+            studies = JSON.parse(RestClientWrapper.get(File.join(np["compound"]["URI"],"study"), {}, {accept: :json}))["study"]
             studies.each do |study|
               dataset = datasets[np["bundles"].keys.first]
               proteomics_features = {}
