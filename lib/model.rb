@@ -395,6 +395,7 @@ module OpenTox
       include Mongoid::Timestamps
 
       field :endpoint, type: String
+      field :qmrf, type: Hash
       field :species, type: String
       field :source, type: String
       field :unit, type: String
