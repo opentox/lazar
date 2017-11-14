@@ -19,7 +19,7 @@ ENV["MONGOID_ENV"] = ENV["LAZAR_ENV"]
 ENV["RACK_ENV"] = ENV["LAZAR_ENV"] # should set sinatra environment
 # search for a central mongo database in use
 # http://opentox.github.io/installation/2017/03/07/use-central-mongodb-in-docker-environment
-CENTRAL_MONGO_IP = `grep -oP '^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*mongodb)' /etc/hosts`.chomp
+CENTRAL_MONGO_IP = ''#`grep -oP '^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*mongodb)' /etc/hosts`.chomp
 Mongoid.load_configuration({
   :clients => {
     :default => {
