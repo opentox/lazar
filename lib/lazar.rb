@@ -45,11 +45,12 @@ when "development"
 end
 
 # R setup
-rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
+#rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
 # should work on POSIX including os x
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
+=begin
 R.eval "
 suppressPackageStartupMessages({
   library(labeling,lib=\"#{rlib}\")
@@ -66,7 +67,7 @@ suppressPackageStartupMessages({
   registerDoMC(#{NR_CORES})
 })
 "
-
+=end
 # OpenTox classes and includes
 CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
