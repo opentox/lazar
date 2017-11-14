@@ -49,7 +49,7 @@ end
 # should work on POSIX including os x
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
-R = Rserve::Connection.new
+R = Rserve::run.Rserve(remote=TRUE)
 =begin
 R.eval "
 suppressPackageStartupMessages({
