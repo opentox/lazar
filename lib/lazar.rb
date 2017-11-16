@@ -50,7 +50,11 @@ end
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
 CENTRAL_RSERVE_IP = `grep -oP "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*rserve)" /etc/hosts`.chomp
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
-R = Rserve::Connection.new( CENTRAL_RSERVE_IP.blank? ? "127.0.0.1" : CENTRAL_RSERVE_IP)
+if CENTRAL_RSERVE_IP.blank?
+  R = Rserve::Connection.new
+else
+  R = Rserve::Connection.new(:hostname => CENTRAL_RSERVE_IP)
+end
 =begin
 R.eval "
 suppressPackageStartupMessages({
