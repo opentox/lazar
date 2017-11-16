@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency 'rest-client'
   s.add_runtime_dependency 'addressable'
   s.add_runtime_dependency 'nokogiri'
-  s.add_runtime_dependency 'rserve-client'
   s.add_runtime_dependency 'mongoid'
   s.add_runtime_dependency 'openbabel'
 end
