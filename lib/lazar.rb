@@ -19,7 +19,7 @@ ENV["MONGOID_ENV"] = ENV["LAZAR_ENV"]
 ENV["RACK_ENV"] = ENV["LAZAR_ENV"] # should set sinatra environment
 # search for a central mongo database in use
 # http://opentox.github.io/installation/2017/03/07/use-central-mongodb-in-docker-environment
-CENTRAL_MONGO_IP = ''#`grep -oP '^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*mongodb)' /etc/hosts`.chomp
+CENTRAL_MONGO_IP = `grep -oP "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*mongodb)" /etc/hosts`.chomp
 Mongoid.load_configuration({
   :clients => {
     :default => {
@@ -48,8 +48,9 @@ end
 #rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
 # should work on POSIX including os x
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
+CENTRAL_RSERVE_IP = `grep -oP "^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}(?=.*rserve)" /etc/hosts`.chomp
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
-R = Rserve::Connection.new
+R = Rserve::Connection.new( CENTRAL_RSERVE_IP.blank? ? "127.0.0.1" : CENTRAL_RSERVE_IP)
 =begin
 R.eval "
 suppressPackageStartupMessages({
