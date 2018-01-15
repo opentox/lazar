@@ -50,6 +50,7 @@ rlib = File.expand_path(File.join(File.dirname(__FILE__),"..","R"))
 # http://stackoverflow.com/questions/19619582/number-of-processors-cores-in-command-line
 NR_CORES = `getconf _NPROCESSORS_ONLN`.to_i
 R = Rserve::Connection.new
+R.eval ".libPaths('#{rlib}')"
 R.eval "
 suppressPackageStartupMessages({
   library(labeling,lib=\"#{rlib}\")
