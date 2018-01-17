@@ -110,7 +110,7 @@ print c.sdf
 
   def test_molecular_weight
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C"
-    assert_equal 100.15888, c.molecular_weight
+    assert_equal 100.15888, c.molecular_weight.round(5)
   end
 
   def test_physchem
