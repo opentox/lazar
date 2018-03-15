@@ -46,7 +46,7 @@ module OpenTox
       if data_entries[substance.to_s] and data_entries[substance.to_s][feature.to_s]
         data_entries[substance.to_s][feature.to_s]
       else
-        nil
+        [nil]
       end
     end
 
