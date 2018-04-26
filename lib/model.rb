@@ -46,15 +46,17 @@ module OpenTox
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
         model.name = "#{prediction_feature.name} (#{training_dataset.name})" 
-        # TODO: check if this works for gem version, add gem versioning?
+        # git or gem versioning
         dir = File.dirname(__FILE__)
-        commit = `cd #{dir}; git rev-parse HEAD`.chomp
-        branch = `cd #{dir}; git rev-parse --abbrev-ref HEAD`.chomp
-        url = `cd #{dir}; git config --get remote.origin.url`.chomp
-        if branch
+        if Dir.exists?("#{dir}/.git")
+          commit = `cd #{dir}; git rev-parse HEAD`.chomp
+          branch = `cd #{dir}; git rev-parse --abbrev-ref HEAD`.chomp
+          url = `cd #{dir}; git config --get remote.origin.url`.chomp
           model.version = {:url => url, :branch => branch, :commit => commit}
         else
-          model.version = {:warning => "git is not installed"}
+          version = File.open(File.join(dir,"VERSION"), &:gets).chomp
+          url = "https://rubygems.org/gems/lazar/versions/"+version
+          model.version = {:url => url, :branch => "gem", :commit => version}
         end
 
         # set defaults#
