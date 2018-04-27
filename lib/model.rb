@@ -55,7 +55,7 @@ module OpenTox
           url = `git config --get remote.origin.url`.chomp
           model.version = {:url => url, :branch => branch, :commit => commit}
         else
-          version = File.open(path+"/VERSION"), &:gets).chomp
+          version = File.open(path+"/VERSION", &:gets).chomp
           url = "https://rubygems.org/gems/lazar/versions/"+version
           model.version = {:url => url, :branch => "gem", :commit => version}
         end
