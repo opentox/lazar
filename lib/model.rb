@@ -48,13 +48,14 @@ module OpenTox
         model.name = "#{prediction_feature.name} (#{training_dataset.name})" 
         # git or gem versioning
         dir = File.dirname(__FILE__)
-        if Dir.exists?("#{dir}/.git")
-          commit = `cd #{dir}; git rev-parse HEAD`.chomp
-          branch = `cd #{dir}; git rev-parse --abbrev-ref HEAD`.chomp
-          url = `cd #{dir}; git config --get remote.origin.url`.chomp
+        path = File.expand_path("../", File.expand_path(dir))
+        if Dir.exists?(dir+"/.git")
+          commit = `git rev-parse HEAD`.chomp
+          branch = `git rev-parse --abbrev-ref HEAD`.chomp
+          url = `git config --get remote.origin.url`.chomp
           model.version = {:url => url, :branch => branch, :commit => commit}
         else
-          version = File.open(File.join(dir,"VERSION"), &:gets).chomp
+          version = File.open(path+"/VERSION"), &:gets).chomp
           url = "https://rubygems.org/gems/lazar/versions/"+version
           model.version = {:url => url, :branch => "gem", :commit => version}
         end
