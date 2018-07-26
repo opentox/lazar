@@ -37,10 +37,16 @@ class Float
     Float("%.#{n}g" % self)
   end
 
-  # Convert -10 log values to original values
+  # Convert -log10 values to original values
   # @return [Float]
   def delog10
     10**(-1*self)
+  end
+
+  # Convert log10 values to original values
+  # @return [Float]
+  def delog10p
+    10**self
   end
 end
 
