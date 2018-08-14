@@ -80,7 +80,7 @@ module OpenTox
             }
             model.algorithms[:similarity] = {
               :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.1,
+              :min => 0.5,
             }
           elsif model.class == LazarRegression
             model.algorithms[:prediction] = {

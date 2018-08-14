@@ -103,7 +103,7 @@ module OpenTox
       # @param [Fixnum] number of folds
       # @param [Fixnum] number of repeats
       # @return [OpenTox::Validation::RepeatedCrossValidation]
-      def self.create model, folds=10, repeats=3
+      def self.create model, folds=10, repeats=5
         repeated_cross_validation = self.new
         repeats.times do |n|
           $logger.debug "Crossvalidation #{n+1} for #{model.name}"
