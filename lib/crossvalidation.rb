@@ -72,25 +72,27 @@ module OpenTox
     class ClassificationCrossValidation < CrossValidation
       include ClassificationStatistics
       field :accept_values, type: Array
-      field :confusion_matrix, type: Array
-      field :weighted_confusion_matrix, type: Array
-      field :accuracy, type: Float
-      field :weighted_accuracy, type: Float
+      field :confusion_matrix, type: Hash
+      field :weighted_confusion_matrix, type: Hash
+      field :accuracy, type: Hash
+      field :weighted_accuracy, type: Hash
       field :true_rate, type: Hash
       field :predictivity, type: Hash
+      field :nr_predictions, type: Hash
       field :probability_plot_id, type: BSON::ObjectId
     end
 
     # Crossvalidation of regression models
     class RegressionCrossValidation < CrossValidation
       include RegressionStatistics
-      field :rmse, type: Float, default:0
-      field :mae, type: Float, default:0
-      field :r_squared, type: Float
-      field :within_prediction_interval, type: Integer, default:0
-      field :out_of_prediction_interval, type: Integer, default:0
-      field :correlation_plot_id, type: BSON::ObjectId
+      field :rmse, type: Hash
+      field :mae, type: Hash
+      field :r_squared, type: Hash
+      field :within_prediction_interval, type: Hash
+      field :out_of_prediction_interval, type: Hash
+      field :nr_predictions, type: Hash
       field :warnings, type: Array
+      field :correlation_plot_id, type: BSON::ObjectId
     end
 
     # Independent repeated crossvalidations

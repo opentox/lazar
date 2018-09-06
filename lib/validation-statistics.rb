@@ -7,9 +7,10 @@ module OpenTox
       # @return [Hash]
       def statistics 
         self.accept_values = model.prediction_feature.accept_values
-        self.confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
-        self.weighted_confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
-        nr_instances = 0
+        self.confusion_matrix = {:all => Array.new(accept_values.size){Array.new(accept_values.size,0)}, :without_warnings => Array.new(accept_values.size){Array.new(accept_values.size,0)}}
+        self.weighted_confusion_matrix = {:all => Array.new(accept_values.size){Array.new(accept_values.size,0)}, :without_warnings => Array.new(accept_values.size){Array.new(accept_values.size,0)}}
+        #self.weighted_confusion_matrix = Array.new(accept_values.size){Array.new(accept_values.size,0)}
+	self.nr_predictions = {:all => 0,:without_warnings => 0}
         predictions.each do |cid,pred|
           # TODO
           # use predictions without probabilities (single neighbor)??
@@ -18,41 +19,69 @@ module OpenTox
             m = pred[:measurements].first
             if pred[:value] == m
               if pred[:value] == accept_values[0]
-                confusion_matrix[0][0] += 1
-                weighted_confusion_matrix[0][0] += pred[:probabilities][pred[:value]]
-                nr_instances += 1
+                confusion_matrix[:all][0][0] += 1
+                weighted_confusion_matrix[:all][0][0] += pred[:probabilities][pred[:value]]
+		self.nr_predictions[:all] += 1
+		if pred[:warnings].empty?
+                  confusion_matrix[:without_warnings][0][0] += 1
+                  weighted_confusion_matrix[:without_warnings][0][0] += pred[:probabilities][pred[:value]]
+		  self.nr_predictions[:without_warnings] += 1
+		end
               elsif pred[:value] == accept_values[1]
-                confusion_matrix[1][1] += 1
-                weighted_confusion_matrix[1][1] += pred[:probabilities][pred[:value]]
-                nr_instances += 1
+                confusion_matrix[:all][1][1] += 1
+                weighted_confusion_matrix[:all][1][1] += pred[:probabilities][pred[:value]]
+		self.nr_predictions[:all] += 1
+		if pred[:warnings].empty?
+                  confusion_matrix[:without_warnings][1][1] += 1
+                  weighted_confusion_matrix[:without_warnings][1][1] += pred[:probabilities][pred[:value]]
+		  self.nr_predictions[:without_warnings] += 1
+		end
               end
             elsif pred[:value] != m
               if pred[:value] == accept_values[0]
-                confusion_matrix[0][1] += 1
-                weighted_confusion_matrix[0][1] += pred[:probabilities][pred[:value]]
-                nr_instances += 1
+                confusion_matrix[:all][0][1] += 1
+                weighted_confusion_matrix[:all][0][1] += pred[:probabilities][pred[:value]]
+		self.nr_predictions[:all] += 1
+		if pred[:warnings].empty?
+                  confusion_matrix[:without_warnings][0][1] += 1
+                  weighted_confusion_matrix[:without_warnings][0][1] += pred[:probabilities][pred[:value]]
+		  self.nr_predictions[:without_warnings] += 1
+		end
               elsif pred[:value] == accept_values[1]
-                confusion_matrix[1][0] += 1
-                weighted_confusion_matrix[1][0] += pred[:probabilities][pred[:value]]
-                nr_instances += 1
+                confusion_matrix[:all][1][0] += 1
+                weighted_confusion_matrix[:all][1][0] += pred[:probabilities][pred[:value]]
+		self.nr_predictions[:all] += 1
+		if pred[:warnings].empty?
+                  confusion_matrix[:without_warnings][1][0] += 1
+                  weighted_confusion_matrix[:without_warnings][1][0] += pred[:probabilities][pred[:value]]
+		  self.nr_predictions[:without_warnings] += 1
+		end
               end
             end
           end
         end
-        self.true_rate = {}
-        self.predictivity = {}
+        self.true_rate = {:all => {}, :without_warnings => {}}
+        self.predictivity = {:all => {}, :without_warnings => {}}
         accept_values.each_with_index do |v,i|
-          self.true_rate[v] = confusion_matrix[i][i]/confusion_matrix[i].reduce(:+).to_f
-          self.predictivity[v] = confusion_matrix[i][i]/confusion_matrix.collect{|n| n[i]}.reduce(:+).to_f
+	  [:all,:without_warnings].each do |a|
+		  self.true_rate[a][v] = confusion_matrix[a][i][i]/confusion_matrix[a][i].reduce(:+).to_f
+		  self.predictivity[a][v] = confusion_matrix[a][i][i]/confusion_matrix[a].collect{|n| n[i]}.reduce(:+).to_f
+	  end
         end
-        confidence_sum = 0
-        weighted_confusion_matrix.each do |r|
-          r.each do |c|
-            confidence_sum += c
+        confidence_sum = {:all => 0, :without_warnings => 0}
+        [:all,:without_warnings].each do |a|
+          weighted_confusion_matrix[a].each do |r|
+            r.each do |c|
+              confidence_sum[a] += c
+	    end
           end
         end
-        self.accuracy = (confusion_matrix[0][0]+confusion_matrix[1][1])/nr_instances.to_f
-        self.weighted_accuracy = (weighted_confusion_matrix[0][0]+weighted_confusion_matrix[1][1])/confidence_sum.to_f
+	self.accuracy = {}
+	self.weighted_accuracy = {}
+        [:all,:without_warnings].each do |a|
+          self.accuracy[a] = (confusion_matrix[a][0][0]+confusion_matrix[a][1][1])/nr_predictions[a].to_f
+          self.weighted_accuracy[a] = (weighted_confusion_matrix[a][0][0]+weighted_confusion_matrix[a][1][1])/confidence_sum[a].to_f
+	end
         $logger.debug "Accuracy #{accuracy}"
         save
         {
@@ -63,6 +92,7 @@ module OpenTox
           :weighted_accuracy => weighted_accuracy,
           :true_rate => self.true_rate,
           :predictivity => self.predictivity,
+	  :nr_predictions => nr_predictions,
         }
       end
 
@@ -112,26 +142,44 @@ module OpenTox
       # @return [Hash]
       def statistics
         self.warnings = []
-        self.rmse = 0
-        self.mae = 0
-        self.within_prediction_interval = 0
-        self.out_of_prediction_interval = 0
-        x = []
-        y = []
+        self.rmse = {:all =>0,:without_warnings => 0}
+        self.mae = {:all =>0,:without_warnings => 0}
+        self.within_prediction_interval = {:all =>0,:without_warnings => 0}
+        self.out_of_prediction_interval = {:all =>0,:without_warnings => 0}
+        x = {:all => [],:without_warnings => []}
+        y = {:all => [],:without_warnings => []}
+        self.nr_predictions = {:all =>0,:without_warnings => 0}
+	error = {}
         predictions.each do |cid,pred|
           if pred[:value] and pred[:measurements] 
-            x << pred[:measurements].median
-            y << pred[:value]
-            error = pred[:value]-pred[:measurements].median
-            self.rmse += error**2
-            self.mae += error.abs
+     	    self.nr_predictions[:all] +=1
+            x[:all] << pred[:measurements].median
+            y[:all] << pred[:value]
+            error[:all] = pred[:value]-pred[:measurements].median
+            self.rmse[:all] += error**2
+            self.mae[:all] += error.abs
             if pred[:prediction_interval]
               if pred[:measurements].median >= pred[:prediction_interval][0] and pred[:measurements].median <= pred[:prediction_interval][1]
-                self.within_prediction_interval += 1
+                self.within_prediction_interval[:all] += 1
               else
-                self.out_of_prediction_interval += 1
+                self.out_of_prediction_interval[:all] += 1
               end
             end
+	    if pred[:warnings].empty?
+     	      self.nr_predictions[:without_warnings] +=1
+       	      x[:without_warnings] << pred[:measurements].median
+	      y[:without_warnings] << pred[:value]
+	      error[:without_warnings] = pred[:value]-pred[:measurements].median
+	      self.rmse[:without_warnings] += error**2
+	      self.mae[:without_warnings] += error.abs
+	      if pred[:prediction_interval]
+	        if pred[:measurements].median >= pred[:prediction_interval][0] and pred[:measurements].median <= pred[:prediction_interval][1]
+		  self.within_prediction_interval[:without_warnings] += 1
+	        else
+		  self.out_of_prediction_interval[:without_warnings] += 1
+	        end
+	      end
+	    end
           else
             trd_id = model.training_dataset_id
             smiles = Compound.find(cid).smiles
@@ -139,12 +187,14 @@ module OpenTox
             $logger.debug "No training activities for #{smiles} in training dataset #{trd_id}."
           end
         end
-        R.assign "measurement", x
-        R.assign "prediction", y
-        R.eval "r <- cor(measurement,prediction,use='pairwise')"
-        self.r_squared = R.eval("r").to_ruby**2
-        self.mae = self.mae/predictions.size
-        self.rmse = Math.sqrt(self.rmse/predictions.size)
+	[:all,:without_warnings].each do |a|
+          R.assign "measurement", x[a]
+          R.assign "prediction", y[a]
+          R.eval "r <- cor(measurement,prediction,use='pairwise')"
+          self.r_squared[a] = R.eval("r").to_ruby**2
+	  self.mae[a] = self.mae[a]/self.nr_predictions[a]
+	  self.rmse[a] = Math.sqrt(self.rmse[a]/self.nr_predictions[a])
+	end
         $logger.debug "R^2 #{r_squared}"
         $logger.debug "RMSE #{rmse}"
         $logger.debug "MAE #{mae}"
@@ -157,6 +207,7 @@ module OpenTox
           :r_squared => r_squared,
           :within_prediction_interval => within_prediction_interval,
           :out_of_prediction_interval => out_of_prediction_interval,
+	  :nr_predictions => nr_predictions,
         }
       end
 

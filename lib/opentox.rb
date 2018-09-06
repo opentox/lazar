@@ -15,7 +15,7 @@ module OpenTox
       field :warnings, type: Array, default: []
 
       def warn warning
-        $logger.warn warning
+        #$logger.warn warning
         warnings << warning
       end
     end

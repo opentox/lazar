@@ -135,6 +135,19 @@ module OpenTox
       end
     end
 
+    # Convert dataset to SDF file
+    # @return [String]
+    def to_sdf
+      substances.each do |substance|
+        puts substance.sdf.sub(/\$\$\$\$\n/,"")
+        features.each do |f|
+          puts "> <#{f.name}>"
+          puts values(substance,f).uniq.join ","
+          puts "\n$$$$"
+        end
+      end
+    end
+
     # Parsers
 
     # Create a dataset from file (csv,sdf,...)

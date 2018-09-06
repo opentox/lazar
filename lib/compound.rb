@@ -131,12 +131,12 @@ module OpenTox
     # @return [OpenTox::Compound]
     def self.from_smiles smiles
       if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
-        $logger.warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
+        warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
         return nil
       end
       smiles = obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
       if smiles.empty?
-        $logger.warn "SMILES parsing failed for '#{smiles}'', this may be caused by an incorrect SMILES string."
+        warn "SMILES parsing failed for '#{smiles}'', this may be caused by an incorrect SMILES string."
         return nil
       else
         Compound.find_or_create_by :smiles => smiles 
@@ -259,7 +259,7 @@ module OpenTox
       self["chemblid"]
     end
 
-    def db_neighbors min_sim: 0.1, dataset_id:
+    def db_neighbors min_sim: 0.2, dataset_id:
       #p fingerprints[DEFAULT_FINGERPRINT]
       # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
 
@@ -332,11 +332,11 @@ module OpenTox
 print sdf
         if sdf.match(/.nan/)
           
-          $logger.warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
+          warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
           obconversion.set_options("gen2D", OpenBabel::OBConversion::GENOPTIONS)
           sdf = obconversion.write_string(obmol)
           if sdf.match(/.nan/)
-            $logger.warn "2D generation failed for compound #{identifier}, rendering without coordinates."
+            warn "2D generation failed for compound #{identifier}, rendering without coordinates."
             obconversion.remove_option("gen2D", OpenBabel::OBConversion::GENOPTIONS)
             sdf = obconversion.write_string(obmol)
           end
