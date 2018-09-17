@@ -139,7 +139,9 @@ module OpenTox
     # @return [String]
     def to_sdf
       substances.each do |substance|
-        puts substance.sdf.sub(/\$\$\$\$\n/,"")
+        sdf_lines = substance.sdf.sub(/\$\$\$\$\n/,"").split("\n")
+        sdf_lines[0] = substance.smiles
+        puts sdf_lines.join("\n")
         features.each do |f|
           puts "> <#{f.name}>"
           puts values(substance,f).uniq.join ","
