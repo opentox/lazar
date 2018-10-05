@@ -1,5 +1,6 @@
 require 'csv'
 require 'tempfile'
+require 'digest/md5'
 
 module OpenTox
 
@@ -7,6 +8,7 @@ module OpenTox
   class Dataset
 
     field :data_entries, type: Hash, default: {}
+    field :md5, type: String
 
     # Readers
 
@@ -104,6 +106,7 @@ module OpenTox
     
     # Convert dataset to csv format including compound smiles as first column, other column headers are feature names
     # @return [String]
+    # TODO original_id
     def to_csv(inchi=false)
       CSV.generate() do |csv| 
         compound = substances.first.is_a? Compound
@@ -152,28 +155,120 @@ module OpenTox
 
     # Parsers
 
-    # Create a dataset from file (csv,sdf,...)
-    # @param filename [String]
-    # @return [String] dataset uri
-    # TODO
-    #def self.from_sdf_file
-    #end
+    # Create a dataset from PubChem Assay
+    # @param [File] 
+    # @return [OpenTox::Dataset]
+    def self.from_pubchem aid
+      csv = RestClientWrapper.get "https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/#{aid}/CSV"
+      table = CSV.read csv
+      puts table
+=begin
+          dataset = self.new(:source => file, :name => name, :md5 => md5)
+          dataset.parse_table table, accept_empty_values
+        else
+      puts csv
+i = 0
+activities = []
+File.readlines(ARGV[0]).each do |line|
+  if i > 2
+    tokens = line.split ","
+    p line if tokens[1].empty?
+    activities << [tokens[1],tokens[3]]
+  end
+  i += 1
+end
+
+puts "SMILES,Activity"
+activities.each_slice(100) do |slice| # get SMILES in chunks
+  sids = slice.collect{|e| e[0]}
+  smiles = `curl https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/#{sids.join(",")}/property/CanonicalSMILES/TXT`.split("\n")
+  abort("Could not get SMILES for all SIDs from PubChem") unless sids.size == smiles.size
+  smiles.each_with_index do |smi,i|
+    act = slice[i]
+    puts [smi.chomp,act[1]].join(",")
+  end
+end
+=end
+    end
+
+    # Create a dataset from SDF file 
+    # @param [File] 
+    # @return [OpenTox::Dataset]
+    def self.from_sdf_file file
+      md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
+      dataset = self.find_by(:md5 => md5)
+      if dataset
+        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
+      else
+        $logger.debug "Parsing #{file}."
+        table = nil
+        read_result = false
+        sdf = ""
+        dataset = self.new(:source => file, :name => name, :md5 => md5)
+        original_id = NominalFeature.find_or_create_by(:name => "original_id")
+
+        feature_name = ""
+        compound = nil
+        features = {}
+
+        File.readlines(file).each do |line|
+          if line.match %r{\$\$\$\$}
+            sdf << line
+            id = sdf.split("\n").first.chomp
+            compound = Compound.from_sdf sdf
+            dataset.add compound, original_id, id
+            features.each { |f,v| dataset.add compound, f, v }
+            sdf = ""
+            features = {}
+          elsif line.match /^>\s+</
+            feature_name = line.match(/^>\s+<(.*)>/)[1]
+            read_result = true
+          else
+            if read_result
+              value = line.chomp
+              if value.numeric?
+                feature = NumericFeature.find_or_create_by(:name => feature_name)
+                value = value.to_f
+              else
+                feature = NominalFeature.find_or_create_by(:name => feature_name)
+              end
+              features[feature] = value
+              #p compound.smiles, feature.name, value
+              read_result = false
+            else
+              sdf << line
+            end
+          end
+        end
+      end
+      dataset
+ 
+    end
     
     # Create a dataset from CSV file
     # @param [File] 
     # @param [TrueClass,FalseClass] accept or reject empty values
     # @return [OpenTox::Dataset]
     def self.from_csv_file file, accept_empty_values=false
-      source = file
-      name = File.basename(file,".*")
-      dataset = self.find_by(:source => source, :name => name)
+      md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
+      dataset = self.find_by(:md5 => md5)
       if dataset
         $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
       else
         $logger.debug "Parsing #{file}."
-        table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
-        dataset = self.new(:source => source, :name => name)
-        dataset.parse_table table, accept_empty_values
+        table = nil
+        [",","\t",";"].each do |sep| # guess CSV separator
+          if File.readlines(file).first.match(/#{sep}/)
+            table = CSV.read file, :col_sep => sep, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
+            break
+          end
+        end
+        if table
+          dataset = self.new(:source => file, :name => name, :md5 => md5)
+          dataset.parse_table table, accept_empty_values
+        else
+          bad_request_error "#{file} is not a valid CSV/TSV file. Could not find "," ";" or TAB as column separator."
+        end
       end
       dataset
     end
@@ -187,10 +282,18 @@ module OpenTox
       # features
       feature_names = table.shift.collect{|f| f.strip}
       warnings << "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
-      compound_format = feature_names.shift.strip
+
+      original_id = nil 
+      if feature_names[0] =~ /ID/i # check ID column
+        feature_names.shift 
+        original_id = NominalFeature.find_or_create_by(:name => "original_id")
+      end
+
+      compound_format = feature_names.shift
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
       numeric = []
       features = []
+
       # guess feature types
       feature_names.each_with_index do |f,i|
         metadata = {:name => f}
@@ -213,6 +316,7 @@ module OpenTox
 
       all_substances = []
       table.each_with_index do |vals,i|
+        original_id_value = vals.shift.strip if original_id
         identifier = vals.shift.strip
         warn "No feature values for compound at line #{i+2} of #{source}." if vals.compact.empty? and !accept_empty_values
         begin
@@ -238,6 +342,8 @@ module OpenTox
           warn "Number of values at position #{i+2} is different than header size (#{vals.size} vs. #{features.size}), all entries are ignored."
           next
         end
+
+        add substance, original_id, original_id_value if original_id
 
         vals.each_with_index do |v,j|
           if v.blank?
@@ -290,6 +396,111 @@ module OpenTox
     # @return [Array<OpenTox::Substance>]
     def substances
       predictions.keys.collect{|id| Substance.find id}
+    end
+
+  end
+
+  class Batch
+
+    include OpenTox
+    include Mongoid::Document
+    include Mongoid::Timestamps
+    store_in collection: "batch"
+    field :name,  type: String
+    field :source,  type: String
+    field :identifiers, type: Array
+    field :ids, type: Array
+    field :compounds, type: Array
+    field :warnings, type: Array, default: []
+
+    def self.from_csv_file file
+      source = file
+      name = File.basename(file,".*")
+      batch = self.find_by(:source => source, :name => name)
+      if batch
+        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{batch.id})."
+      else
+        $logger.debug "Parsing #{file}."
+        # check delimiter
+        line = File.readlines(file).first
+        if line.match(/\t/)
+          table = CSV.read file, :col_sep => "\t", :skip_blanks => true, :encoding => 'windows-1251:utf-8'
+        else
+          table = CSV.read file, :skip_blanks => true, :encoding => 'windows-1251:utf-8'
+        end
+        batch = self.new(:source => source, :name => name, :identifiers => [], :ids => [], :compounds => [])
+
+        # original IDs
+        if table[0][0] =~ /ID/i
+          @original_ids = table.collect{|row| row.shift}
+          @original_ids.shift
+        end
+        
+        # features
+        feature_names = table.shift.collect{|f| f.strip}
+        warnings << "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
+        compound_format = feature_names.shift.strip
+        unless compound_format =~ /SMILES|InChI/i
+          File.delete file
+          bad_request_error "'#{compound_format}' is not a supported compound format in the header. " \
+          "Accepted formats: SMILES, InChI. Please take a look on the help page."
+        end
+        numeric = []
+        features = []
+        # guess feature types
+        feature_names.each_with_index do |f,i|
+          metadata = {:name => f}
+          values = table.collect{|row| val=row[i+1].to_s.strip; val.blank? ? nil : val }.uniq.compact
+          types = values.collect{|v| v.numeric? ? true : false}.uniq
+          feature = nil
+          if values.size == 0 # empty feature
+          elsif  values.size > 5 and types.size == 1 and types.first == true # 5 max classes
+            numeric[i] = true
+            feature = NumericFeature.find_or_create_by(metadata)
+          else
+            metadata["accept_values"] = values
+            numeric[i] = false
+            feature = NominalFeature.find_or_create_by(metadata)
+          end
+          features << feature if feature
+        end
+        
+        table.each_with_index do |vals,i|
+          identifier = vals.shift.strip.gsub(/^'|'$/,"")
+          begin
+            case compound_format
+            when /SMILES/i
+              compound = OpenTox::Compound.from_smiles(identifier)
+            when /InChI/i
+              compound = OpenTox::Compound.from_inchi(identifier)
+            end
+          rescue 
+            compound = nil
+          end
+          # collect only for present compounds
+          unless compound.nil?
+            batch.identifiers << identifier
+            batch.compounds << compound.id
+            batch.ids << @original_ids[i] if @original_ids
+          else
+            batch.warnings << "Cannot parse #{compound_format} compound '#{identifier}' at line #{i+2} of #{source}."
+          end
+        end
+        batch.compounds.duplicates.each do |duplicate|
+          $logger.debug "Duplicates found in #{name}."
+          dup = Compound.find duplicate
+          positions = []
+          batch.compounds.each_with_index do |co,i|
+            c = Compound.find co
+            if !c.blank? and c.inchi and c.inchi == dup.inchi
+              positions << i+1
+            end
+          end
+          batch.warnings << "Duplicate compound at ID #{positions.join(' and ')}."
+        end
+        batch.save
+      end
+      batch
     end
 
   end

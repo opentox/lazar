@@ -319,7 +319,8 @@ module OpenTox
       obconversion.read_string obmol, identifier
       case output_format
       when /smi|can|inchi/
-        obconversion.write_string(obmol).gsub(/\s/,'').chomp
+        #obconversion.write_string(obmol).gsub(/\s/,'').chomp
+        obconversion.write_string(obmol).split(/\s/).first
       when /sdf/
         # TODO: find disconnected structures
         # strip_salts

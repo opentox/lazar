@@ -1,6 +1,21 @@
+# batch class
+
 require_relative "setup.rb"
 
 class DatasetTest < MiniTest::Test
+  
+  # TODO 
+  def test_from_pubchem
+    d = Dataset.from_pubchem 1190
+  end
+
+  def test_merge
+    skip "TODO"
+  end
+
+  def test_to_sdf
+    skip "TODO"
+  end
 
   # basics
 
@@ -20,6 +35,34 @@ class DatasetTest < MiniTest::Test
   end
 
   # real datasets
+
+  def test_upload_csv_with_id
+    d = Dataset.from_csv_file "#{DATA_DIR}/input_53.csv"
+    assert_equal 53, d.compounds.size
+    assert_equal 1, d.features.size
+    f = d.features[0]
+    assert_equal "original_id", f.name
+    assert_equal ["123-30-8"], d.values(d.compounds.first,f)
+  end
+
+  def test_upload_tsv_with_id
+    d = Dataset.from_csv_file "#{DATA_DIR}/input_53.tsv"
+    assert_equal 53, d.compounds.size
+    assert_equal 1, d.features.size
+    assert_equal 1, d.features.size
+    f = d.features[0]
+    assert_equal "original_id", f.name
+    assert_equal ["123-30-8"], d.values(d.compounds.first,f)
+  end
+
+  def test_upload_sdf
+    #d = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
+    d = Dataset.from_sdf_file "#{DATA_DIR}/PA.sdf"
+    assert_equal Compound.from_smiles("C[C@H]1C(=O)O[C@@H]2CCN3[C@@H]2C(=CC3)COC(=O)[C@]([C@]1(C)O)(C)O").smiles, d.compounds.first.smiles
+    f = Feature.find_by(:name => "original_id")
+    assert_equal 35, d.features.size
+    assert_equal ["9415"], d.values(d.compounds.first,f)
+  end
 
   def test_upload_hamster
     d = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
@@ -101,6 +144,15 @@ class DatasetTest < MiniTest::Test
     assert_equal -Math.log10(0.0113), d2.values(d2.compounds[0],feature).first
     assert_equal -Math.log10(0.00323), d2.values(d2.compounds[4],feature).first
     d.delete
+  end
+
+  def test_multiple_uploads
+    datasets = []
+    2.times do
+      d = Dataset.from_csv_file("#{DATA_DIR}/hamster_carcinogenicity.csv")
+      datasets << d
+    end
+    assert_equal datasets[0],datasets[1]
   end
 
   # batch predictions
