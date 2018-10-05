@@ -4,9 +4,13 @@ require_relative "setup.rb"
 
 class DatasetTest < MiniTest::Test
   
-  # TODO 
   def test_from_pubchem
-    d = Dataset.from_pubchem 1190
+    d = Dataset.from_pubchem 1191
+    assert_equal 87, d.compounds.size
+    assert_equal 2, d.features.size
+    assert_equal "Active", d.values(d.compounds[10],d.features[1])
+    # TODO endpoint name
+    # TODO regression import
   end
 
   def test_merge

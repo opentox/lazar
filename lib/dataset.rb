@@ -156,39 +156,24 @@ module OpenTox
     # Parsers
 
     # Create a dataset from PubChem Assay
-    # @param [File] 
+    # @param [Integer] PubChem AssayID (AID)
     # @return [OpenTox::Dataset]
     def self.from_pubchem aid
-      csv = RestClientWrapper.get "https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/#{aid}/CSV"
-      table = CSV.read csv
-      puts table
-=begin
-          dataset = self.new(:source => file, :name => name, :md5 => md5)
-          dataset.parse_table table, accept_empty_values
-        else
-      puts csv
-i = 0
-activities = []
-File.readlines(ARGV[0]).each do |line|
-  if i > 2
-    tokens = line.split ","
-    p line if tokens[1].empty?
-    activities << [tokens[1],tokens[3]]
-  end
-  i += 1
-end
-
-puts "SMILES,Activity"
-activities.each_slice(100) do |slice| # get SMILES in chunks
-  sids = slice.collect{|e| e[0]}
-  smiles = `curl https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/#{sids.join(",")}/property/CanonicalSMILES/TXT`.split("\n")
-  abort("Could not get SMILES for all SIDs from PubChem") unless sids.size == smiles.size
-  smiles.each_with_index do |smi,i|
-    act = slice[i]
-    puts [smi.chomp,act[1]].join(",")
-  end
-end
-=end
+      url = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/assay/aid/#{aid}/CSV"
+      csv = CSV.parse(RestClientWrapper.get(url))
+      csv.select!{|r| r[0].match /^\d/} # discard header rows
+      table = [["SID","SMILES","Activity"]]
+      csv.each_slice(100) do |slice|
+        sids = slice.collect{|s| s[1]}
+        smiles = RestClientWrapper.get("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/#{sids.join(",")}/property/CanonicalSMILES/TXT").split("\n")
+        abort("Could not get SMILES for all SIDs from PubChem") unless sids.size == smiles.size
+        smiles.each_with_index do |smi,i|
+          table << [slice[i][1],smi.chomp,slice[i][3]]
+        end
+      end
+      dataset = self.new(:source => url) # TODO name
+      dataset.parse_table table, false
+      dataset
     end
 
     # Create a dataset from SDF file 
@@ -233,7 +218,6 @@ end
                 feature = NominalFeature.find_or_create_by(:name => feature_name)
               end
               features[feature] = value
-              #p compound.smiles, feature.name, value
               read_result = false
             else
               sdf << line
@@ -297,7 +281,8 @@ end
       # guess feature types
       feature_names.each_with_index do |f,i|
         metadata = {:name => f}
-        values = table.collect{|row| val=row[i+1].to_s.strip; val.blank? ? nil : val }.uniq.compact
+        original_id ? j = i+2 : j = i+1
+        values = table.collect{|row| val=row[j].to_s.strip; val.blank? ? nil : val }.uniq.compact
         types = values.collect{|v| v.numeric? ? true : false}.uniq
         feature = nil
         if values.size == 0 # empty feature
