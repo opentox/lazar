@@ -69,6 +69,26 @@ module OpenTox
 
     # Dataset operations
 
+    # Merge an array of datasets 
+    # @param [Array] OpenTox::Dataset Array to be merged
+    # @return [OpenTox::Dataset] merged dataset
+    def self.merge datasets, feature_map=nil, value_map=nil
+      dataset = self.new(:source => datasets.collect{|d| d.source}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", "))
+      datasets.each do |d|
+        d.substances.each do |s|
+          d.features.each do |f|
+            d.values(s,f).each do |v|
+              f = feature_map[f] if feature_map and feature_map[f]
+              v = value_map[v] if value_map and value_map[v]
+              dataset.add s,f,v #unless dataset.values(s,f).include? v
+            end
+          end
+        end
+      end
+      dataset.save
+      dataset
+    end
+
     # Split a dataset into n folds
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
@@ -138,19 +158,21 @@ module OpenTox
       end
     end
 
-    # Convert dataset to SDF file
-    # @return [String]
+    # Convert dataset to SDF format
+    # @return [String] SDF string
     def to_sdf
+      sdf = ""
       substances.each do |substance|
         sdf_lines = substance.sdf.sub(/\$\$\$\$\n/,"").split("\n")
         sdf_lines[0] = substance.smiles
-        puts sdf_lines.join("\n")
+        sdf += sdf_lines.join("\n")
         features.each do |f|
-          puts "> <#{f.name}>"
-          puts values(substance,f).uniq.join ","
-          puts "\n$$$$"
+          sdf += "\n> <#{f.name}>\n"
+          sdf += values(substance,f).uniq.join ","
         end
+        sdf += "\n$$$$\n"
       end
+      sdf
     end
 
     # Parsers
@@ -163,7 +185,7 @@ module OpenTox
       csv = CSV.parse(RestClientWrapper.get(url))
       csv.select!{|r| r[0].match /^\d/} # discard header rows
       table = [["SID","SMILES","Activity"]]
-      csv.each_slice(100) do |slice|
+      csv.each_slice(100) do |slice| # get SMILES in chunks
         sids = slice.collect{|s| s[1]}
         smiles = RestClientWrapper.get("https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/#{sids.join(",")}/property/CanonicalSMILES/TXT").split("\n")
         abort("Could not get SMILES for all SIDs from PubChem") unless sids.size == smiles.size
@@ -179,7 +201,7 @@ module OpenTox
     # Create a dataset from SDF file 
     # @param [File] 
     # @return [OpenTox::Dataset]
-    def self.from_sdf_file file
+    def self.from_sdf_file file, map=nil
       md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
       dataset = self.find_by(:md5 => md5)
       if dataset
@@ -189,8 +211,8 @@ module OpenTox
         table = nil
         read_result = false
         sdf = ""
-        dataset = self.new(:source => file, :name => name, :md5 => md5)
-        original_id = NominalFeature.find_or_create_by(:name => "original_id")
+        dataset = self.new(:source => file, :name => File.basename(file), :md5 => md5)
+        original_id = OriginalId.find_or_create_by(:dataset_id => dataset.id,:name => dataset.name+".ID")
 
         feature_name = ""
         compound = nil
@@ -225,15 +247,15 @@ module OpenTox
           end
         end
       end
+      dataset.save
       dataset
- 
     end
     
     # Create a dataset from CSV file
     # @param [File] 
     # @param [TrueClass,FalseClass] accept or reject empty values
     # @return [OpenTox::Dataset]
-    def self.from_csv_file file, accept_empty_values=false
+    def self.from_csv_file file
       md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
       dataset = self.find_by(:md5 => md5)
       if dataset
@@ -248,8 +270,8 @@ module OpenTox
           end
         end
         if table
-          dataset = self.new(:source => file, :name => name, :md5 => md5)
-          dataset.parse_table table, accept_empty_values
+          dataset = self.new(:source => file, :name => File.basename(file), :md5 => md5)
+          dataset.parse_table table
         else
           bad_request_error "#{file} is not a valid CSV/TSV file. Could not find "," ";" or TAB as column separator."
         end
@@ -260,8 +282,7 @@ module OpenTox
     # Parse data in tabular format (e.g. from csv)
     #   does a lot of guesswork in order to determine feature types
     # @param [Array<Array>] 
-    # @param [TrueClass,FalseClass] accept or reject empty values
-    def parse_table table, accept_empty_values
+    def parse_table table
 
       # features
       feature_names = table.shift.collect{|f| f.strip}
@@ -270,7 +291,7 @@ module OpenTox
       original_id = nil 
       if feature_names[0] =~ /ID/i # check ID column
         feature_names.shift 
-        original_id = NominalFeature.find_or_create_by(:name => "original_id")
+        original_id = OriginalId.find_or_create_by(:dataset_id => self.id,:name => self.name+".ID")
       end
 
       compound_format = feature_names.shift
@@ -290,7 +311,7 @@ module OpenTox
           numeric[i] = true
           feature = NumericFeature.find_or_create_by(metadata)
         else
-          metadata["accept_values"] = values
+          metadata["accept_values"] = values.sort
           numeric[i] = false
           feature = NominalFeature.find_or_create_by(metadata)
         end
@@ -303,7 +324,7 @@ module OpenTox
       table.each_with_index do |vals,i|
         original_id_value = vals.shift.strip if original_id
         identifier = vals.shift.strip
-        warn "No feature values for compound at line #{i+2} of #{source}." if vals.compact.empty? and !accept_empty_values
+        #warn "No feature values for compound at line #{i+2} of #{source}." if vals.compact.empty? #and !accept_empty_values
         begin
           case compound_format
           when /SMILES/i
@@ -341,8 +362,8 @@ module OpenTox
           end
           add substance, features[j], v
         end
-        data_entries[substance.id.to_s] = {} if vals.empty? and accept_empty_values
       end
+
       all_substances.duplicates.each do |substance|
         positions = []
         all_substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.inchi and c.inchi == substance.inchi}
@@ -443,7 +464,7 @@ module OpenTox
             numeric[i] = true
             feature = NumericFeature.find_or_create_by(metadata)
           else
-            metadata["accept_values"] = values
+            metadata["accept_values"] = values.sort
             numeric[i] = false
             feature = NominalFeature.find_or_create_by(metadata)
           end

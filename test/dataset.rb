@@ -3,23 +3,6 @@
 require_relative "setup.rb"
 
 class DatasetTest < MiniTest::Test
-  
-  def test_from_pubchem
-    d = Dataset.from_pubchem 1191
-    assert_equal 87, d.compounds.size
-    assert_equal 2, d.features.size
-    assert_equal "Active", d.values(d.compounds[10],d.features[1])
-    # TODO endpoint name
-    # TODO regression import
-  end
-
-  def test_merge
-    skip "TODO"
-  end
-
-  def test_to_sdf
-    skip "TODO"
-  end
 
   # basics
 
@@ -39,27 +22,37 @@ class DatasetTest < MiniTest::Test
   end
 
   # real datasets
+  
+  def test_import_pubchem
+    d = Dataset.from_pubchem 1191
+    assert_equal 87, d.compounds.size
+    assert_equal 2, d.features.size
+    assert_equal "Active", d.values(d.compounds[10],d.features[1])
+    # TODO endpoint name
+    # TODO regression import
+  end
 
-  def test_upload_csv_with_id
+  def test_import_csv_with_id
     d = Dataset.from_csv_file "#{DATA_DIR}/input_53.csv"
     assert_equal 53, d.compounds.size
     assert_equal 1, d.features.size
     f = d.features[0]
-    assert_equal "original_id", f.name
+    assert_equal "input_53.csv.ID", f.name
+    assert_equal OriginalId, f.class
     assert_equal ["123-30-8"], d.values(d.compounds.first,f)
   end
 
-  def test_upload_tsv_with_id
+  def test_import_tsv_with_id
     d = Dataset.from_csv_file "#{DATA_DIR}/input_53.tsv"
     assert_equal 53, d.compounds.size
     assert_equal 1, d.features.size
-    assert_equal 1, d.features.size
     f = d.features[0]
-    assert_equal "original_id", f.name
+    assert_equal "input_53.tsv.ID", f.name
+    assert_equal OriginalId, f.class
     assert_equal ["123-30-8"], d.values(d.compounds.first,f)
   end
 
-  def test_upload_sdf
+  def test_import_sdf
     #d = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     d = Dataset.from_sdf_file "#{DATA_DIR}/PA.sdf"
     assert_equal Compound.from_smiles("C[C@H]1C(=O)O[C@@H]2CCN3[C@@H]2C(=CC3)COC(=O)[C@]([C@]1(C)O)(C)O").smiles, d.compounds.first.smiles
@@ -68,7 +61,7 @@ class DatasetTest < MiniTest::Test
     assert_equal ["9415"], d.values(d.compounds.first,f)
   end
 
-  def test_upload_hamster
+  def test_import_hamster
     d = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     assert_equal Dataset, d.class
     assert_equal 1, d.features.size
@@ -82,7 +75,7 @@ class DatasetTest < MiniTest::Test
     d.delete 
   end
 
-  def test_upload_kazius
+  def test_import_kazius
     f = File.join DATA_DIR, "kazius.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
@@ -96,7 +89,7 @@ class DatasetTest < MiniTest::Test
     d.delete
   end
 
-  def test_upload_multicell
+  def test_import_multicell
     duplicates = [
       "InChI=1S/C6HCl5O/c7-1-2(8)4(10)6(12)5(11)3(1)9/h12H",
       "InChI=1S/C12H8Cl6O/c13-8-9(14)11(16)5-3-1-2(6-7(3)19-6)4(5)10(8,15)12(11,17)18/h2-7H,1H2",
@@ -122,7 +115,7 @@ class DatasetTest < MiniTest::Test
     d.delete
   end
 
-  def test_upload_isscan
+  def test_import_isscan
     f = File.join DATA_DIR, "ISSCAN-multi.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
@@ -131,7 +124,7 @@ class DatasetTest < MiniTest::Test
     d.delete
   end
 
-  def test_upload_epafhm
+  def test_import_epafhm
     f = File.join DATA_DIR, "EPAFHM_log10.csv"
     d = OpenTox::Dataset.from_csv_file f
     assert_equal Dataset, d.class
@@ -173,6 +166,21 @@ class DatasetTest < MiniTest::Test
   end
 
   # dataset operations
+
+  def test_merge
+    source_feature = Feature.where(:name => "Ames test categorisation").first
+    target_feature = Feature.where(:name => "Mutagenicity").first
+    kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
+    hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
+    efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
+    d = Dataset.merge [kazius,hansen,efsa], {source_feature => target_feature}, {1 => "mutagen", 0 => "nonmutagen"}
+    File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
+    assert_equal 8281, d.compounds.size
+    assert_equal 4, d.features.size
+    c = Compound.from_smiles("C/C=C/C=O")
+    assert_equal ["mutagen"], d.values(c,target_feature)
+    assert_equal "/home/ist/lazar/test/data/cas_4337.sdf, /home/ist/lazar/test/data/hansen.csv, /home/ist/lazar/test/data/efsa.csv", d.source
+  end
 
   def test_folds
     dataset = Dataset.from_csv_file File.join(DATA_DIR,"loael.csv")
@@ -222,6 +230,16 @@ class DatasetTest < MiniTest::Test
 
     end
     d.delete 
+  end
+
+  def test_to_sdf
+    d = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.mini.csv"
+    File.open("#{DATA_DIR}/tmp.sdf","w+") do |f|
+      f.puts d.to_sdf
+    end
+    d2 = Dataset.from_sdf_file "#{DATA_DIR}/tmp.sdf"
+    assert_equal d.compounds.size, d2.compounds.size
+    `rm #{DATA_DIR}/tmp.sdf`
   end
 
   # special cases/details

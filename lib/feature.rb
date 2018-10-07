@@ -42,4 +42,8 @@ module OpenTox
     end
   end
 
+  class OriginalId < Feature
+    field :dataset_id, type: BSON::ObjectId
+  end
+
 end
