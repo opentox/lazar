@@ -2,42 +2,6 @@ require_relative "setup.rb"
 
 class LazarClassificationTest < MiniTest::Test
 
-  def test_carcinogenicity_rf_classification
-    skip "Caret rf may run into a (endless?) loop for some compounds."
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
-    algorithms = {
-      :prediction => {
-        :method => "Algorithm::Caret.rf",
-      },
-    }
-    model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
-    substance = Compound.from_smiles "[O-]S(=O)(=O)[O-].[Mn+2].O"
-    prediction = model.predict substance
-    p prediction
-    
-  end
-
-  def test_rf_classification
-    skip "Caret rf may run into a (endless?) loop for some compounds."
-    algorithms = {
-      :prediction => {
-        :method => "Algorithm::Caret.rf",
-      },
-    }
-    training_dataset = Dataset.from_sdf_file File.join(DATA_DIR,"cas_4337.sdf")
-    model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
-    #p model.id.to_s
-    #model = Model::Lazar.find "5bbb4c0cca626909f6c8a924"
-    assert_kind_of Model::LazarClassification, model
-    assert_equal algorithms[:prediction][:method], model.algorithms["prediction"]["method"]
-    substance = Compound.from_smiles "Clc1ccc(cc1)C(=O)c1ccc(cc1)OC(C(=O)O)(C)C"
-    prediction = model.predict substance
-    assert_equal  51, prediction[:neighbors].size
-    assert_equal "nonmutagen", prediction[:value]
-    assert_equal 0.1, prediction[:probabilities]["mutagen"].round(1)
-    assert_equal 0.9, prediction[:probabilities]["nonmutagen"].round(1)
-  end
-
   def test_classification_default
     algorithms = {
       :descriptors => {
@@ -130,15 +94,40 @@ class LazarClassificationTest < MiniTest::Test
     training_dataset.delete
   end
 
-  def test_caret_classification
-    skip
+  def test_carcinogenicity_rf_classification
+    skip "Caret rf may run into a (endless?) loop for some compounds."
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
+    algorithms = {
+      :prediction => {
+        :method => "Algorithm::Caret.rf",
+      },
+    }
+    model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
+    substance = Compound.from_smiles "[O-]S(=O)(=O)[O-].[Mn+2].O"
+    prediction = model.predict substance
+    p prediction
+    
   end
 
-  def test_fingerprint_chisq_feature_selection
-    skip
+  def test_rf_classification
+    skip "Caret rf may run into a (endless?) loop for some compounds."
+    algorithms = {
+      :prediction => {
+        :method => "Algorithm::Caret.rf",
+      },
+    }
+    training_dataset = Dataset.from_sdf_file File.join(DATA_DIR,"cas_4337.sdf")
+    model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
+    #p model.id.to_s
+    #model = Model::Lazar.find "5bbb4c0cca626909f6c8a924"
+    assert_kind_of Model::LazarClassification, model
+    assert_equal algorithms[:prediction][:method], model.algorithms["prediction"]["method"]
+    substance = Compound.from_smiles "Clc1ccc(cc1)C(=O)c1ccc(cc1)OC(C(=O)O)(C)C"
+    prediction = model.predict substance
+    assert_equal  51, prediction[:neighbors].size
+    assert_equal "nonmutagen", prediction[:value]
+    assert_equal 0.1, prediction[:probabilities]["mutagen"].round(1)
+    assert_equal 0.9, prediction[:probabilities]["nonmutagen"].round(1)
   end
 
-  def test_physchem_classification
-    skip
-  end
 end
