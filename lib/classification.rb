@@ -19,6 +19,7 @@ module OpenTox
           probabilities[a] = w.sum/weights.sum
         end
         # DG: hack to ensure always two probability values
+        # TODO: does not work for arbitrary feature names FIX!!
         if probabilities.keys.uniq.size == 1
           missing_key = probabilities.keys.uniq[0].match(/^non/) ? probabilities.keys.uniq[0].sub(/non-/,"") : "non-"+probabilities.keys.uniq[0]
           probabilities[missing_key] = 0.0
@@ -26,7 +27,7 @@ module OpenTox
         probabilities = probabilities.collect{|a,p| [a,weights.max*p]}.to_h
         p_max = probabilities.collect{|a,p| p}.max
         prediction = probabilities.key(p_max)
-        {:value => prediction,:probabilities => probabilities}
+        {:value => prediction,:probabilities => probabilities,:warnings => []}
       end
 
     end

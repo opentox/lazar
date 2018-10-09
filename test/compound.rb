@@ -3,12 +3,6 @@ require_relative "setup.rb"
 class CompoundTest < MiniTest::Test
 
   def test_compound_from_smiles
-    c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"
-    assert_equal "InChI=1S/BF4.Na/c2-1(3,4)5;/q-1;+1", c.inchi.chomp
-    assert_equal "F[B-](F)(F)F.[Na+]", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures using an outdated version of OpenBabel. Please install OpenBabel version 2.3.2 or higher." # seems to be fixed in 2.3.2
-  end
-
-  def test_compound_from_smiles
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C#N"
     assert_equal "InChI=1S/C6H9NO/c1-5(4-7)3-6(2)8/h5H,3H2,1-2H3", c.inchi
     assert_equal "CC(C#N)CC(=O)C", c.smiles
@@ -117,5 +111,11 @@ print c.sdf
     c = OpenTox::Compound.from_smiles "CC(=O)CC(C)C"
     properties = c.calculate_properties(PhysChem.openbabel_descriptors)
     assert_equal PhysChem::OPENBABEL.size, properties.size
+  end
+
+  def test_openbabel_64bit_bug
+    c = OpenTox::Compound.from_smiles "F[B-](F)(F)F.[Na+]"
+    assert_equal "InChI=1S/BF4.Na/c2-1(3,4)5;/q-1;+1", c.inchi.chomp
+    assert_equal "F[B-](F)(F)F.[Na+]", c.smiles, "A failure here might be caused by a compound webservice running on 64bit architectures using an outdated version of OpenBabel. Please install OpenBabel version 2.3.2 or higher." # seems to be fixed in 2.3.2
   end
 end

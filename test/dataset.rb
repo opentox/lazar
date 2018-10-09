@@ -66,6 +66,7 @@ class DatasetTest < MiniTest::Test
     assert_equal Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size
+    assert_equal true, d.features.first.measured
     csv = CSV.read("#{DATA_DIR}/hamster_carcinogenicity.csv")
     csv.shift
     csv.each do |row|
@@ -174,7 +175,7 @@ class DatasetTest < MiniTest::Test
     hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
     efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
     d = Dataset.merge [kazius,hansen,efsa], {source_feature => target_feature}, {1 => "mutagen", 0 => "nonmutagen"}
-    File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
+    #File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
     assert_equal 8281, d.compounds.size
     assert_equal 4, d.features.size
     c = Compound.from_smiles("C/C=C/C=O")

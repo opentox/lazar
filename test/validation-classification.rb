@@ -64,4 +64,50 @@ class ValidationClassificationTest < MiniTest::Test
     end
   end
 
+  def test_carcinogenicity_rf_classification
+    skip "Caret rf classification may run into a (endless?) loop for some compounds."
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
+    algorithms = {
+      :prediction => {
+        :method => "Algorithm::Caret.rf",
+      },
+    }
+    model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
+    cv = ClassificationCrossValidation.create model
+#    cv = ClassificationCrossValidation.find "5bbc822dca626919731e2822"
+    puts cv.statistics
+    puts cv.id
+    
+  end
+
+  def test_mutagenicity_classification_algorithms
+    skip "Caret rf classification may run into a (endless?) loop for some compounds."
+    source_feature = Feature.where(:name => "Ames test categorisation").first
+    target_feature = Feature.where(:name => "Mutagenicity").first
+    kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
+    hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
+    efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
+    dataset = Dataset.merge [kazius,hansen,efsa], {source_feature => target_feature}, {1 => "mutagen", 0 => "nonmutagen"}
+    model = Model::Lazar.create training_dataset: dataset
+    repeated_cv = RepeatedCrossValidation.create model
+    puts repeated_cv.id
+    repeated_cv.crossvalidations.each do |cv|
+      puts cv.accuracy
+      puts cv.confusion_matrix
+    end
+    algorithms = {
+      :prediction => {
+        :method => "Algorithm::Caret.rf",
+      },
+    }
+    model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
+    repeated_cv = RepeatedCrossValidation.create model
+    puts repeated_cv.id
+    repeated_cv.crossvalidations.each do |cv|
+      puts cv.accuracy
+      puts cv.confusion_matrix
+    end
+    
+  end
+
 end

@@ -71,6 +71,8 @@ module OpenTox
 
     # Merge an array of datasets 
     # @param [Array] OpenTox::Dataset Array to be merged
+    # @param [Hash] feature modifications
+    # @param [Hash] value modifications
     # @return [OpenTox::Dataset] merged dataset
     def self.merge datasets, feature_map=nil, value_map=nil
       dataset = self.new(:source => datasets.collect{|d| d.source}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", "))
@@ -205,7 +207,7 @@ module OpenTox
       md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
       dataset = self.find_by(:md5 => md5)
       if dataset
-        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
+        $logger.debug "Found #{file} in the database (id: #{dataset.id}, md5: #{dataset.md5}), skipping import."
       else
         $logger.debug "Parsing #{file}."
         table = nil
@@ -234,10 +236,10 @@ module OpenTox
             if read_result
               value = line.chomp
               if value.numeric?
-                feature = NumericFeature.find_or_create_by(:name => feature_name)
+                feature = NumericFeature.find_or_create_by(:name => feature_name, :measured => true)
                 value = value.to_f
               else
-                feature = NominalFeature.find_or_create_by(:name => feature_name)
+                feature = NominalFeature.find_or_create_by(:name => feature_name, :measured => true)
               end
               features[feature] = value
               read_result = false
@@ -259,7 +261,7 @@ module OpenTox
       md5 = Digest::MD5.hexdigest(File.read(file)) # use hash to identify identical files
       dataset = self.find_by(:md5 => md5)
       if dataset
-        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{dataset.id})."
+        $logger.debug "Found #{file} in the database (id: #{dataset.id}, md5: #{dataset.md5}), skipping import."
       else
         $logger.debug "Parsing #{file}."
         table = nil
@@ -301,7 +303,7 @@ module OpenTox
 
       # guess feature types
       feature_names.each_with_index do |f,i|
-        metadata = {:name => f}
+        metadata = {:name => f, :measured => true}
         original_id ? j = i+2 : j = i+1
         values = table.collect{|row| val=row[j].to_s.strip; val.blank? ? nil : val }.uniq.compact
         types = values.collect{|v| v.numeric? ? true : false}.uniq
@@ -424,7 +426,7 @@ module OpenTox
       name = File.basename(file,".*")
       batch = self.find_by(:source => source, :name => name)
       if batch
-        $logger.debug "Skipping import of #{file}, it is already in the database (id: #{batch.id})."
+        $logger.debug "Found #{file} in the database (id: #{dataset.id}, md5: #{dataset.md5}), skipping import."
       else
         $logger.debug "Parsing #{file}."
         # check delimiter

@@ -37,7 +37,7 @@ module OpenTox
       # @return [OpenTox::Model::Lazar]
       def self.create prediction_feature:nil, training_dataset:, algorithms:{}
         bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
-        prediction_feature = training_dataset.features.first unless prediction_feature
+        prediction_feature = training_dataset.features.select{|f| f.measured}.first unless prediction_feature
         # TODO: prediction_feature without training_dataset: use all available data
 
         # guess model type
@@ -199,6 +199,8 @@ module OpenTox
       # @return [Hash]
       def predict_substance substance, threshold = self.algorithms[:similarity][:min]
         
+        p substance.smiles
+        t = Time.now
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
         when /tanimoto/ # binary features
@@ -284,6 +286,9 @@ module OpenTox
         else # try again with a lower threshold
           predict_substance substance, 0.2
         end
+        p prediction
+        p Time.now - t
+        prediction
       end
 
       # Predict a substance (compound or nanoparticle), an array of substances or a dataset
