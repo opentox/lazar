@@ -1,7 +1,7 @@
 module OpenTox
 
   # Feature for physico-chemical descriptors
-  class PhysChem < NumericFeature
+  class PhysChem < NumericSubstanceProperty
 
     field :library, type: String
     field :descriptor, type: String
@@ -45,7 +45,7 @@ module OpenTox
     def self.descriptors desc=DESCRIPTORS
       desc.collect do |name,description|
         lib,desc = name.split('.',2)
-        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
+        self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description)
       end
     end
 
@@ -59,11 +59,11 @@ module OpenTox
           CDK_DESCRIPTIONS.select{|d| desc == d[:java_class].split('.').last.sub('Descriptor','') }.first[:names].each do |n|
             dname = "#{name}.#{n}"
             description = DESCRIPTORS[dname]
-            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
+            udesc << self.find_or_create_by(:name => dname, :library => lib, :descriptor => desc, :description => description)
           end
         else
           description = DESCRIPTORS[name]
-          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description, :measured => false, :calculated => true)
+          udesc << self.find_or_create_by(:name => name, :library => lib, :descriptor => desc, :description => description)
         end
       end
       udesc

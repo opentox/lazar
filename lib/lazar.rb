@@ -94,6 +94,5 @@ CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","
   "train-test-validation.rb",
   "leave-one-out-validation.rb",
   "crossvalidation.rb",
-  #"experiment.rb",
   "import.rb",
 ].each{ |f| require_relative f }
