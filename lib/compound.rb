@@ -1,4 +1,5 @@
-CACTUS_URI="https://cactus.nci.nih.gov/chemical/structure/"
+PUBCHEM_URI = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
+CHEMBL_URI = "https://www.ebi.ac.uk/chembl/api/data/molecule/"
 
 module OpenTox
 
@@ -12,7 +13,7 @@ module OpenTox
     field :inchikey, type: String
     field :names, type: Array
     field :cid, type: String
-    field :chemblid, type: String
+    #field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
@@ -147,7 +148,6 @@ module OpenTox
     # @param [String] InChI 
     # @return [OpenTox::Compound] 
     def self.from_inchi inchi
-      #smiles = `echo "#{inchi}" | "#{File.join(File.dirname(__FILE__),"..","openbabel","bin","babel")}" -iinchi - -ocan`.chomp.strip
       smiles = obconversion(inchi,"inchi","can")
       if smiles.empty?
         Compound.find_or_create_by(:warnings => ["InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries."])
@@ -170,7 +170,7 @@ module OpenTox
     # @param [String] name, can be also an InChI/InChiKey, CAS number, etc
     # @return [OpenTox::Compound]
     def self.from_name name
-      Compound.from_smiles RestClientWrapper.get(File.join(CACTUS_URI,URI.escape(name),"smiles"))
+      Compound.from_smiles RestClientWrapper.get(File.join(PUBCHEM_URI,"compound","name",URI.escape(name),"property","CanonicalSMILES","TXT")).chomp
     end
 
     # Get InChI
@@ -238,26 +238,25 @@ module OpenTox
     #   names = compound.names
     # @return [Array<String>] 
     def names
-      update(:names => RestClientWrapper.get("#{CACTUS_URI}#{inchi}/names").split("\n")) unless self["names"] 
+      update(:names => RestClientWrapper.get(File.join(PUBCHEM_URI,"compound","smiles",URI.escape(smiles),"synonyms","TXT")).split("\n")) #unless self["names"] 
       self["names"]
     end
 
     # Get PubChem Compound Identifier (CID), obtained via REST call to PubChem
     # @return [String] 
     def cid
-      pug_uri = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
-      update(:cid => RestClientWrapper.post(File.join(pug_uri, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
+      update(:cid => RestClientWrapper.post(File.join(PUBCHEM_URI, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
 
+=begin
     # Get ChEMBL database compound id, obtained via REST call to ChEMBL
     # @return [String] 
     def chemblid
-      # https://www.ebi.ac.uk/chembldb/ws#individualCompoundByInChiKey
-      uri = "https://www.ebi.ac.uk/chemblws/compounds/smiles/#{smiles}.json"
-      update(:chemblid => JSON.parse(RestClientWrapper.get(uri))["compounds"].first["chemblId"]) unless self["chemblid"] 
+      update(:chemblid => JSON.parse(RestClientWrapper.get(File.join CHEMBL_URI,URI.escape(smiles)+".json"))["molecule_chembl_id"])
       self["chemblid"]
     end
+=end
 
     def db_neighbors min_sim: 0.2, dataset_id:
       #p fingerprints[DEFAULT_FINGERPRINT]
