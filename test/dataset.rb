@@ -24,10 +24,10 @@ class DatasetTest < MiniTest::Test
   # real datasets
   
   def test_import_pubchem
-    d = Dataset.from_pubchem 1191
+    d = Dataset.from_pubchem_aid 1191
     assert_equal 87, d.compounds.size
     assert_equal 2, d.features.size
-    assert_equal "Active", d.values(d.compounds[10],d.features[1])
+    assert_equal ["Active"], d.values(d.compounds[10],d.features[1])
     # TODO endpoint name
     # TODO regression import
   end
@@ -37,7 +37,7 @@ class DatasetTest < MiniTest::Test
     assert_equal 53, d.compounds.size
     assert_equal 1, d.features.size
     f = d.features[0]
-    assert_equal "input_53.csv.ID", f.name
+    assert_equal "input_53.ID", f.name
     assert_equal OriginalId, f.class
     assert_equal ["123-30-8"], d.values(d.compounds.first,f)
   end
@@ -47,18 +47,18 @@ class DatasetTest < MiniTest::Test
     assert_equal 53, d.compounds.size
     assert_equal 1, d.features.size
     f = d.features[0]
-    assert_equal "input_53.tsv.ID", f.name
+    assert_equal "input_53.ID", f.name
     assert_equal OriginalId, f.class
     assert_equal ["123-30-8"], d.values(d.compounds.first,f)
   end
 
   def test_import_sdf
-    #d = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     d = Dataset.from_sdf_file "#{DATA_DIR}/PA.sdf"
-    assert_equal Compound.from_smiles("C[C@H]1C(=O)O[C@@H]2CCN3[C@@H]2C(=CC3)COC(=O)[C@]([C@]1(C)O)(C)O").smiles, d.compounds.first.smiles
-    f = Feature.find_by(:name => "original_id")
     assert_equal 35, d.features.size
-    assert_equal ["9415"], d.values(d.compounds.first,f)
+    assert_kind_of NumericSubstanceProperty, d.features[1]
+    assert_equal NominalSubstanceProperty, d.features.last.class
+    assert_equal 602, d.compounds.size
+    assert_match "PUBCHEM_XLOGP3_AA", d.warnings.last
   end
 
   def test_import_hamster
@@ -66,7 +66,7 @@ class DatasetTest < MiniTest::Test
     assert_equal Dataset, d.class
     assert_equal 1, d.features.size
     assert_equal 85, d.compounds.size
-    assert_equal true, d.features.first.measured
+    assert_equal NominalBioActivity, d.features.first.class
     csv = CSV.read("#{DATA_DIR}/hamster_carcinogenicity.csv")
     csv.shift
     csv.each do |row|
@@ -104,7 +104,7 @@ class DatasetTest < MiniTest::Test
     f = File.join DATA_DIR, "multi_cell_call.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
-    assert_equal true, d.features.first.nominal?
+    assert_equal NominalBioActivity, d.features.first.class
     assert_equal 1056, d.compounds.size
     assert_equal csv.first.size-1, d.features.size
     errors.each do |smi|
@@ -157,7 +157,7 @@ class DatasetTest < MiniTest::Test
 
   def test_create_without_features_smiles_and_inchi
     ["smiles", "inchi"].each do |type|
-      d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction_#{type}_small.csv"), true
+      d = Dataset.from_csv_file File.join(DATA_DIR,"batch_prediction_#{type}_small.csv")
       assert_equal Dataset, d.class
       refute_nil d.id
       dataset = Dataset.find d.id
@@ -169,6 +169,7 @@ class DatasetTest < MiniTest::Test
   # dataset operations
 
   def test_merge
+    skip # TODO use new Features
     source_feature = Feature.where(:name => "Ames test categorisation").first
     target_feature = Feature.where(:name => "Mutagenicity").first
     kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
@@ -177,10 +178,11 @@ class DatasetTest < MiniTest::Test
     d = Dataset.merge [kazius,hansen,efsa], {source_feature => target_feature}, {1 => "mutagen", 0 => "nonmutagen"}
     #File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
     assert_equal 8281, d.compounds.size
-    assert_equal 4, d.features.size
     c = Compound.from_smiles("C/C=C/C=O")
     assert_equal ["mutagen"], d.values(c,target_feature)
     assert_equal "/home/ist/lazar/test/data/cas_4337.sdf, /home/ist/lazar/test/data/hansen.csv, /home/ist/lazar/test/data/efsa.csv", d.source
+    p d.features
+    assert_equal 4, d.features.size
   end
 
   def test_folds
@@ -219,7 +221,6 @@ class DatasetTest < MiniTest::Test
       c = Compound.from_smiles row.shift
       serialized[c.inchi] = row
     end
-    #puts serialized.to_yaml
     original.each do |inchi,row|
       row.each_with_index do |v,i|
         if v.numeric?

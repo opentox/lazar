@@ -1,6 +1,3 @@
-PUBCHEM_URI = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
-CHEMBL_URI = "https://www.ebi.ac.uk/chembl/api/data/molecule/"
-
 module OpenTox
 
   # Small molecules with defined chemical structures

@@ -68,6 +68,9 @@ suppressPackageStartupMessages({
 })
 "
 
+PUBCHEM_URI = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
+CHEMBL_URI = "https://www.ebi.ac.uk/chembl/api/data/molecule/"
+
 # OpenTox classes and includes
 CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
 
