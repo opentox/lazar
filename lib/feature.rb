@@ -37,6 +37,10 @@ module OpenTox
     field :training_feature_id, type: BSON::ObjectId
   end
 
+  class LazarPredictionProbability < NominalLazarPrediction
+    field :value, type: Float
+  end
+
   # Numeric lazar prediction
   class NumericLazarPrediction < NumericFeature
     field :model_id, type: BSON::ObjectId

@@ -36,12 +36,12 @@ module OpenTox
       #
       # @return [OpenTox::Model::Lazar]
       def self.create prediction_feature:nil, training_dataset:, algorithms:{}
-        bad_request_error "Please provide a prediction_feature and/or a training_dataset." unless prediction_feature or training_dataset
-        prediction_feature = training_dataset.features.select{|f| f.measured}.first unless prediction_feature
+        bad_request_error "Please provide a training_dataset and a optional prediction_feature." unless prediction_feature or training_dataset
+        prediction_feature ||= training_dataset.features.select{|f| f.is_a? NumericBioActivity or f.is_a? NominalBioActivity}.first unless prediction_feature
         # TODO: prediction_feature without training_dataset: use all available data
 
         # guess model type
-        prediction_feature.numeric? ?  model = LazarRegression.new : model = LazarClassification.new
+        prediction_feature.is_a?(NumericBioActivity) ? model = LazarRegression.new : model = LazarClassification.new
 
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
@@ -199,7 +199,7 @@ module OpenTox
       # @return [Hash]
       def predict_substance substance, threshold = self.algorithms[:similarity][:min]
         
-        p substance.smiles
+        #p substance.smiles
         t = Time.now
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
@@ -286,8 +286,8 @@ module OpenTox
         else # try again with a lower threshold
           predict_substance substance, 0.2
         end
-        p prediction
-        p Time.now - t
+        #p prediction
+        #p Time.now - t
         prediction
       end
 
@@ -314,6 +314,11 @@ module OpenTox
         predictions = {}
         substances.each do |c|
           predictions[c.id.to_s] = predict_substance c
+          if prediction_feature.is_a? NominalBioActivity and predictions[c.id.to_s][:value]
+            prediction_feature.accept_values.each do |v|
+              predictions[c.id.to_s][:probabilities][v] ||= 0.0 # use 0 instead of empty probabilities (happens if all neighbors have the same activity)
+            end
+          end
           predictions[c.id.to_s][:prediction_feature_id] = prediction_feature_id 
         end
 
@@ -325,17 +330,28 @@ module OpenTox
         elsif object.is_a? Array
           return predictions
         elsif object.is_a? Dataset
-          # prepare prediction dataset
-          measurement_feature = Feature.find prediction_feature_id
+          if prediction_feature.is_a? NominalBioActivity
+            f = NominalLazarPrediction.find_or_create_by(:name => prediction_feature.name, :accept_values => prediction_feature.accept_values, :model_id => self.id, :training_feature_id => prediction_feature.id)
+            probability_features = {}
+            prediction_feature.accept_values.each do |v|
+              probability_features[v] = LazarPredictionProbability.find_or_create_by(:name => "probability(#{v})", :accept_values => prediction_feature.accept_values, :value => v, :model_id => self.id, :training_feature_id => prediction_feature.id)
+            end
+          elsif prediction_feature.is_a? NumericBioActivity
+            f = NumericLazarPrediction.find_or_create_by(:name => prediction_feature.name, :unit => prediction_feature.unit, :model_id => self.id, :training_feature_id => prediction_feature.id)
+            # TODO prediction interval
+          end
 
-          prediction_feature = NumericFeature.find_or_create_by( "name" => measurement_feature.name + " (Prediction)" )
-          prediction_dataset = LazarPrediction.create(
-            :name => "Lazar prediction for #{prediction_feature.name}",
-            :creator =>  __FILE__,
-            :prediction_feature_id => prediction_feature.id,
-            :predictions => predictions
-          )
-          return prediction_dataset
+          d = Dataset.new(:name => object.name)
+          # add predictions to dataset
+          predictions.each do |substance_id,p|
+            d.warnings += p[:warnings]
+            unless p[:value].nil?
+              d.add substance_id,f,p[:value]
+              p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p}
+            end
+          end
+          d.save
+          return d
         end
 
       end

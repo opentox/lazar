@@ -94,6 +94,18 @@ class LazarClassificationTest < MiniTest::Test
     training_dataset.delete
   end
 
+  def test_dataset_prediction
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    model = Model::Lazar.create training_dataset: training_dataset
+    result = model.predict training_dataset
+    assert 3, result.features.size
+    assert 8, result.compounds.size
+    assert_equal ["true"], result.values(result.compounds.first, result.features[0])
+    assert_equal [0.65], result.values(result.compounds.first, result.features[1])
+    assert_equal [0], result.values(result.compounds.first, result.features[2]) # classification returns nil, check if 
+    #p prediction_dataset
+  end
+
   def test_carcinogenicity_rf_classification
     skip "Caret rf may run into a (endless?) loop for some compounds."
     dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
