@@ -12,7 +12,7 @@ module OpenTox
         bad_request_error "Cannot create leave one out validation for models with supervised feature selection. Please use crossvalidation instead." if model.algorithms[:feature_selection]
         $logger.debug "#{model.name}: LOO validation started"
         t = Time.now
-        model.training_dataset.features.first.nominal? ? klass = ClassificationLeaveOneOut : klass = RegressionLeaveOneOut
+        model.training_dataset.features.collect{|f| f.class}.include?(NominalBioActivity) ? klass = ClassificationLeaveOneOut : klass = RegressionLeaveOneOut
         loo = klass.new :model_id => model.id
         predictions = model.predict model.training_dataset.substances
         predictions.each{|cid,p| p.delete(:neighbors)}
@@ -40,25 +40,27 @@ module OpenTox
     class ClassificationLeaveOneOut < LeaveOneOut
       include ClassificationStatistics
       field :accept_values, type: Array
-      field :confusion_matrix, type: Array, default: []
-      field :weighted_confusion_matrix, type: Array, default: []
-      field :accuracy, type: Float
-      field :weighted_accuracy, type: Float
-      field :true_rate, type: Hash, default: {}
-      field :predictivity, type: Hash, default: {}
-      field :confidence_plot_id, type: BSON::ObjectId
+      field :confusion_matrix, type: Hash
+      field :weighted_confusion_matrix, type: Hash
+      field :accuracy, type: Hash
+      field :weighted_accuracy, type: Hash
+      field :true_rate, type: Hash
+      field :predictivity, type: Hash
+      field :nr_predictions, type: Hash
+      field :probability_plot_id, type: BSON::ObjectId
     end
     
     # Leave one out validation for regression models
     class RegressionLeaveOneOut  < LeaveOneOut
       include RegressionStatistics
-      field :rmse, type: Float, default: 0
-      field :mae, type: Float, default: 0
-      field :r_squared, type: Float
-      field :within_prediction_interval, type: Integer, default:0
-      field :out_of_prediction_interval, type: Integer, default:0
-      field :correlation_plot_id, type: BSON::ObjectId
+      field :rmse, type: Hash
+      field :mae, type: Hash
+      field :r_squared, type: Hash
+      field :within_prediction_interval, type: Hash
+      field :out_of_prediction_interval, type: Hash
+      field :nr_predictions, type: Hash
       field :warnings, type: Array
+      field :correlation_plot_id, type: BSON::ObjectId
     end
 
   end

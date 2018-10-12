@@ -4,10 +4,10 @@ class DescriptorTest < MiniTest::Test
 
   def test_list
     # check available descriptors
-    assert_equal 15,PhysChem.openbabel_descriptors.size,"incorrect number of Openbabel descriptors"
+    assert_equal 16,PhysChem.openbabel_descriptors.size,"incorrect number of Openbabel descriptors"
     assert_equal 45,PhysChem.joelib_descriptors.size,"incorrect number of Joelib descriptors"
     assert_equal 286,PhysChem.cdk_descriptors.size,"incorrect number of Cdk descriptors"
-    assert_equal 346,PhysChem.descriptors.size,"incorrect number of physchem descriptors"
+    assert_equal 347,PhysChem.descriptors.size,"incorrect number of physchem descriptors"
   end
 
   def test_smarts

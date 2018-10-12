@@ -35,13 +35,12 @@ module OpenTox
             cv.validation_ids << validation.id
             cv.nr_instances += validation.nr_instances
             cv.nr_unpredicted += validation.nr_unpredicted
-            #cv.predictions.merge! validation.predictions
             $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
           #end
         end
         #Process.waitall
         cv.save
-        $logger.debug "Nr unpredicted: #{nr_unpredicted}"
+        $logger.debug "Nr unpredicted: #{cv.nr_unpredicted}"
         cv.statistics
         cv.update_attributes(finished_at: Time.now)
         cv

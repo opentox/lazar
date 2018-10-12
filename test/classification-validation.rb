@@ -4,17 +4,17 @@ class ValidationClassificationTest < MiniTest::Test
   include OpenTox::Validation
 
   # defaults
-  
+
   def test_default_classification_crossvalidation
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::Lazar.create training_dataset: dataset
     cv = ClassificationCrossValidation.create model
-    assert cv.accuracy > 0.7, "Accuracy (#{cv.accuracy}) should be larger than 0.7, this may occur due to an unfavorable training/test set split"
-    assert cv.weighted_accuracy > cv.accuracy, "Weighted accuracy (#{cv.weighted_accuracy}) should be larger than accuracy (#{cv.accuracy})."
+    assert cv.accuracy[:without_warnings] > 0.65, "Accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65, this may occur due to an unfavorable training/test set split"
+    assert cv.weighted_accuracy[:all] > cv.accuracy[:all], "Weighted accuracy (#{cv.weighted_accuracy[:all]}) should be larger than accuracy (#{cv.accuracy[:all]})."
     File.open("/tmp/tmp.pdf","w+"){|f| f.puts cv.probability_plot(format:"pdf")}
-    p `file -b /tmp/tmp.pdf`
+    assert_match "PDF", `file -b /tmp/tmp.pdf`
     File.open("/tmp/tmp.png","w+"){|f| f.puts cv.probability_plot(format:"png")}
-    p `file -b /tmp/tmp.png`
+    assert_match "PNG", `file -b /tmp/tmp.png`
   end
 
   # parameters
@@ -28,16 +28,14 @@ class ValidationClassificationTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
     cv = ClassificationCrossValidation.create model
     params = model.algorithms
-    params = Hash[params.map{ |k, v| [k.to_s, v] }] # convert symbols to string
+    params = JSON.parse(params.to_json) # convert symbols to string
     
     cv.validations.each do |validation|
       validation_params = validation.model.algorithms
       refute_nil model.training_dataset_id
       refute_nil validation.model.training_dataset_id
       refute_equal model.training_dataset_id, validation.model.training_dataset_id
-      ["min_sim","type","prediction_feature_id"].each do |k|
-        assert_equal params[k], validation_params[k]
-      end
+      assert_equal params, validation_params
     end
   end
   
@@ -47,10 +45,10 @@ class ValidationClassificationTest < MiniTest::Test
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::Lazar.create training_dataset: dataset
     loo = ClassificationLeaveOneOut.create model
-    assert_equal 24, loo.nr_unpredicted
+    assert_equal 77, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
-    assert loo.accuracy > 0.77
-    assert loo.weighted_accuracy > loo.accuracy, "Weighted accuracy (#{loo.weighted_accuracy}) should be larger than accuracy (#{loo.accuracy})."
+    assert loo.accuracy[:without_warnings] > 0.650
+    assert loo.weighted_accuracy[:all] > loo.accuracy[:all], "Weighted accuracy (#{loo.weighted_accuracy[:all]}) should be larger than accuracy (#{loo.accuracy[:all]})."
   end
 
   # repeated CV
@@ -60,8 +58,23 @@ class ValidationClassificationTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
-      assert_operator cv.accuracy, :>, 0.7, "model accuracy < 0.7, this may happen by chance due to an unfavorable training/test set split"
+      assert_operator cv.accuracy[:without_warnings], :>, 0.65, "model accuracy < 0.65, this may happen by chance due to an unfavorable training/test set split"
     end
+  end
+  
+  def test_validation_model
+    m = Model::Validation.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    [:endpoint,:species,:source].each do |p|
+      refute_empty m[p]
+    end
+    assert m.classification?
+    refute m.regression?
+    m.crossvalidations.each do |cv|
+      assert cv.accuracy[:without_warnings] > 0.65, "Crossvalidation accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65. This may happen due to an unfavorable training/test set split."
+    end
+    prediction = m.predict Compound.from_smiles("OCC(CN(CC(O)C)N=O)O")
+    assert_equal "false", prediction[:value]
+    m.delete
   end
 
   def test_carcinogenicity_rf_classification

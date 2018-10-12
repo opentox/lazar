@@ -6,12 +6,12 @@ class ValidationRegressionTest < MiniTest::Test
   # defaults
   
   def test_default_regression_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM_log10.csv"
     model = Model::Lazar.create training_dataset: dataset
     cv = RegressionCrossValidation.create model
-    assert cv.rmse < 1.5, "RMSE #{cv.rmse} should be smaller than 1.5, this may occur due to unfavorable training/test set splits"
-    assert cv.mae < 1.1, "MAE #{cv.mae} should be smaller than 1.1, this may occur due to unfavorable training/test set splits"
-    assert cv.percent_within_prediction_interval > 80, "Only #{cv.percent_within_prediction_interval.round(2)}% of measurement within prediction interval. This may occur due to unfavorable training/test set splits"
+    assert cv.rmse[:all] < 1.5, "RMSE #{cv.rmse[:all]} should be smaller than 1.5, this may occur due to unfavorable training/test set splits"
+    assert cv.mae[:all] < 1.1, "MAE #{cv.mae[:all]} should be smaller than 1.1, this may occur due to unfavorable training/test set splits"
+    assert cv.within_prediction_interval[:all]/cv.nr_predictions[:all] > 0.8, "Only #{(100*cv.within_prediction_interval[:all]/cv.nr_predictions[:all]).round(2)}% of measurement within prediction interval. This may occur due to unfavorable training/test set splits"
   end
 
   # parameters
@@ -34,16 +34,16 @@ class ValidationRegressionTest < MiniTest::Test
       refute_equal dataset.id, model.training_dataset_id
     end
 
-    refute_nil cv.rmse
-    refute_nil cv.mae 
+    refute_nil cv.rmse[:all]
+    refute_nil cv.mae[:all]
   end
 
   def test_physchem_regression_crossvalidation
     training_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::Lazar.create training_dataset:training_dataset
     cv = RegressionCrossValidation.create model
-    refute_nil cv.rmse
-    refute_nil cv.mae 
+    refute_nil cv.rmse[:all]
+    refute_nil cv.mae[:all]
   end
 
   # LOO
@@ -52,7 +52,7 @@ class ValidationRegressionTest < MiniTest::Test
     dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
     model = Model::Lazar.create training_dataset: dataset
     loo = RegressionLeaveOneOut.create model
-    assert loo.r_squared > 0.34, "R^2 (#{loo.r_squared}) should be larger than 0.034"
+    assert loo.r_squared[:all] > 0.34, "R^2 (#{loo.r_squared[:all]}) should be larger than 0.034"
   end
 
   def test_regression_loo_validation_with_feature_selection
@@ -83,8 +83,8 @@ class ValidationRegressionTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
-      assert cv.r_squared > 0.34, "R^2 (#{cv.r_squared}) should be larger than 0.034"
-      assert cv.rmse < 1.5, "RMSE (#{cv.rmse}) should be smaller than 0.5"
+      assert cv.r_squared[:all] > 0.34, "R^2 (#{cv.r_squared[:all]}) should be larger than 0.034"
+      assert cv.rmse[:all] < 1.5, "RMSE (#{cv.rmse[:all]}) should be smaller than 0.5"
     end
   end
 
