@@ -7,7 +7,8 @@ module OpenTox
   # Collection of substances and features
   class Dataset
 
-    field :data_entries, type: Hash, default: {}
+    field :data_entries, type: Array, default: [] #substance,feature,value
+    field :warnings, type: Array, default: [] 
     field :source, type: String
     field :md5, type: String
 
@@ -28,29 +29,25 @@ module OpenTox
     # Get all substances
     # @return [Array<OpenTox::Substance>]
     def substances
-      @substances ||= data_entries.keys.collect{|id| OpenTox::Substance.find id}.uniq
+      @substances ||= data_entries.collect{|row| OpenTox::Substance.find row[0] if row[0]}.compact.uniq
       @substances
     end
 
     # Get all features
     # @return [Array<OpenTox::Feature>]
     def features
-      @features ||= data_entries.collect{|sid,data| data.keys.collect{|id| OpenTox::Feature.find(id)}}.flatten.uniq
+      @features ||= data_entries.collect{|row| OpenTox::Feature.find(row[1])}.uniq
       @features
     end
 
     # Get all values for a given substance and feature
-    # @param [OpenTox::Substance,BSON::ObjectId,String] substance or substance id
-    # @param [OpenTox::Feature,BSON::ObjectId,String] feature or feature id
+    # @param [OpenTox::Substance,BSON::ObjectId] substance or substance id
+    # @param [OpenTox::Feature,BSON::ObjectId] feature or feature id
     # @return [TrueClass,FalseClass,Float]
     def values substance,feature
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
-      if data_entries[substance.to_s] and data_entries[substance.to_s][feature.to_s]
-        data_entries[substance.to_s][feature.to_s]
-      else
-        [nil]
-      end
+      data_entries.select{|row| row[0] == substance and row[1] == feature}.collect{|row| row[2]}
     end
 
     # Get OriginalId feature
@@ -79,16 +76,30 @@ module OpenTox
       values(substance,original_smiles_feature).first
     end
 
+    def warnings_feature
+      features.select{|f| f.is_a?(Warnings)}.first
+    end
+
+    #def warnings
+      #data_entries.select{|row| row[1] == warnings_feature}.collect{|row| row[2]}.compact
+    #end
+
     # Get nominal and numeric bioactivity features
     # @return [Array<OpenTox::NominalBioActivity,OpenTox::NumericBioActivity>]
     def bioactivity_features
-      features.select{|f| f.class.to_s.match("BioActivity")}
+      features.select{|f| f._type.match(/BioActivity/)}
     end
 
     # Get nominal and numeric bioactivity features
     # @return [Array<OpenTox::NominalBioActivity,OpenTox::NumericBioActivity>]
     def transformed_bioactivity_features
       features.select{|f| f.class.to_s.match(/Transformed.*BioActivity/)}
+    end
+
+    # Get nominal and numeric substance property features
+    # @return [Array<OpenTox::NominalSubstanceProperty,OpenTox::NumericSubstanceProperty>]
+    def substance_property_features
+      features.select{|f| f.class.to_s.match("SubstanceProperty")}
     end
 
     # Writers
@@ -100,10 +111,7 @@ module OpenTox
     def add(substance,feature,value)
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
-      data_entries[substance.to_s] ||= {}
-      data_entries[substance.to_s][feature.to_s] ||= []
-      data_entries[substance.to_s][feature.to_s] << value
-      #data_entries[substance.to_s][feature.to_s].uniq! if value.numeric? # assuming that identical values come from the same source
+      data_entries << [substance,feature,value] if substance and feature and value
     end
 
     # Parsers
@@ -235,8 +243,6 @@ module OpenTox
         original_id = OriginalId.find_or_create_by(:dataset_id => self.id,:name => "LineID")
       end
 
-      warnings = Warnings.find_or_create_by(:dataset_id => self.id)
-
       compound_format = feature_names.shift
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
       original_smiles = OriginalSmiles.create if compound_format.match(/SMILES/i)
@@ -282,9 +288,7 @@ module OpenTox
         end
 
         if substance.nil? # compound parsers may return nil
-          add substance, original_id, original_id_value 
-          add substance, original_smiles, identifier
-          add substance, warnings, "Cannot parse #{compound_format} compound '#{identifier}' at line #{i+2} of #{source}, all entries are ignored."
+          warnings << "Cannot parse #{compound_format} compound '#{identifier}' at line #{i+2} of #{source}, all entries are ignored."
           next
         end
 
@@ -297,8 +301,8 @@ module OpenTox
 
         vals.each_with_index do |v,j|
           if v.blank?
-            add substance, warnings, "Empty value for compound '#{identifier}' (#{original_id_value}) and feature '#{feature_names[j]}'."
-            v = nil
+            warnings << "Empty value for compound '#{identifier}' (#{original_id_value}) and feature '#{feature_names[j]}'."
+            next
           elsif numeric[j]
             v = v.to_f
           else
@@ -306,14 +310,14 @@ module OpenTox
           end
           add substance, features[j], v
         end
-        #data_entries[substance.id.to_s] ||= nil #if vals.empty? # no features, eg batch predictions
       end
 
+      warnings_feature = Warnings.find_or_create_by(:dataset_id => id)
       all_substances.duplicates.each do |substance|
         positions = []
         all_substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.smiles and c.smiles == substance.smiles}
         all_substances.select{|s| s.smiles == substance.smiles}.each do |s|
-          add s, warnings, "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
+          add s, warnings_feature, "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
         end
       end
       save
@@ -325,28 +329,25 @@ module OpenTox
     # @return [String]
     def to_csv inchi=false
       CSV.generate() do |csv| 
+        # TODO support multiple original id|smiles
         compound = substances.first.is_a? Compound
-        id = features.select{|f| f.is_a? OriginalId}.first
-        features.delete(id)
-        original_smiles = features.select{|f| f.is_a? OriginalSmiles}.first
-        features.delete(original_smiles)
-        warning = features.select{|f| f.is_a? Warnings}.first
-        features.delete(warning)
+        f = features - [original_id_feature,original_smiles_feature,warnings_feature]
 
         if compound
-          csv << [id.name, inchi ? "InChI" : "SMILES"] + features.collect{|f| f.name} + ["OriginalSmiles", "Warnings"]
+          csv << ["Original ID", inchi ? "InChI" : "SMILES", "Original SMILES"] + f.collect{|f| f.name} + ["Warnings"]
         else
-          csv << [id.name, "Name"] + features.collect{|f| f.name}
+          csv << ["Original ID", "Name"] + f.collect{|f| f.name} + ["Warnings"]
         end
+
         substances.each do |substance|
           if compound
             name = (inchi ? substance.inchi : substance.smiles)
           else
             name = substance.name
           end
-          row = [values(substance,id).first,name] + features.collect{|f| values(substance,f).join(" ")}
-          row << values(substance,original_smiles).join(" ")
-          row << values(substance,warning).join(" ")
+          row = [values(substance,original_id_feature).first,name,values(substance,original_smiles_feature).first]
+          row += f.collect{|f| values(substance,f).join(" ")}
+          row << values(substance,warnings_feature).join(" ")
           csv << row
         end
       end
@@ -427,7 +428,7 @@ module OpenTox
             substance.dataset_ids << dataset.id
             substance.dataset_ids.uniq!
             substance.save
-            dataset.data_entries[substance.id.to_s] = data_entries[substance.id.to_s] ||= {}
+            dataset.data_entries << data_entries.select{|row| row[0] == substance.id}
           end
           dataset.save
           dataset

@@ -136,7 +136,7 @@ module OpenTox
     # @return [OpenTox::Compound] 
     def self.from_inchi inchi
       smiles = obconversion(inchi,"inchi","can")
-      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
+      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles)
     end
 
     # Create a compound from SDF 
