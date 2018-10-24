@@ -72,7 +72,7 @@ PUBCHEM_URI = "https://pubchem.ncbi.nlm.nih.gov/rest/pug/"
 CHEMBL_URI = "https://www.ebi.ac.uk/chembl/api/data/molecule/"
 
 # OpenTox classes and includes
-CLASSES = ["Feature","Substance","Dataset","LazarPrediction","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation","Experiment"]# Algorithm and Models are modules
+CLASSES = ["Feature","Substance","Dataset","CrossValidation","LeaveOneOutValidation","RepeatedCrossValidation"]# Algorithm and Models are modules
 
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",

@@ -199,7 +199,6 @@ module OpenTox
       # @return [Hash]
       def predict_substance substance, threshold = self.algorithms[:similarity][:min]
         
-        #p substance.smiles
         t = Time.now
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
@@ -286,7 +285,6 @@ module OpenTox
         else # try again with a lower threshold
           predict_substance substance, 0.2
         end
-        #p prediction
         #p Time.now - t
         prediction
       end
@@ -330,11 +328,12 @@ module OpenTox
         elsif object.is_a? Array
           return predictions
         elsif object.is_a? Dataset
+          warning_feature = InfoFeature.find_or_create_by(:name => "Warnings")
           if prediction_feature.is_a? NominalBioActivity
             f = NominalLazarPrediction.find_or_create_by(:name => prediction_feature.name, :accept_values => prediction_feature.accept_values, :model_id => self.id, :training_feature_id => prediction_feature.id)
             probability_features = {}
             prediction_feature.accept_values.each do |v|
-              probability_features[v] = LazarPredictionProbability.find_or_create_by(:name => "probability(#{v})", :accept_values => prediction_feature.accept_values, :value => v, :model_id => self.id, :training_feature_id => prediction_feature.id)
+              probability_features[v] = LazarPredictionProbability.find_or_create_by(:name => v, :model_id => self.id, :training_feature_id => prediction_feature.id)
             end
           elsif prediction_feature.is_a? NumericBioActivity
             f = NumericLazarPrediction.find_or_create_by(:name => prediction_feature.name, :unit => prediction_feature.unit, :model_id => self.id, :training_feature_id => prediction_feature.id)
@@ -344,10 +343,11 @@ module OpenTox
           d = Dataset.new(:name => object.name)
           # add predictions to dataset
           predictions.each do |substance_id,p|
-            d.warnings += p[:warnings]
+            d.add substance_id,warning_feature,p[:warnings].join(" ") if p[:warnings]
             unless p[:value].nil?
               d.add substance_id,f,p[:value]
               p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p}
+            # TODO prediction interval
             end
           end
           d.save

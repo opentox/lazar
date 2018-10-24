@@ -11,13 +11,13 @@ module OpenTox
       include Mongoid::Timestamps
       store_in collection: klass.downcase.pluralize
       field :name,  type: String
-      field :source,  type: String
-      field :warnings, type: Array, default: []
+      #field :source,  type: String
+      #field :warnings, type: Array, default: []
 
-      def warn warning
+#      def warn warning
         #$logger.warn warning
-        warnings << warning
-      end
+#        warnings << warning
+#      end
     end
     OpenTox.const_set klass,c
   end

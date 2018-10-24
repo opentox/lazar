@@ -33,13 +33,11 @@ module OpenTox
     def fingerprint type=DEFAULT_FINGERPRINT
       unless fingerprints[type]
         return [] unless self.smiles
-        #http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
-        if type == "MP2D"
+        if type == "MP2D" # http://openbabel.org/docs/dev/FileFormats/MolPrint2D_format.html#molprint2d-format
           fp = obconversion(smiles,"smi","mpd").strip.split("\t")
           name = fp.shift # remove Title
           fingerprints[type] = fp.uniq # no fingerprint counts
-        #http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
-        elsif type== "MNA"
+        elsif type== "MNA" # http://openbabel.org/docs/dev/FileFormats/Multilevel_Neighborhoods_of_Atoms_(MNA).html
           level = 2 # TODO: level as parameter, evaluate level 1, see paper
           fp = obconversion(smiles,"smi","mna","xL\"#{level}\"").split("\n")
           fp.shift # remove Title
@@ -128,17 +126,9 @@ module OpenTox
     # @param [String] smiles 
     # @return [OpenTox::Compound]
     def self.from_smiles smiles
-      if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
-        warn "SMILES parsing failed for '#{smiles}'', SMILES string contains whitespaces."
-        return nil
-      end
+      return nil if smiles.match(/\s/) # spaces seem to confuse obconversion and may lead to invalid smiles
       smiles = obconversion(smiles,"smi","can") # test if SMILES is correct and return canonical smiles (for compound comparisons)
-      if smiles.empty?
-        warn "SMILES parsing failed for '#{smiles}'', this may be caused by an incorrect SMILES string."
-        return nil
-      else
-        Compound.find_or_create_by :smiles => smiles 
-      end
+      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles)
     end
 
     # Create a compound from InChI string
@@ -146,11 +136,7 @@ module OpenTox
     # @return [OpenTox::Compound] 
     def self.from_inchi inchi
       smiles = obconversion(inchi,"inchi","can")
-      if smiles.empty?
-        Compound.find_or_create_by(:warnings => ["InChi parsing failed for #{inchi}, this may be caused by an incorrect InChi string or a bug in OpenBabel libraries."])
-      else
-        Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
-      end
+      smiles.empty? ? nil : Compound.find_or_create_by(:smiles => smiles, :inchi => inchi)
     end
 
     # Create a compound from SDF 
@@ -328,11 +314,11 @@ module OpenTox
 print sdf
         if sdf.match(/.nan/)
           
-          warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
+          #warn "3D generation failed for compound #{identifier}, trying to calculate 2D structure"
           obconversion.set_options("gen2D", OpenBabel::OBConversion::GENOPTIONS)
           sdf = obconversion.write_string(obmol)
           if sdf.match(/.nan/)
-            warn "2D generation failed for compound #{identifier}, rendering without coordinates."
+            #warn "2D generation failed for compound #{identifier}, rendering without coordinates."
             obconversion.remove_option("gen2D", OpenBabel::OBConversion::GENOPTIONS)
             sdf = obconversion.write_string(obmol)
           end

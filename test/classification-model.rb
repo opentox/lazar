@@ -22,37 +22,40 @@ class LazarClassificationTest < MiniTest::Test
     assert_kind_of Model::LazarClassification, model
     assert_equal algorithms, model.algorithms
     [ {
-      :compound => OpenTox::Compound.from_inchi("InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H"),
+      :compound => OpenTox::Compound.from_smiles("OCC(CN(CC(O)C)N=O)O"),
       :prediction => "false",
     },{
-      :compound => OpenTox::Compound.from_smiles("c1ccccc1NN"),
-      :prediction => "false",
+      :compound => OpenTox::Compound.from_smiles("O=CNc1scc(n1)c1ccc(o1)[N+](=O)[O-]"),
+      :prediction => "true",
     } ].each do |example|
       prediction = model.predict example[:compound]
-      p example[:compound]
-      p prediction
-      #assert_equal example[:prediction], prediction[:value]
+      assert_equal example[:prediction], prediction[:value]
     end
-
-    compound = Compound.from_smiles "CCO"
-    prediction = model.predict compound
-    assert_equal "true", prediction[:value]
-    assert_equal ["false"], prediction[:measurements]
 
     # make a dataset prediction
-    compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.mini_log10.csv")
+    compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"multi_cell_call.csv")
     prediction_dataset = model.predict compound_dataset
-    assert_equal compound_dataset.compounds, prediction_dataset.compounds
+    puts prediction_dataset.to_csv
+    assert_equal compound_dataset.compounds.size, prediction_dataset.compounds.size
+    c = Compound.from_smiles "CC(CN(CC(O)C)N=O)O"
+    prediction_feature = prediction_dataset.features.select{|f| f.class == NominalLazarPrediction}[0]
+    assert_equal ["true"], prediction_dataset.values(c, prediction_feature)
+    p_true = LazarPredictionProbability.find_by(:name => "true")
+    p_false = LazarPredictionProbability.find_by(:name => "false")
+    p p_true
+    assert_equal [0.7], prediction_dataset.values(c,p_true)
+    assert_equal [0.0], prediction_dataset.values(c,p_false)
+    assert_equal 0.0, p_false
 
-    cid = prediction_dataset.compounds[7].id.to_s
-    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warnings][0]
-    expectations = ["Cannot create prediction: Only one similar compound in the training set.",
-    "Could not find similar substances with experimental data in the training dataset."]
-    prediction_dataset.predictions.each do |cid,pred|
-      assert_includes expectations, pred[:warnings][0] if pred[:value].nil?
-    end
-    cid = Compound.from_smiles("CCOC(=O)N").id.to_s
-    assert_match "excluded", prediction_dataset.predictions[cid][:info]
+#    cid = prediction_dataset.compounds[7].id.to_s
+#    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warnings][0]
+#    expectations = ["Cannot create prediction: Only one similar compound in the training set.",
+#    "Could not find similar substances with experimental data in the training dataset."]
+#    prediction_dataset.predictions.each do |cid,pred|
+#      assert_includes expectations, pred[:warnings][0] if pred[:value].nil?
+#    end
+#    cid = Compound.from_smiles("CCOC(=O)N").id.to_s
+#    assert_match "excluded", prediction_dataset.predictions[cid][:info]
   end
  
   def test_classification_parameters

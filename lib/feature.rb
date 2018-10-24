@@ -1,32 +1,46 @@
 module OpenTox
 
-  # Basic feature class
-  class Feature
-  end
-
   # Original ID (e.g. from CSV input)
   class OriginalId < Feature
     field :dataset_id, type: BSON::ObjectId
   end
 
-  # Feature for categorical variables
+  # Original SMILES (e.g. from CSV input)
+  class OriginalSmiles < Feature
+    field :dataset_id, type: BSON::ObjectId
+  end
+
+  # Warnings
+  class Warnings < Feature
+    field :dataset_id, type: BSON::ObjectId
+  end
+
+  # Categorical variables
   class NominalFeature < Feature
     field :accept_values, type: Array
   end
 
-  # Feature for quantitative variables
+  # Quantitative variables
   class NumericFeature < Feature
     field :unit, type: String
   end
 
   # Nominal biological activity
   class NominalBioActivity < NominalFeature
-    field :original_feature_id, type: BSON::ObjectId
-    field :transformation, type: Hash
   end
 
   # Numeric biological activity
   class NumericBioActivity < NumericFeature
+  end
+
+  # Transformed nominal biological activity
+  class TransformedNominalBioActivity < NominalFeature
+    field :original_feature_id, type: BSON::ObjectId
+    field :transformation, type: Hash
+  end
+
+  # Transformed numeric biological activity
+  class TransformedNumericBioActivity < NumericFeature
     field :original_feature_id, type: BSON::ObjectId
     field :transformation, type: String
   end
@@ -38,13 +52,15 @@ module OpenTox
   end
 
   class LazarPredictionProbability < NominalLazarPrediction
-    field :value, type: Float
   end
 
   # Numeric lazar prediction
   class NumericLazarPrediction < NumericFeature
     field :model_id, type: BSON::ObjectId
     field :training_feature_id, type: BSON::ObjectId
+  end
+
+  class LazarConfidenceInterval < NumericLazarPrediction
   end
 
   class NominalSubstanceProperty < NominalFeature
