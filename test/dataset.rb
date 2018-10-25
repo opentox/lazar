@@ -1,5 +1,3 @@
-# batch class
-
 require_relative "setup.rb"
 
 class DatasetTest < MiniTest::Test
@@ -123,8 +121,6 @@ class DatasetTest < MiniTest::Test
     csv = CSV.read f
     assert_equal csv.size-1, d.compounds.size
     assert_equal csv.first.size+1, d.features.size
-    # TODO fix csv output (headers, column order)
-    #puts d.to_csv
   end
 
   def test_import_epafhm
@@ -197,48 +193,40 @@ class DatasetTest < MiniTest::Test
     mapped = d.map(d.bioactivity_features.first, map)
     c = d.compounds.sample
     assert_equal d.values(c,d.bioactivity_features.first).collect{|v| map[v]}, mapped.values(c,mapped.transformed_bioactivity_features.first)
-    assert_equal d.original_id(c), mapped.original_id(c)
+    assert_equal d.values(c,d.original_id_features.first), mapped.values(c,mapped.original_id_features.first)
     assert_equal d.bioactivity_features.first.name, mapped.bioactivity_features.first.name
     assert_equal ["carcinogen","non-carcinogen"], mapped.transformed_bioactivity_features.first.accept_values
   end
 
   def test_merge
-    skip
     kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
     efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
-    hansen_mapped = hansen.map hansen.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
-    efsa_mapped = efsa.map efsa.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
-    datasets = [kazius,hansen_mapped,efsa_mapped]
-    d = Dataset.merge datasets, datasets.collect{|d| d.bioactivity_features}.flatten.uniq
-    File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
+    #p "mapping hansen"
+    #hansen_mapped = hansen.map hansen.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
+    #p "mapping efsa"
+    #efsa_mapped = efsa.map efsa.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
+    #datasets = [kazius,hansen_mapped,efsa_mapped]
+    datasets = [kazius,hansen,efsa]
+    d = Dataset.merge datasets#, datasets.collect{|d| d.bioactivity_features}.flatten.uniq
     assert_equal 8281, d.compounds.size
     c = Compound.from_smiles("C/C=C/C=O")
     assert_equal ["mutagen"], d.values(c,d.bioactivity_features.first)
-    assert_equal "/home/ist/lazar/test/data/cas_4337.sdf, /home/ist/lazar/test/data/hansen.csv, /home/ist/lazar/test/data/efsa.csv", d.source
-    assert_equal 4, d.features.size
+    assert_equal datasets.collect{|d| d.id.to_s}.join(", "), d.source
+    assert_equal 8, d.features.size
+    p "serializing"
+    File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
   end
 
   # serialisation
 
   def test_to_csv
-    # TODO
-    skip
     d = Dataset.from_csv_file "#{DATA_DIR}/multicolumn.csv"
     csv = CSV.parse(d.to_csv)
-    original_csv = CSV.read("#{DATA_DIR}/multicolumn.csv")
-    header = csv.shift
-    original_header = original_csv.shift.collect{|h| h.strip}
-    #p header, original_header
-    original_header.each_with_index do |name,i|
-      name = "Original SMILES" if name == "SMILES"
-      j = header.index name
-      original_csv.each_with_index do |row,k|
-        row.collect!{|c| c.strip}
-        assert_equal csv[k][j], original_csv[k][i]
-      end
-    end
-    d.delete 
+    assert_equal "3 5", csv[3][0]
+    assert_match "3, 5", csv[3][9]
+    assert_match "Duplicate", csv[3][9]
+    assert_equal '7,c1nccc1,[N]1C=CC=C1,1,,false,,,1.0,', csv[5].join(",")
   end
 
   def test_to_sdf

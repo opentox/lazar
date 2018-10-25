@@ -29,7 +29,7 @@ module OpenTox
     # Get all substances
     # @return [Array<OpenTox::Substance>]
     def substances
-      @substances ||= data_entries.collect{|row| OpenTox::Substance.find row[0] if row[0]}.compact.uniq
+      @substances ||= data_entries.collect{|row| OpenTox::Substance.find row[0]}.uniq
       @substances
     end
 
@@ -43,46 +43,30 @@ module OpenTox
     # Get all values for a given substance and feature
     # @param [OpenTox::Substance,BSON::ObjectId] substance or substance id
     # @param [OpenTox::Feature,BSON::ObjectId] feature or feature id
-    # @return [TrueClass,FalseClass,Float]
+    # @return [Array<TrueClass,FalseClass,Float>] values
     def values substance,feature
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
       data_entries.select{|row| row[0] == substance and row[1] == feature}.collect{|row| row[2]}
     end
 
-    # Get OriginalId feature
-    # @return [OpenTox::OriginalId]
-    def original_id_feature
-      features.select{|f| f.is_a?(OriginalId)}.first
+    # Get OriginalId features
+    # @return [Array<OpenTox::OriginalId>] original ID features (merged datasets may have multiple original IDs)
+    def original_id_features
+      features.select{|f| f.is_a?(OriginalId)}
     end
 
-    # Get original id
-    # @param [OpenTox::Substance] substance
-    # @return [String] original id
-    def original_id substance
-      values(substance,original_id_feature).first
+    # Get OriginalSmiles features
+    # @return [Array<OpenTox::OriginalSmiles>] original smiles features (merged datasets may have multiple original smiles)
+    def original_smiles_features
+      features.select{|f| f.is_a?(OriginalSmiles)}
     end
 
-    # Get OriginalSmiles feature
-    # @return [OpenTox::OriginalSmiles]
-    def original_smiles_feature
-      features.select{|f| f.is_a?(OriginalSmiles)}.first
+    # Get Warnings features
+    # @return [Array<OpenTox::Warnings>] warnings features (merged datasets may have multiple warnings)
+    def warnings_features
+      features.select{|f| f.is_a?(Warnings)}
     end
-
-    # Get original SMILES
-    # @param [OpenTox::Substance] substance
-    # @return [String] original SMILES
-    def original_smiles substance
-      values(substance,original_smiles_feature).first
-    end
-
-    def warnings_feature
-      features.select{|f| f.is_a?(Warnings)}.first
-    end
-
-    #def warnings
-      #data_entries.select{|row| row[1] == warnings_feature}.collect{|row| row[2]}.compact
-    #end
 
     # Get nominal and numeric bioactivity features
     # @return [Array<OpenTox::NominalBioActivity,OpenTox::NumericBioActivity>]
@@ -93,13 +77,13 @@ module OpenTox
     # Get nominal and numeric bioactivity features
     # @return [Array<OpenTox::NominalBioActivity,OpenTox::NumericBioActivity>]
     def transformed_bioactivity_features
-      features.select{|f| f.class.to_s.match(/Transformed.*BioActivity/)}
+      features.select{|f| f._type.match(/Transformed.*BioActivity/)}
     end
 
     # Get nominal and numeric substance property features
     # @return [Array<OpenTox::NominalSubstanceProperty,OpenTox::NumericSubstanceProperty>]
     def substance_property_features
-      features.select{|f| f.class.to_s.match("SubstanceProperty")}
+      features.select{|f| f._type.match("SubstanceProperty")}
     end
 
     # Writers
@@ -245,7 +229,7 @@ module OpenTox
 
       compound_format = feature_names.shift
       bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
-      original_smiles = OriginalSmiles.create if compound_format.match(/SMILES/i)
+      original_smiles = OriginalSmiles.find_or_create_by(:dataset_id => self.id) if compound_format.match(/SMILES/i)
 
       numeric = []
       features = []
@@ -325,31 +309,29 @@ module OpenTox
 
     # Serialisation
     
-    # Convert dataset to csv format including compound smiles as first column, other column headers are feature names
+    # Convert dataset to csv format 
     # @return [String]
-    def to_csv inchi=false
+    def to_csv #inchi=false
       CSV.generate() do |csv| 
-        # TODO support multiple original id|smiles
+        
         compound = substances.first.is_a? Compound
-        f = features - [original_id_feature,original_smiles_feature,warnings_feature]
-
-        if compound
-          csv << ["Original ID", inchi ? "InChI" : "SMILES", "Original SMILES"] + f.collect{|f| f.name} + ["Warnings"]
-        else
-          csv << ["Original ID", "Name"] + f.collect{|f| f.name} + ["Warnings"]
-        end
+        f = features - original_id_features - original_smiles_features - warnings_features
+        header = original_id_features.collect{|f| "ID "+Dataset.find(f.dataset_id).name}
+        header += original_smiles_features.collect{|f| "SMILES "+Dataset.find(f.dataset_id).name} if compound
+        compound ? header << "Canonical SMILES" : header << "Name"
+        header += f.collect{|f| f.name}
+        header += warnings_features.collect{|f| "Warnings "+Dataset.find(f.dataset_id).name} 
+        csv << header
 
         substances.each do |substance|
-          if compound
-            name = (inchi ? substance.inchi : substance.smiles)
-          else
-            name = substance.name
-          end
-          row = [values(substance,original_id_feature).first,name,values(substance,original_smiles_feature).first]
+          row = original_id_features.collect{|f| values(substance,f).join(" ")}
+          row += original_smiles_features.collect{|f| values(substance,f).join(" ")} if compound
+          compound ? row << substance.smiles : row << substance.name
           row += f.collect{|f| values(substance,f).join(" ")}
-          row << values(substance,warnings_feature).join(" ")
+          row += warnings_features.collect{|f| values(substance,f).uniq.join(" ")} 
           csv << row
         end
+
       end
     end
 
@@ -373,23 +355,13 @@ module OpenTox
     # Dataset operations
 
     # Merge an array of datasets 
-    # @param [Array] OpenTox::Dataset Array to be merged
-    # @param [Array] OpenTox::Feature Array to be merged
+    # @param [Array<OpenTox::Dataset>] datasets to be merged
     # @return [OpenTox::Dataset] merged dataset
-    def self.merge datasets, features
-      # TODO warnings
-      features.uniq!
+    def self.merge datasets
       dataset = self.create(:source => datasets.collect{|d| d.id.to_s}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", "))
       datasets.each do |d|
-        d.substances.each do |s|
-          dataset.add s,d.original_id_feature,d.original_id(s)
-          dataset.add s,d.original_smiles_feature,d.original_smiles(s)
-          features.each do |f|
-            d.values(s,f).each do |v|
-              dataset.add s,features.first,v #unless dataset.values(s,f).include? v
-            end
-          end
-        end
+        dataset.data_entries += d.data_entries
+        dataset.warnings += d.warnings
       end
       dataset.save
       dataset
@@ -400,6 +372,7 @@ module OpenTox
     def copy
       dataset = Dataset.new
       dataset.data_entries = data_entries
+      dataset.warnings = warnings
       dataset.name = name
       dataset.source = id.to_s
       dataset.save
@@ -450,6 +423,16 @@ module OpenTox
       end
       dataset.save
       dataset
+    end
+
+    def merge_nominal_features nominal_features, maps=[]
+      dataset = self.copy
+      new_feature = MergedNominalBioActivity.find_or_create_by(:name => nominal_features.collect{|f| f.name}.join("/") + " (transformed)", :original_feature_id => feature.id, :transformation => map, :accept_values => map.values.sort)
+
+      compounds.each do |c|
+        if map
+          values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
+        else
     end
     
     def transform # TODO

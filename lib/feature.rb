@@ -33,6 +33,11 @@ module OpenTox
   class NumericBioActivity < NumericFeature
   end
 
+  # Merged nominal biological activity
+  class MergedNominalBioActivity < NominalFeature
+    field :original_feature_ids, type: Array
+  end
+
   # Transformed nominal biological activity
   class TransformedNominalBioActivity < NominalFeature
     field :original_feature_id, type: BSON::ObjectId
