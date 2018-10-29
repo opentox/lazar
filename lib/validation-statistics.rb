@@ -150,8 +150,7 @@ module OpenTox
         y = {:all => [],:without_warnings => []}
         self.nr_predictions = {:all =>0,:without_warnings => 0}
         predictions.each do |cid,pred|
-          p pred
-          if pred[:value] and pred[:measurements] 
+          !if pred[:value] and pred[:measurements] and !pred[:measurements].empty?
             self.nr_predictions[:all] +=1
             x[:all] << pred[:measurements].median
             y[:all] << pred[:value]

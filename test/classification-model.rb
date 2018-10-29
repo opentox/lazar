@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class LazarClassificationTest < MiniTest::Test
+class ClassificationModelTest < MiniTest::Test
 
   def test_classification_default
     algorithms = {
@@ -31,31 +31,6 @@ class LazarClassificationTest < MiniTest::Test
       prediction = model.predict example[:compound]
       assert_equal example[:prediction], prediction[:value]
     end
-
-    # make a dataset prediction
-    compound_dataset = OpenTox::Dataset.from_csv_file File.join(DATA_DIR,"multi_cell_call.csv")
-    prediction_dataset = model.predict compound_dataset
-    puts prediction_dataset.to_csv
-    assert_equal compound_dataset.compounds.size, prediction_dataset.compounds.size
-    c = Compound.from_smiles "CC(CN(CC(O)C)N=O)O"
-    prediction_feature = prediction_dataset.features.select{|f| f.class == NominalLazarPrediction}[0]
-    assert_equal ["true"], prediction_dataset.values(c, prediction_feature)
-    p_true = LazarPredictionProbability.find_by(:name => "true")
-    p_false = LazarPredictionProbability.find_by(:name => "false")
-    p p_true
-    assert_equal [0.7], prediction_dataset.values(c,p_true)
-    assert_equal [0.0], prediction_dataset.values(c,p_false)
-    assert_equal 0.0, p_false
-
-#    cid = prediction_dataset.compounds[7].id.to_s
-#    assert_equal "Could not find similar substances with experimental data in the training dataset.", prediction_dataset.predictions[cid][:warnings][0]
-#    expectations = ["Cannot create prediction: Only one similar compound in the training set.",
-#    "Could not find similar substances with experimental data in the training dataset."]
-#    prediction_dataset.predictions.each do |cid,pred|
-#      assert_includes expectations, pred[:warnings][0] if pred[:value].nil?
-#    end
-#    cid = Compound.from_smiles("CCOC(=O)N").id.to_s
-#    assert_match "excluded", prediction_dataset.predictions[cid][:info]
   end
  
   def test_classification_parameters
@@ -81,16 +56,19 @@ class LazarClassificationTest < MiniTest::Test
   end
 
   def test_dataset_prediction
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"multi_cell_call.csv")
+    test_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     model = Model::Lazar.create training_dataset: training_dataset
-    result = model.predict training_dataset
-    puts result.to_csv
+    result = model.predict test_dataset
     assert_kind_of Dataset, result
-    assert 3, result.features.size
-    assert 8, result.compounds.size
-    assert_equal ["true"], result.values(result.compounds.first, result.features[0])
-    assert_equal [0.65], result.values(result.compounds.first, result.features[1])
-    assert_equal [0], result.values(result.compounds.first, result.features[2]) # classification returns nil, check if 
+    assert_equal 7, result.features.size
+    assert_equal 85, result.compounds.size
+    prediction_feature = result.prediction_features.first
+    assert_equal ["yes"], result.values(result.compounds[1], prediction_feature)
+    assert_equal ["no"], result.values(result.compounds[5], prediction_feature)
+    assert_nil result.predictions[result.compounds.first][:value]
+    assert_equal "yes", result.predictions[result.compounds[1]][:value]
+    assert_equal 0.27, result.predictions[result.compounds[1]][:probabilities]["no"].round(2)
   end
 
   def test_carcinogenicity_rf_classification

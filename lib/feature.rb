@@ -54,18 +54,30 @@ module OpenTox
   class NominalLazarPrediction < NominalFeature
     field :model_id, type: BSON::ObjectId
     field :training_feature_id, type: BSON::ObjectId
+    def name
+      "#{self[:name]} Prediction"
+    end
   end
 
   class LazarPredictionProbability < NominalLazarPrediction
+    def name
+      "probability(#{self[:name]})"
+    end
   end
 
   # Numeric lazar prediction
   class NumericLazarPrediction < NumericFeature
     field :model_id, type: BSON::ObjectId
     field :training_feature_id, type: BSON::ObjectId
+    def name
+      "#{name} Prediction"
+    end
   end
 
   class LazarPredictionInterval < NumericLazarPrediction
+    def name
+      "prediction_interval_#{self[:name]}"
+    end
   end
 
   class NominalSubstanceProperty < NominalFeature

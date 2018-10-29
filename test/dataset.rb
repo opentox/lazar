@@ -110,7 +110,7 @@ class DatasetTest < MiniTest::Test
       assert_match smi, d.warnings.join
     end
     duplicates.each do |inchi|
-      refute_empty d.values(Compound.from_inchi(inchi),d.warnings_feature)
+      refute_empty d.values(Compound.from_inchi(inchi),d.warnings_features.first)
     end
     d.delete
   end

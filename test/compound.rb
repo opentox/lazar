@@ -74,7 +74,7 @@ class CompoundTest < MiniTest::Test
   end
 
   def test_openbabel_segfault
-    inchi = "InChI=1S/C19H27NO7/c1-11-9-19(12(2)27-19)17(23)26-14-6-8-20(4)7-5-13(15(14)21)10-25-16(22)18(11,3)24/h5,11-12,14,24H,6-10H2,1-4H3/b13-5-/t11-,12-,14-,18-,19?/m1/s1"
+    inchi = "InChI=1S/C19H27NO7/c1-11-9-19(12(2)27-19)17(23)26-14-6-8-20(4)7-5-13(15(14)21)10-25-16(22)18(11,3)24/h5,11-12,14,24H,6-10H2,1-4H3/t11-,12-,14-,18-,19?/m1/s1"
 
     c = Compound.from_inchi(inchi)
     assert_equal inchi, c.inchi

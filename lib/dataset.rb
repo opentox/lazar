@@ -86,6 +86,10 @@ module OpenTox
       features.select{|f| f._type.match("SubstanceProperty")}
     end
 
+    def prediction_features
+      features.select{|f| f._type.match("Prediction")}
+    end
+
     # Writers
 
     # Add a value for a given substance and feature
@@ -350,6 +354,25 @@ module OpenTox
         sdf += "\n$$$$\n"
       end
       sdf
+    end
+
+    def predictions
+      predictions = {}
+      substances.each do |s| 
+        predictions[s] ||= {}
+        prediction_feature = prediction_features.first
+        predictions[s][:value] = values(s,prediction_feature).first
+        predictions[s][:warnings] = []
+        warnings_features.each { |w| predictions[s][:warnings] += values(s,w) }
+        if predictions[s][:value] and prediction_feature.is_a? NominalLazarPrediction
+          prediction_feature.accept_values.each do |v|
+            f = LazarPredictionProbability.find_by(:name => v, :model_id => prediction_feature.model_id, :training_feature_id => prediction_feature.training_feature_id)
+            predictions[s][:probabilities] ||= {}
+            predictions[s][:probabilities][v] = values(s,f).first
+          end
+        end
+      end
+      predictions
     end
 
     # Dataset operations

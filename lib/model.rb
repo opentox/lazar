@@ -346,7 +346,8 @@ module OpenTox
 
           # add predictions to dataset
           predictions.each do |substance_id,p|
-            d.add substance_id,warning_feature,p[:warnings].join(" ") if p[:warnings]
+            substance_id = BSON::ObjectId.from_string(substance_id)
+            d.add substance_id,warning_feature,p[:warnings].join(" ") unless p[:warnings].empty?
             unless p[:value].nil?
               d.add substance_id,f,p[:value]
               p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p} if p[:probabilities]
