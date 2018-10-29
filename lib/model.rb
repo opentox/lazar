@@ -277,7 +277,7 @@ module OpenTox
           prediction.merge! result
           prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
           #if neighbor_similarities.max < algorithms[:similarity][:warn_min]
-            #prediction[:warnings] << "Closest neighbor has similarity < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
+            #prediction[:warnings] << "Closest neighbor has similarity #{neighbor_similarities.max} < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
           #end
         end
         if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min] or threshold <= 0.2
@@ -328,7 +328,8 @@ module OpenTox
         elsif object.is_a? Array
           return predictions
         elsif object.is_a? Dataset
-          warning_feature = InfoFeature.find_or_create_by(:name => "Warnings")
+          d = object.copy
+          warning_feature = Warnings.find_or_create_by(:dataset_id => d.id)
           if prediction_feature.is_a? NominalBioActivity
             f = NominalLazarPrediction.find_or_create_by(:name => prediction_feature.name, :accept_values => prediction_feature.accept_values, :model_id => self.id, :training_feature_id => prediction_feature.id)
             probability_features = {}
@@ -337,17 +338,19 @@ module OpenTox
             end
           elsif prediction_feature.is_a? NumericBioActivity
             f = NumericLazarPrediction.find_or_create_by(:name => prediction_feature.name, :unit => prediction_feature.unit, :model_id => self.id, :training_feature_id => prediction_feature.id)
-            # TODO prediction interval
+            prediction_interval = {}
+            ["lower","upper"].each do |v|
+              prediction_interval[v] = LazarPredictionInterval.find_or_create_by(:name => v, :model_id => self.id, :training_feature_id => prediction_feature.id)
+            end
           end
 
-          d = Dataset.new(:name => object.name)
           # add predictions to dataset
           predictions.each do |substance_id,p|
             d.add substance_id,warning_feature,p[:warnings].join(" ") if p[:warnings]
             unless p[:value].nil?
               d.add substance_id,f,p[:value]
-              p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p}
-            # TODO prediction interval
+              p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p} if p[:probabilities]
+              p[:prediction_interval].each_with_index {|v,i| d.add substance_id, prediction_interval[i], v } if p[:prediction_interval]
             end
           end
           d.save

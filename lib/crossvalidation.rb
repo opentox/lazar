@@ -29,16 +29,14 @@ module OpenTox
         training_dataset = model.training_dataset
         training_dataset.folds(n).each_with_index do |fold,fold_nr|
           #fork do # parallel execution of validations can lead to Rserve and memory problems
-            $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
-            t = Time.now
-            validation = TrainTest.create(model, fold[0], fold[1])
-            cv.validation_ids << validation.id
-            cv.nr_instances += validation.nr_instances
-            cv.nr_unpredicted += validation.nr_unpredicted
-            $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
-          #end
+          $logger.debug "Dataset #{training_dataset.name}: Fold #{fold_nr} started"
+          t = Time.now
+          validation = TrainTest.create(model, fold[0], fold[1])
+          cv.validation_ids << validation.id
+          cv.nr_instances += validation.nr_instances
+          cv.nr_unpredicted += validation.nr_unpredicted
+          $logger.debug "Dataset #{training_dataset.name}, Fold #{fold_nr}:  #{Time.now-t} seconds"
         end
-        #Process.waitall
         cv.save
         $logger.debug "Nr unpredicted: #{cv.nr_unpredicted}"
         cv.statistics

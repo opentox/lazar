@@ -401,7 +401,7 @@ module OpenTox
             substance.dataset_ids << dataset.id
             substance.dataset_ids.uniq!
             substance.save
-            dataset.data_entries << data_entries.select{|row| row[0] == substance.id}
+            dataset.data_entries += data_entries.select{|row| row[0] == substance.id}
           end
           dataset.save
           dataset
@@ -433,6 +433,8 @@ module OpenTox
         if map
           values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
         else
+        end
+      end
     end
     
     def transform # TODO
@@ -442,32 +444,6 @@ module OpenTox
     def delete
       compounds.each{|c| c.dataset_ids.delete id.to_s}
       super
-    end
-
-  end
-
-  # Dataset for lazar predictions
-  class LazarPrediction < Dataset
-    field :creator, type: String
-    #field :prediction_feature_id, type: BSON::ObjectId
-    field :predictions, type: Hash, default: {}
-
-    # Get prediction feature
-    # @return [OpenTox::Feature]
-    def prediction_feature
-      Feature.find prediction_feature_id
-    end
-
-    def prediction compound
-    end
-
-    def probability klass
-    end
-
-    def prediction_interval
-    end
-
-    def predictions
     end
 
   end

@@ -65,7 +65,7 @@ module OpenTox
     field :training_feature_id, type: BSON::ObjectId
   end
 
-  class LazarConfidenceInterval < NumericLazarPrediction
+  class LazarPredictionInterval < NumericLazarPrediction
   end
 
   class NominalSubstanceProperty < NominalFeature

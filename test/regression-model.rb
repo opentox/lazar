@@ -168,4 +168,22 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal 0.83, prediction[:value].round(2)
   end
 
+  def test_dataset_prediction
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM.medi_log10.csv")
+    model = Model::Lazar.create training_dataset: training_dataset
+    result = model.predict training_dataset
+    assert_kind_of Dataset, result
+    puts result.to_csv
+    puts result.features
+    # TODO
+    # check prediction
+    # check prediction_interval
+    # check warnings/applicability domain
+    assert 3, result.features.size
+    assert 8, result.compounds.size
+    assert_equal ["true"], result.values(result.compounds.first, result.features[1])
+    assert_equal [0.65], result.values(result.compounds.first, result.features[2])
+    assert_equal [0], result.values(result.compounds.first, result.features[2]) # classification returns nil, check if 
+  end
+
 end

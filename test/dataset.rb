@@ -172,6 +172,10 @@ class DatasetTest < MiniTest::Test
       fold.each do |d|
         assert_operator d.compounds.size, :>=, d.compounds.uniq.size
       end
+      refute_empty fold[0].compounds
+      refute_empty fold[1].compounds
+      refute_empty fold[0].data_entries
+      refute_empty fold[1].data_entries
       assert_operator fold[0].compounds.size, :>=, fold[1].compounds.size
       assert_equal dataset.substances.size, fold.first.substances.size + fold.last.substances.size
       assert_empty (fold.first.substances & fold.last.substances)

@@ -84,6 +84,7 @@ class LazarClassificationTest < MiniTest::Test
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     model = Model::Lazar.create training_dataset: training_dataset
     result = model.predict training_dataset
+    puts result.to_csv
     assert_kind_of Dataset, result
     assert 3, result.features.size
     assert 8, result.compounds.size
