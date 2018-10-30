@@ -487,6 +487,16 @@ module OpenTox
       end
 
       # TODO from_pubchem_aid
+      def self.from_dataset training_dataset: , prediction_feature: , species: , endpoint: 
+        model_validation = Model::Validation.create species: species, endpoint: endpoint
+        p "create model"
+        model = Lazar.create training_dataset: training_dataset, prediction_feature: prediction_feature
+        model_validation[:model_id] = model.id
+        p "create_crossvalidations"
+        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id # full class name required
+        model_validation.save
+        model_validation
+      end
 
       # Create and validate a lazar model from a csv file with training data and a json file with metadata
       # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at https://github.com/opentox/lazar-public-data.

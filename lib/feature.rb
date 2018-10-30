@@ -34,7 +34,13 @@ module OpenTox
   end
 
   # Merged nominal biological activity
-  class MergedNominalBioActivity < NominalFeature
+  class MergedNominalBioActivity < NominalBioActivity
+    field :original_feature_ids, type: Array
+    field :transformations, type: Array
+  end
+
+  # Merged numeric biological activity
+  class MergedNumericBioActivity < NumericBioActivity
     field :original_feature_ids, type: Array
   end
 

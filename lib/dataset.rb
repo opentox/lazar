@@ -94,6 +94,12 @@ module OpenTox
       features.select{|f| f._type.match("Prediction")}
     end
 
+    # Get nominal and numeric merged features
+    # @return [Array<OpenTox::NominalLazarPrediction,OpenTox::NumericLazarPrediction>]
+    def merged_features
+      features.select{|f| f._type.match("Merged")}
+    end
+
     # Writers
 
     # Add a value for a given substance and feature
@@ -425,27 +431,48 @@ module OpenTox
       end
       chunks
     end
-=begin
+
     # Merge an array of datasets 
     # @param [Array<OpenTox::Dataset>] datasets to be merged
     # @return [OpenTox::Dataset] merged dataset
-    def self.merge datasets: datasets, features: features, value_maps: value_maps, keep_original_features: keep_original_features, remove_duplicates: remove_duplicates
+    def self.merge datasets: , features: , value_maps: , keep_original_features: , remove_duplicates: 
       dataset = self.create(:source => datasets.collect{|d| d.id.to_s}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", ")+" merged")
-      datasets.each_with_index do |d,i|
+
+      datasets.each do |d|
         dataset.data_entries += d.data_entries
         dataset.warnings += d.warnings
-      end
+      end if keep_original_features
+
       feature_classes = features.collect{|f| f.class}.uniq
+      merged_feature = nil
       if feature_classes.size == 1
-        if features.first.nominal?
-          merged_feature = MergedNominalBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " (merged)", :original_feature_id => feature.id, :transformation => map, :accept_values => map.values.sort)
-      compounds.each do |c|
-        values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
+        if features.first.kind_of? NominalFeature
+          merged_feature = MergedNominalBioActivity.find_or_create_by(:name => features.collect{|f| f.name}.uniq.join(", ") + " merged", :original_feature_ids => features.collect{|f| f.id}, :transformations => value_maps)
+        else
+          merged_feature = MergedNumericBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " merged", :original_feature_ids => features.collect{|f| f.id}) # TODO, :transformations 
+        end
+      else
+        bad_request_error "Cannot merge features of different types (#{feature_classes})."
       end
+
+      accept_values = []
+      features.each_with_index do |f,i|
+        dataset.data_entries += datasets[i].data_entries.select{|de| de[1] == f.id}.collect do |de|
+          value_maps[i] ?  v = value_maps[i][de[2]] : v = de[2]
+          accept_values << v
+          [de[0],merged_feature.id,v]
+        end
+      end
+
+      if merged_feature.is_a? MergedNominalBioActivity
+        merged_feature.accept_values = accept_values.uniq.sort
+        merged_feature.save
+      end
+
+      dataset.data_entries.uniq! if remove_duplicates
       dataset.save
       dataset
     end
-=end
 
     # Change nominal feature values
     # @param [NominalFeature] Original feature

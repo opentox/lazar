@@ -190,37 +190,18 @@ class DatasetTest < MiniTest::Test
     assert_equal d.id.to_s, copy.source
   end
 
-  def test_map
-    skip
-    d = Dataset.from_csv_file("#{DATA_DIR}/hamster_carcinogenicity.csv")
-    assert_equal 1, d.bioactivity_features.size
-    map = {"true" => "carcinogen", "false" => "non-carcinogen"}
-    mapped = d.map(d.bioactivity_features.first, map)
-    c = d.compounds.sample
-    assert_equal d.values(c,d.bioactivity_features.first).collect{|v| map[v]}, mapped.values(c,mapped.transformed_bioactivity_features.first)
-    assert_equal d.values(c,d.original_id_features.first), mapped.values(c,mapped.original_id_features.first)
-    assert_equal d.bioactivity_features.first.name, mapped.bioactivity_features.first.name
-    assert_equal ["carcinogen","non-carcinogen"], mapped.transformed_bioactivity_features.first.accept_values
-  end
-
   def test_merge
-    skip
     kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
     efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
-    #p "mapping hansen"
-    #hansen_mapped = hansen.map hansen.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
-    #p "mapping efsa"
-    #efsa_mapped = efsa.map efsa.bioactivity_features.first, {"1" => "mutagen", "0" => "nonmutagen"}
-    #datasets = [kazius,hansen_mapped,efsa_mapped]
     datasets = [kazius,hansen,efsa]
-    d = Dataset.merge datasets#, datasets.collect{|d| d.bioactivity_features}.flatten.uniq
-    assert_equal 8281, d.compounds.size
+    map = {"1" => "mutagen", "0" => "nonmutagen"}
+    dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,map,map], keep_original_features: true, remove_duplicates: false
+    assert_equal 8281, dataset.compounds.size
+    assert_equal 9, dataset.features.size
     c = Compound.from_smiles("C/C=C/C=O")
-    assert_equal ["mutagen"], d.values(c,d.bioactivity_features.first)
-    assert_equal datasets.collect{|d| d.id.to_s}.join(", "), d.source
-    assert_equal 8, d.features.size
-    File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
+    assert_equal ["mutagen"], dataset.values(c,dataset.merged_features.first)
+    #File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
   end
 
   # serialisation

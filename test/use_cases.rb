@@ -3,18 +3,25 @@ require_relative "setup.rb"
 class UseCasesTest < MiniTest::Test
 
   def test_PA
-    skip
     kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
     efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
     datasets = [kazius,hansen,efsa]
-    map = {"true" => "carcinogen", "false" => "non-carcinogen"}
+    map = {"1" => "mutagen", "0" => "nonmutagen"}
+    p "merging"
     training_dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,map,map], keep_original_features: false, remove_duplicates: true
-    model = Model::Validation.create training_dataset: training_dataset, species: "Salmonella typhimurium", endpoint: "Mutagenicity"
+    assert_equal 8281, training_dataset.compounds.size
+    p training_dataset.features.size
+    p training_dataset.id
+    training_dataset = Dataset.find('5bd8ac8fca62695d767fca6b')
+    p "create model_validation"
+    model_validation = Model::Validation.from_dataset training_dataset: training_dataset, prediction_feature: training_dataset.merged_features.first, species: "Salmonella typhimurium", endpoint: "Mutagenicity"
+    p model_validation.id
+    p "predict"
     pa = Dataset.from_sdf_file "#{DATA_DIR}/PA.sdf"
-    prediction_dataset = model.predict pa
+    prediction_dataset = model_dataset.predict pa
+    p prediction_dataset.id
     puts prediction_dataset.to_csv
-    assert_equal 8281, d.compounds.size
   end
 
   def test_public_models
