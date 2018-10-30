@@ -70,7 +70,7 @@ module OpenTox
     field :model_id, type: BSON::ObjectId
     field :training_feature_id, type: BSON::ObjectId
     def name
-      "#{name} Prediction"
+      "#{self[:name]} Prediction"
     end
   end
 

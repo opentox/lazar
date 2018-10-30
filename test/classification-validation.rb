@@ -9,6 +9,7 @@ class ValidationClassificationTest < MiniTest::Test
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::Lazar.create training_dataset: dataset
     cv = ClassificationCrossValidation.create model
+    p cv
     assert cv.accuracy[:without_warnings] > 0.65, "Accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65, this may occur due to an unfavorable training/test set split"
     assert cv.weighted_accuracy[:all] > cv.accuracy[:all], "Weighted accuracy (#{cv.weighted_accuracy[:all]}) should be larger than accuracy (#{cv.accuracy[:all]})."
     File.open("/tmp/tmp.pdf","w+"){|f| f.puts cv.probability_plot(format:"pdf")}
