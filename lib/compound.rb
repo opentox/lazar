@@ -10,7 +10,6 @@ module OpenTox
     field :inchikey, type: String
     field :names, type: Array
     field :cid, type: String
-    #field :chemblid, type: String
     field :png_id, type: BSON::ObjectId
     field :svg_id, type: BSON::ObjectId
     field :sdf_id, type: BSON::ObjectId
@@ -231,15 +230,6 @@ module OpenTox
       update(:cid => RestClientWrapper.post(File.join(PUBCHEM_URI, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
-
-=begin
-    # Get ChEMBL database compound id, obtained via REST call to ChEMBL
-    # @return [String] 
-    def chemblid
-      update(:chemblid => JSON.parse(RestClientWrapper.get(File.join CHEMBL_URI,URI.escape(smiles)+".json"))["molecule_chembl_id"])
-      self["chemblid"]
-    end
-=end
 
     def db_neighbors min_sim: 0.2, dataset_id:
       #p fingerprints[DEFAULT_FINGERPRINT]

@@ -41,12 +41,14 @@ module OpenTox
     end
 
     # Get all values for a given substance and feature
-    # @param [OpenTox::Substance,BSON::ObjectId] substance or substance id
-    # @param [OpenTox::Feature,BSON::ObjectId] feature or feature id
+    # @param [OpenTox::Substance,BSON::ObjectId,String] substance or substance id
+    # @param [OpenTox::Feature,BSON::ObjectId,String] feature or feature id
     # @return [Array<TrueClass,FalseClass,Float>] values
     def values substance,feature
       substance = substance.id if substance.is_a? Substance
       feature = feature.id if feature.is_a? Feature
+      substance = BSON::ObjectId.from_string(substance) if substance.is_a? String
+      feature = BSON::ObjectId.from_string(feature) if feature.is_a? String
       data_entries.select{|row| row[0] == substance and row[1] == feature}.collect{|row| row[2]}
     end
 
@@ -86,6 +88,8 @@ module OpenTox
       features.select{|f| f._type.match("SubstanceProperty")}
     end
 
+    # Get nominal and numeric prediction features
+    # @return [Array<OpenTox::NominalLazarPrediction,OpenTox::NumericLazarPrediction>]
     def prediction_features
       features.select{|f| f._type.match("Prediction")}
     end
@@ -377,19 +381,6 @@ module OpenTox
 
     # Dataset operations
 
-    # Merge an array of datasets 
-    # @param [Array<OpenTox::Dataset>] datasets to be merged
-    # @return [OpenTox::Dataset] merged dataset
-    def self.merge datasets
-      dataset = self.create(:source => datasets.collect{|d| d.id.to_s}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", "))
-      datasets.each do |d|
-        dataset.data_entries += d.data_entries
-        dataset.warnings += d.warnings
-      end
-      dataset.save
-      dataset
-    end
-
     # Copy a dataset
     # @return OpenTox::Dataset dataset copy
     def copy
@@ -434,6 +425,27 @@ module OpenTox
       end
       chunks
     end
+=begin
+    # Merge an array of datasets 
+    # @param [Array<OpenTox::Dataset>] datasets to be merged
+    # @return [OpenTox::Dataset] merged dataset
+    def self.merge datasets: datasets, features: features, value_maps: value_maps, keep_original_features: keep_original_features, remove_duplicates: remove_duplicates
+      dataset = self.create(:source => datasets.collect{|d| d.id.to_s}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", ")+" merged")
+      datasets.each_with_index do |d,i|
+        dataset.data_entries += d.data_entries
+        dataset.warnings += d.warnings
+      end
+      feature_classes = features.collect{|f| f.class}.uniq
+      if feature_classes.size == 1
+        if features.first.nominal?
+          merged_feature = MergedNominalBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " (merged)", :original_feature_id => feature.id, :transformation => map, :accept_values => map.values.sort)
+      compounds.each do |c|
+        values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
+      end
+      dataset.save
+      dataset
+    end
+=end
 
     # Change nominal feature values
     # @param [NominalFeature] Original feature

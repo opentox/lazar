@@ -28,7 +28,7 @@ module OpenTox
         end
         predictions.select!{|cid,p| p[:value] and p[:measurements]}
         # hack to avoid mongos file size limit error on large datasets
-        predictions.each{|cid,p| p[:neighbors] = []} #if model.training_dataset.name.match(/mutagenicity/i)
+        predictions.each{|cid,p| p.delete(:neighbors)} #if model.training_dataset.name.match(/mutagenicity/i)
         validation = self.new(
           :model_id => validation_model.id,
           :test_dataset_id => test_set.id,

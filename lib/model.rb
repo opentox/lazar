@@ -46,6 +46,7 @@ module OpenTox
         model.prediction_feature_id = prediction_feature.id
         model.training_dataset_id = training_dataset.id
         model.name = "#{prediction_feature.name} (#{training_dataset.name})" 
+        
         # git or gem versioning
         dir = File.dirname(__FILE__)
         path = File.expand_path("../", File.expand_path(dir))
@@ -485,6 +486,8 @@ module OpenTox
         model.is_a? LazarClassification
       end
 
+      # TODO from_pubchem_aid
+
       # Create and validate a lazar model from a csv file with training data and a json file with metadata
       # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at https://github.com/opentox/lazar-public-data.
       # @return [OpenTox::Model::Validation] lazar model with three independent 10-fold crossvalidations
@@ -531,6 +534,14 @@ module OpenTox
         model_validation
       end
 
+    end
+
+    # TODO
+    def to_json
+      "{\n  metadata:#{super},\n  model:#{model.to_json},  repeated_crossvalidations:#{repeated_crossvalidations.to_json}\n}"
+    end
+
+    def from_json_file
     end
 
   end

@@ -32,6 +32,27 @@ class ClassificationModelTest < MiniTest::Test
       assert_equal example[:prediction], prediction[:value]
     end
   end
+
+  def test_export_import
+    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
+    export = Model::Lazar.create  training_dataset: training_dataset
+    File.open("tmp.csv","w+"){|f| f.puts export.to_json }
+    import = Model::LazarClassification.new JSON.parse(File.read "tmp.csv")
+    assert_kind_of Model::LazarClassification, import
+    import.algorithms.each{|k,v| v.transform_keys!(&:to_sym) if v.is_a? Hash}
+    import.algorithms.transform_keys!(&:to_sym)
+    assert_equal export.algorithms, import.algorithms
+    [ {
+      :compound => OpenTox::Compound.from_smiles("OCC(CN(CC(O)C)N=O)O"),
+      :prediction => "false",
+    },{
+      :compound => OpenTox::Compound.from_smiles("O=CNc1scc(n1)c1ccc(o1)[N+](=O)[O-]"),
+      :prediction => "true",
+    } ].each do |example|
+      prediction = import.predict example[:compound]
+      assert_equal example[:prediction], prediction[:value]
+    end
+  end
  
   def test_classification_parameters
     algorithms = {

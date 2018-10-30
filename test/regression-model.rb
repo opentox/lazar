@@ -173,17 +173,12 @@ class LazarRegressionTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: training_dataset
     result = model.predict training_dataset
     assert_kind_of Dataset, result
-    puts result.to_csv
-    puts result.features
-    # TODO
-    # check prediction
-    # check prediction_interval
-    # check warnings/applicability domain
-    assert 3, result.features.size
-    assert 8, result.compounds.size
-    assert_equal ["true"], result.values(result.compounds.first, result.features[1])
-    assert_equal [0.65], result.values(result.compounds.first, result.features[2])
-    assert_equal [0], result.values(result.compounds.first, result.features[2]) # classification returns nil, check if 
+    assert_equal 6, result.features.size
+    assert_equal 88, result.compounds.size
+    assert_equal [1.95], result.values(result.compounds.first, result.bioactivity_features[0]).collect{|v| v.round(2)}
+    assert_equal [1.37], result.values(result.compounds[6], result.bioactivity_features[0]).collect{|v| v.round(2)}
+    assert_equal [1.79], result.values(result.compounds[6], result.prediction_features[0]).collect{|v| v.round(2)}
+    assert_equal [1.84,1.73], result.values(result.compounds[7], result.bioactivity_features[0]).collect{|v| v.round(2)}
   end
 
 end

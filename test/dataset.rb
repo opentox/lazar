@@ -191,6 +191,7 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_map
+    skip
     d = Dataset.from_csv_file("#{DATA_DIR}/hamster_carcinogenicity.csv")
     assert_equal 1, d.bioactivity_features.size
     map = {"true" => "carcinogen", "false" => "non-carcinogen"}
@@ -203,6 +204,7 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_merge
+    skip
     kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
     hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
     efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
@@ -218,7 +220,6 @@ class DatasetTest < MiniTest::Test
     assert_equal ["mutagen"], d.values(c,d.bioactivity_features.first)
     assert_equal datasets.collect{|d| d.id.to_s}.join(", "), d.source
     assert_equal 8, d.features.size
-    p "serializing"
     File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
   end
 
