@@ -207,21 +207,40 @@ module OpenTox
     # @param [Integer] PubChem AssayID (AID)
     # @return [OpenTox::Dataset]
     def self.from_pubchem_aid aid
-      url = File.join PUBCHEM_URI, "assay/aid/#{aid}/CSV"
-      assay_metadata = JSON.parse(RestClientWrapper.get(File.join PUBCHEM_URI,"assay/aid/#{aid}/description/JSON").to_s)["PC_AssayContainer"][0]["assay"]["descr"]
+      # TODO get regression data
+      aid_url = File.join PUBCHEM_URI, "assay/aid/#{aid}"
+      assay_metadata = JSON.parse(RestClientWrapper.get(File.join aid_url,"description/JSON").to_s)["PC_AssayContainer"][0]["assay"]["descr"]
       name = assay_metadata["name"].gsub(/\s+/,"_")
-      csv = CSV.parse(RestClientWrapper.get(url))
-      csv.select!{|r| r[0].match /^\d/} # discard header rows
+      dataset = self.new(:source => aid_url, :name => name) 
+      # Get assay data in chunks
+      # Assay record retrieval is limited to 10000 SIDs
+      # https://pubchemdocs.ncbi.nlm.nih.gov/pug-rest-tutorial$_Toc458584435
+      list = JSON.parse(RestClientWrapper.get(File.join aid_url, "sids/JSON?list_return=listkey").to_s)["IdentifierList"]
+      listkey = list["ListKey"]
+      size = list["Size"]
+      start = 0
+      csv = []
+      while start < size
+        url = File.join aid_url, "CSV?sid=listkey&listkey=#{listkey}&listkey_start=#{start}&listkey_count=10000"
+        csv += CSV.parse(RestClientWrapper.get(url).to_s).select{|r| r[0].match /^\d/} # discard header rows
+        start += 10000
+      end
       table = [["SID","SMILES",name]]
       csv.each_slice(100) do |slice| # get SMILES in chunks
-        sids = slice.collect{|s| s[1]}
-        smiles = RestClientWrapper.get(File.join(PUBCHEM_URI,"compound/cid/#{sids.join(",")}/property/CanonicalSMILES/TXT")).split("\n").collect{|s| s.to_s}
-        abort("Could not get SMILES for all SIDs from PubChem") unless sids.size == smiles.size
-        smiles.each_with_index do |smi,i|
-          table << [slice[i][1].to_s,smi.chomp,slice[i][3].to_s]
+        cids = slice.collect{|s| s[2]}
+        pubchem_cids = []
+        JSON.parse(RestClientWrapper.get(File.join(PUBCHEM_URI,"compound/cid/#{cids.join(",")}/property/CanonicalSMILES/JSON")).to_s)["PropertyTable"]["Properties"].each do |prop|
+          i = cids.index(prop["CID"].to_s)
+          value = slice[i][3]
+          if value == "Active" or value == "Inactive"
+            table << [slice[i][1].to_s,prop["CanonicalSMILES"],slice[i][3].to_s]
+            pubchem_cids << prop["CID"].to_s
+          else
+            dataset.warnings << "Ignoring CID #{prop["CID"]}/ SMILES #{prop["CanonicalSMILES"]}, because PubChem activity is #{value}."
+          end
         end
+        (cids-pubchem_cids).each { |cid| dataset.warnings << "Could not retrieve SMILES for CID #{cid}, all entries are ignored." }
       end
-      dataset = self.new(:source => url, :name => name) 
       dataset.parse_table table
       dataset
     end
@@ -315,7 +334,7 @@ module OpenTox
         positions = []
         all_substances.each_with_index{|c,i| positions << i+1 if !c.blank? and c.smiles and c.smiles == substance.smiles}
         all_substances.select{|s| s.smiles == substance.smiles}.each do |s|
-          add s, warnings_feature, "Duplicate compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
+          add s, warnings_feature, "Duplicated compound #{substance.smiles} at rows #{positions.join(', ')}. Entries are accepted, assuming that measurements come from independent experiments." 
         end
       end
       save
