@@ -1,6 +1,6 @@
 require_relative "setup.rb"
 
-class ValidationRegressionTest < MiniTest::Test
+class RegressionValidationTest < MiniTest::Test
   include OpenTox::Validation
 
   # defaults

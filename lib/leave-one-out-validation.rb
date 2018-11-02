@@ -16,18 +16,11 @@ module OpenTox
         loo = klass.new :model_id => model.id
         predictions = model.predict model.training_dataset.substances
         predictions.each{|cid,p| p.delete(:neighbors)}
-        nr_unpredicted = 0
         predictions.each do |cid,prediction|
-          if prediction[:value]
-            prediction[:measurements] = model.training_dataset.values(cid, prediction[:prediction_feature_id])
-          else
-            nr_unpredicted += 1
-          end
+          prediction[:measurements] = model.training_dataset.values(cid, prediction[:prediction_feature_id]) if prediction[:value]
           predictions.delete(cid) unless prediction[:value] and prediction[:measurements]
         end
         predictions.select!{|cid,p| p[:value] and p[:measurements]}
-        loo.nr_instances = predictions.size
-        loo.nr_unpredicted = nr_unpredicted
         loo.predictions = predictions
         loo.statistics
         $logger.debug "#{model.name}, LOO validation:  #{Time.now-t} seconds"

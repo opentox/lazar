@@ -1,12 +1,13 @@
 require_relative "setup.rb"
 
-class ValidationClassificationTest < MiniTest::Test
+class ClassificationValidationTest < MiniTest::Test
   include OpenTox::Validation
 
   # defaults
 
   def test_default_classification_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    #dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
+    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
     model = Model::Lazar.create training_dataset: dataset
     cv = ClassificationCrossValidation.create model
     assert cv.accuracy[:without_warnings] > 0.65, "Accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65, this may occur due to an unfavorable training/test set split"
@@ -45,7 +46,6 @@ class ValidationClassificationTest < MiniTest::Test
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     model = Model::Lazar.create training_dataset: dataset
     loo = ClassificationLeaveOneOut.create model
-    assert_equal 77, loo.nr_unpredicted
     refute_empty loo.confusion_matrix
     assert loo.accuracy[:without_warnings] > 0.650
     assert loo.weighted_accuracy[:all] > loo.accuracy[:all], "Weighted accuracy (#{loo.weighted_accuracy[:all]}) should be larger than accuracy (#{loo.accuracy[:all]})."

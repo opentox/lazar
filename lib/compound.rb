@@ -230,36 +230,6 @@ module OpenTox
       update(:cid => RestClientWrapper.post(File.join(PUBCHEM_URI, "compound", "inchi", "cids", "TXT"),{:inchi => inchi}).strip) unless self["cid"] 
       self["cid"]
     end
-
-    def db_neighbors min_sim: 0.2, dataset_id:
-      #p fingerprints[DEFAULT_FINGERPRINT]
-      # from http://blog.matt-swain.com/post/87093745652/chemical-similarity-search-in-mongodb
-
-      #qn = default_fingerprint_size
-      #qmin = qn * threshold
-      #qmax = qn / threshold
-      #not sure if it is worth the effort of keeping feature counts up to date (compound deletions, additions, ...)
-      #reqbits = [count['_id'] for count in db.mfp_counts.find({'_id': {'$in': qfp}}).sort('count', 1).limit(qn - qmin + 1)]
-      aggregate = [
-        #{'$match': {'mfp.count': {'$gte': qmin, '$lte': qmax}, 'mfp.bits': {'$in': reqbits}}},
-        #{'$match' =>  {'_id' => {'$ne' => self.id}}}, # remove self
-        {'$project' => {
-          'similarity' => {'$let' => {
-            'vars' => {'common' => {'$size' => {'$setIntersection' => ["$fingerprints.#{DEFAULT_FINGERPRINT}", fingerprints[DEFAULT_FINGERPRINT]]}}},
-            'in' => {'$divide' => ['$$common', {'$subtract' => [{'$add' => [default_fingerprint_size, '$default_fingerprint_size']}, '$$common']}]}
-          }},
-          '_id' => 1,
-          #'measurements' => 1,
-          'dataset_ids' => 1
-        }},
-        {'$match' =>  {'similarity' => {'$gte' => min_sim}}},
-        {'$sort' => {'similarity' => -1}}
-      ]
-
-      # TODO move into aggregate pipeline, see http://stackoverflow.com/questions/30537317/mongodb-aggregation-match-if-value-in-array
-      $mongo["substances"].aggregate(aggregate).select{|r| r["dataset_ids"].include? dataset_id}
-        
-    end
     
     # Convert mmol to mg
     # @return [Float] value in mg

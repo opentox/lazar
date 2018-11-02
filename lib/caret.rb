@@ -22,11 +22,11 @@ module OpenTox
         end
         if independent_variables.flatten.uniq == ["NA"] or independent_variables.flatten.uniq == [] 
           prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
-          prediction[:warnings] << "No variables for regression model. Using weighted average of similar substances."
+          prediction[:warnings] = ["No variables for regression model, using weighted average of similar substances (no prediction interval available)."]
         elsif
           dependent_variables.size < 3
           prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
-          prediction[:warnings] << "Insufficient number of neighbors (#{dependent_variables.size}) for regression model. Using weighted average of similar substances."
+          prediction[:warnings] = ["Insufficient number of neighbors (#{dependent_variables.size}) for regression model, using weighted average of similar substances (no prediction interval available)."]
         else
           dependent_variables.each_with_index do |v,i| 
             dependent_variables[i] = to_r(v)
@@ -51,7 +51,8 @@ module OpenTox
             $logger.debug dependent_variables
             $logger.debug independent_variables
             prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
-            prediction[:warnings] << "R caret model creation error. Using weighted average of similar substances."
+            prediction[:warnings] ||= []
+            prediction[:warnings] << "R caret model creation error, using weighted average of similar substances (no prediction interval available)."
             return prediction
           end
           begin
@@ -72,12 +73,12 @@ module OpenTox
             $logger.debug "R caret prediction error for:"
             $logger.debug self.inspect
             prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
-            prediction[:warnings] << "R caret prediction error. Using weighted average of similar substances"
+            prediction[:warnings] << "R caret prediction error, using weighted average of similar substances (no prediction interval available)."
             return prediction
           end
           if prediction.nil? or prediction[:value].nil?
             prediction = Algorithm::Regression::weighted_average dependent_variables:dependent_variables, weights:weights
-            prediction[:warnings] << "Empty R caret prediction. Using weighted average of similar substances."
+            prediction[:warnings] << "Empty R caret prediction, using weighted average of similar substances (no prediction interval available)."
           end
         end
         prediction

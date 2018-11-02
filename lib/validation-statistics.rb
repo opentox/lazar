@@ -82,6 +82,7 @@ module OpenTox
           self.weighted_accuracy[a] = (weighted_confusion_matrix[a][0][0]+weighted_confusion_matrix[a][1][1])/confidence_sum[a].to_f
         end
         $logger.debug "Accuracy #{accuracy}"
+        $logger.debug "Nr Predictions #{nr_predictions}"
         save
         {
           :accept_values => accept_values,

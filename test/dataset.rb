@@ -23,9 +23,9 @@ class DatasetTest < MiniTest::Test
   
   def test_import_pubchem
     d = Dataset.from_pubchem_aid 1191
-    assert_equal 87, d.compounds.size
+    assert_equal 86, d.compounds.size
     assert_equal 3, d.features.size
-    assert_equal ["Active"], d.values(d.compounds[10],d.features[2])
+    assert_equal ["Inactive"], d.values(d.compounds[10],d.features[2])
     # TODO endpoint name
     # TODO regression import
   end

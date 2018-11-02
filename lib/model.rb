@@ -38,7 +38,6 @@ module OpenTox
       def self.create prediction_feature:nil, training_dataset:, algorithms:{}
         bad_request_error "Please provide a training_dataset and a optional prediction_feature." unless prediction_feature or training_dataset
         prediction_feature ||= training_dataset.features.select{|f| f.is_a? NumericBioActivity or f.is_a? NominalBioActivity}.first unless prediction_feature
-        # TODO: prediction_feature without training_dataset: use all available data
 
         # guess model type
         prediction_feature.is_a?(NumericBioActivity) ? model = LazarRegression.new : model = LazarClassification.new
@@ -198,9 +197,8 @@ module OpenTox
       # Predict a substance (compound or nanoparticle)
       # @param [OpenTox::Substance]
       # @return [Hash]
-      def predict_substance substance, threshold = self.algorithms[:similarity][:min]
+      def predict_substance substance, threshold = self.algorithms[:similarity][:min], prediction = nil
         
-        t = Time.now
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
         when /tanimoto/ # binary features
@@ -229,7 +227,7 @@ module OpenTox
           bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
         end
         
-        prediction = {:warnings => [], :measurements => []}
+        prediction ||= {:warnings => [], :measurements => []}
         prediction[:warnings] << "Similarity threshold #{threshold} < #{algorithms[:similarity][:min]}, prediction may be out of applicability domain." if threshold < algorithms[:similarity][:min]
         neighbor_ids = []
         neighbor_similarities = []
@@ -240,7 +238,7 @@ module OpenTox
         substance_ids.each_with_index do |s,i|
           # handle query substance
           if substance.id.to_s == s
-            prediction[:measurements] << dependent_variables[i]
+            prediction[:measurements] << dependent_variables[i] unless threshold < algorithms[:similarity][:min] # add measurements only once at first pass
             prediction[:info] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
           else
             if fingerprints?
@@ -277,17 +275,13 @@ module OpenTox
           result = Algorithm.run algorithms[:prediction][:method], dependent_variables:neighbor_dependent_variables,independent_variables:neighbor_independent_variables ,weights:neighbor_similarities, query_variables:query_descriptors
           prediction.merge! result
           prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
-          #if neighbor_similarities.max < algorithms[:similarity][:warn_min]
-            #prediction[:warnings] << "Closest neighbor has similarity #{neighbor_similarities.max} < #{algorithms[:similarity][:warn_min]}. Prediction may be out of applicability domain."
-          #end
         end
         if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min] or threshold <= 0.2
           prediction
         else # try again with a lower threshold
-          predict_substance substance, 0.2
+          prediction[:warnings] << "Lowering similarity threshold to 0.2."
+          predict_substance substance, 0.2, prediction
         end
-        #p Time.now - t
-        prediction
       end
 
       # Predict a substance (compound or nanoparticle), an array of substances or a dataset

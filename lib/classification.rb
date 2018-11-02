@@ -21,7 +21,7 @@ module OpenTox
         probabilities = probabilities.collect{|a,p| [a,weights.max*p]}.to_h
         p_max = probabilities.collect{|a,p| p}.max
         prediction = probabilities.key(p_max)
-        {:value => prediction,:probabilities => probabilities,:warnings => []}
+        {:value => prediction,:probabilities => probabilities}
       end
 
     end

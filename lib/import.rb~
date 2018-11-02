@@ -47,9 +47,9 @@ module OpenTox
               :core_id => core_id,
               :coating_ids => coating_ids
             )
-            np["bundles"].keys.each do |bundle_uri|
-              nanoparticle.dataset_ids << datasets[bundle_uri].id
-            end
+            #np["bundles"].keys.each do |bundle_uri|
+              #nanoparticle.dataset_ids << datasets[bundle_uri].id
+            #end
 
             studies = JSON.parse(RestClientWrapper.get(File.join(np["compound"]["URI"],"study"), {}, {accept: :json}))["study"]
             studies.each do |study|

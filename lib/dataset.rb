@@ -310,10 +310,6 @@ module OpenTox
         end
 
         all_substances << substance
-        substance.dataset_ids << self.id
-        substance.dataset_ids.uniq!
-        substance.save
-
         add substance, original_id, original_id_value 
 
         vals.each_with_index do |v,j|
@@ -422,6 +418,7 @@ module OpenTox
     # @param [Integer] number of folds
     # @return [Array] Array with folds [training_dataset,test_dataset]
     def folds n
+      $logger.debug "Creating #{n} folds for #{name}."
       len = self.substances.size
       indices = (0..len-1).to_a.shuffle
       mid = (len/n)
@@ -431,19 +428,15 @@ module OpenTox
         last = start+mid
         last = last-1 unless len%n >= i
         test_idxs = indices[start..last] || []
-        test_substances = test_idxs.collect{|i| substances[i]}
+        test_substances = test_idxs.collect{|i| substances[i].id}
         training_idxs = indices-test_idxs
-        training_substances = training_idxs.collect{|i| substances[i]}
+        training_substances = training_idxs.collect{|i| substances[i].id}
         chunk = [training_substances,test_substances].collect do |substances|
-          dataset = self.class.create(:name => "#{self.name} (Fold #{i-1})",:source => self.id )
-          substances.each do |substance|
-            substance.dataset_ids << dataset.id
-            substance.dataset_ids.uniq!
-            substance.save
-            dataset.data_entries += data_entries.select{|row| row[0] == substance.id}
-          end
-          dataset.save
-          dataset
+          self.class.create(
+            :name => "#{self.name} (Fold #{i-1})",
+            :source => self.id,
+            :data_entries => data_entries.select{|row| substances.include? row[0]}
+          )
         end
         start = last+1
         chunks << chunk
@@ -468,7 +461,7 @@ module OpenTox
         if features.first.kind_of? NominalFeature
           merged_feature = MergedNominalBioActivity.find_or_create_by(:name => features.collect{|f| f.name}.uniq.join(", ") + " merged", :original_feature_ids => features.collect{|f| f.id}, :transformations => value_maps)
         else
-          merged_feature = MergedNumericBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " merged", :original_feature_ids => features.collect{|f| f.id}) # TODO, :transformations 
+          merged_feature = MergedNumericBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " merged", :original_feature_ids => features.collect{|f| f.id}) # TODO: regression transformations 
         end
       else
         bad_request_error "Cannot merge features of different types (#{feature_classes})."
@@ -519,12 +512,6 @@ module OpenTox
     end
     
     def transform # TODO
-    end
-
-    # Delete dataset
-    def delete
-      compounds.each{|c| c.dataset_ids.delete id.to_s}
-      super
     end
 
   end
