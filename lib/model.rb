@@ -481,13 +481,13 @@ module OpenTox
       end
 
       # TODO from_pubchem_aid
-      def self.from_dataset training_dataset: , prediction_feature: , species: , endpoint: 
+      def self.from_dataset training_dataset: , prediction_feature: , species: , endpoint: , folds: 10, repeats: 5
         model_validation = Model::Validation.create species: species, endpoint: endpoint
-        p "create model"
+        #p "create model"
         model = Lazar.create training_dataset: training_dataset, prediction_feature: prediction_feature
         model_validation[:model_id] = model.id
-        p "create_crossvalidations"
-        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model).id # full class name required
+        #p "create_crossvalidations"
+        model_validation[:repeated_crossvalidation_id] = OpenTox::Validation::RepeatedCrossValidation.create(model,folds,repeats).id # full class name required
         model_validation.save
         model_validation
       end

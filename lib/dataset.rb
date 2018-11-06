@@ -199,7 +199,6 @@ module OpenTox
         end
         dataset.parse_table table
       end
-      dataset.save
       dataset
     end
 
@@ -290,7 +289,7 @@ module OpenTox
 
       all_substances = []
       table.each_with_index do |vals,i|
-        original_id.name.match(/LineID$/) ? original_id_value = i+1 : original_id_value = vals.shift.strip
+        original_id.name.match(/LineID$/) ? original_id_value = i+1 : original_id_value = vals.shift.to_s.strip
         identifier = vals.shift.strip
         begin
           case compound_format
@@ -368,13 +367,17 @@ module OpenTox
     # @return [String] SDF string
     def to_sdf
       sdf = ""
-      substances.each do |substance|
-        sdf_lines = substance.sdf.sub(/\$\$\$\$\n/,"").split("\n")
-        sdf_lines[0] = substance.smiles
+      compounds.each do |compound|
+        sdf_lines = compound.sdf.sub(/\$\$\$\$\n/,"").split("\n")
+        sdf_lines[0] = compound.smiles
         sdf += sdf_lines.join("\n")
-        features.each do |f|
-          sdf += "\n> <#{f.name}>\n"
-          sdf += values(substance,f).uniq.join ","
+        bioactivity_features.each do |f|
+          v = values(compound,f)
+          unless v.empty?
+            sdf += "\n> <#{f.name}>\n"
+            sdf += v.uniq.join ","
+            sdf += "\n"
+          end
         end
         sdf += "\n$$$$\n"
       end
