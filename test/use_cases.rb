@@ -50,6 +50,8 @@ class UseCasesTest < MiniTest::Test
   end
 
   def test_public_models
+    Download.mutagenicity
+    exit
     #skip
     # TODO clean mongo
     # PubChem Classification
@@ -71,8 +73,9 @@ class UseCasesTest < MiniTest::Test
         :qmrf => {:group => "QMRF 4.12. Carcinogenicity", :name => "OECD 451 Carcinogenicity Studies"}
       }
     ].each do |assay|
-      Download.pubchem_classification aid: assay[:aid], species: assay[:species], endpoint: assay[:endpoint], active: "carcinogen", inactive: "non-carcinogen", qmrf: qmrf
+      Download.pubchem_classification aid: assay[:aid], species: assay[:species], endpoint: assay[:endpoint], active: "carcinogen", inactive: "non-carcinogen", qmrf: assay[:qmrf]
     end
+    
 
 =begin
     # Mutagenicity

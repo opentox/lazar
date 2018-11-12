@@ -1,0 +1,1 @@
+{"species":"Salmonella typhimurium","endpoint":"Mutagenicity","source":"http://cheminformatics.org/datasets/bursi/cas_4337.zip, http://doc.ml.tu-berlin.de/toxbenchmark/Mutagenicity_N6512.csv, https://data.europa.eu/euodp/data/storage/f/2017-07-19T142131/GENOTOX data and dictionary.xls","qmrf":{"group":"QMRF 4.10. Mutagenicity","name":"OECD 471 Bacterial Reverse Mutation Test"}}
