@@ -422,6 +422,7 @@ module OpenTox
       field :species, type: String
       field :source, type: String
       field :unit, type: String
+      field :warnings, type: Array
       field :model_id, type: BSON::ObjectId
       field :repeated_crossvalidation_id, type: BSON::ObjectId
 
@@ -494,7 +495,7 @@ module OpenTox
 
       # Create and validate a lazar model from a csv file with training data and a json file with metadata
       # @param [File] CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at https://github.com/opentox/lazar-public-data.
-      # @return [OpenTox::Model::Validation] lazar model with three independent 10-fold crossvalidations
+      # @return [OpenTox::Model::Validation] lazar model with five independent 10-fold crossvalidations
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
         bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
