@@ -31,31 +31,80 @@ Tutorial
 
 Execute the following commands either from an interactive Ruby shell or a Ruby script:
 
+  Import `lazar`
+
+  ```
+  require 'lazar'
+  include OpenTox
+  ```
+
 ### Create and use `lazar` models for small molecules
 
-#### Create a training dataset
+#### Create and validate public `lazar` models
 
-  Create a CSV file with two columns. The first line should contain either SMILES or InChI (first column) and the endpoint (second column). The first column should contain either the SMILES or InChI of the training compounds, the second column the training compounds toxic activities (qualitative or quantitative). Use -log10 transformed values for regression datasets. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source" and "unit" (regression only). You can find example training data at [Github](https://github.com/opentox/lazar-public-data).
+  `public_models = Import.public_data`
 
-#### Create and validate a `lazar` model with default algorithms and parameters
+  This command creates models for all training data in the data folder and validates them with 5 independent crossvalidations. This may take some time (several hours). Retrieve validation results with `public_models.crossvalidations`.
 
-  `validated_model = Model::Validation.create_from_csv_file EPAFHM_log10.csv`
+#### Make predictions
 
-  This command will create a `lazar` model and validate it with three independent 10-fold crossvalidations.
-
-#### Inspect crossvalidation results
-
-  `validated_model.crossvalidations`
-
-#### Predict a new compound
+##### Single compounds
 
   Create a compound
 
   `compound = Compound.from_smiles "NC(=O)OCCC"`
 
-  Predict Fathead Minnow Acute Toxicity
+  Select a model
 
-  `validated_model.predict compound`
+  `model = public_models.first`
+
+  `model.predict compound`
+
+##### Batch predictions
+
+  Create a CSV file with one or two columns: An optional Substance ID and SMILES codes for the substances to be predicted. The first line should contain either "ID,SMILES" or just "SMILES" if there is no ID column. 
+
+  Import the dataset
+
+  `dataset = Dataset.from_csv_file batch_file.csv`
+
+  Select a model
+
+  `model = public_models.first`
+
+  Make a batch prediction
+
+  `prediction_dataset model.predict dataset`
+
+  View predictions
+
+  `prediction_dataset.predictions`
+
+#### Create and validate models from your own datasets
+
+##### Create a training dataset
+
+  Create a CSV file with two or three columns: An optional Substance ID, SMILES and toxic activities (qualitative or quantitative). Use -log10 transformed values for quantitative values. The first line should contain "ID" (optional), SMILES and the endpoint name. Add metadata to a JSON file with the same basename containing the fields "species", "endpoint", "source", "qmrf" (optional) and "unit" (regression only). You can find example training data in the data folder of lazar.
+
+##### Create and validate a `lazar` model with default algorithms and parameters
+
+  `validated_model = Model::Validation.create_from_csv_file training_data.csv`
+
+  This command will create a `lazar` model and validate it with five independent 10-fold crossvalidations. You can use the model in the same way as the public models.
+
+#### Create and validate models from PubChem Assay Data
+
+  If you know the PubChem Assay ID (AID), you can create and validate models directly from PubChem.
+
+  Download datasets from PubChem 
+
+  `csv_file = Download.pubchem_classification aid: 1205, species: "Rodents", endpoint: "Carcinogenicity", qmrf: {group: "QMRF 4.12. Carcinogenicity", name: "OECD 451 Carcinogenicity Studies"}`
+
+  or
+
+  `csv_file = Download.pubchem_regression aid: 1195, species: "Human", endpoint: "Maximum Recommended Daily Dose", qmrf: {group: "QMRF 4.14. Repeated dose toxicity", name: "OECD 452 Chronic Toxicity Studies"}`
+
+  This will create new CSV and metadata files in the data folder (or update existing ones). Regression data will use -log10 transformed molar values. Use this file either with `Model::Validation.create_from_csv_file` or create all models in the public folder with `Import.public_models`.
 
 #### Experiment with other algorithms
 
@@ -113,7 +162,6 @@ algorithms = {
 training_dataset = Dataset.from_csv_file "EPAFHM_log10.csv"
 model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
     ```
-
 Please consult the [API documentation](http://rdoc.info/gems/lazar) and [source code](https:://github.com/opentox/lazar) for up to date information about implemented algorithms:
 
 - Descriptor algorithms
@@ -127,9 +175,11 @@ Please consult the [API documentation](http://rdoc.info/gems/lazar) and [source 
   - [R caret](http://www.rubydoc.info/gems/lazar/OpenTox/Algorithm/Caret)
 
 
-You can find more working examples in the `lazar` `model-*.rb` and `validation-*.rb` [tests](https://github.com/opentox/lazar/tree/master/test).
+You can find more working examples in the `lazar`  [tests](https://github.com/opentox/lazar/tree/master/test).
 
 ### Create and use `lazar` nanoparticle models
+
+*eNanoMapper import is currently broken, because API and data models change unpredictably and we have no resources to track these changes. Please contact info@in-silico.ch, if you want to fund the further development of nanoparticle models*
 
 #### Create and validate a `nano-lazar` model from eNanoMapper with default algorithms and parameters
 
@@ -191,4 +241,4 @@ Documentation
 
 Copyright
 ---------
-Copyright (c) 2009-2017 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.
+Copyright (c) 2009-2018 Christoph Helma, Martin Guetlein, Micha Rautenberg, Andreas Maunz, David Vorgrimmler, Denis Gebele. See LICENSE for details.

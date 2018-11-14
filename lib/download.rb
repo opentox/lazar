@@ -4,6 +4,13 @@ module OpenTox
 
     DATA = File.join(File.dirname(__FILE__),"..","data")
 
+    # Download classification dataset from PubChem into the data folder
+    # @param [Integer] aid PubChem Assay ID
+    # @param [String] active Name for the "Active" class
+    # @param [String] inactive Name for the "Inactive" class
+    # @param [String] species Species name
+    # @param [String] endpoint Endpoint name
+    # @param [Hash] qmrf Name and group for QMRF reports (optional)
     def self.pubchem_classification aid: , active: , inactive: , species: , endpoint:, qmrf: nil
       aid_url = File.join PUBCHEM_URI, "assay/aid/#{aid}"
       
@@ -42,7 +49,7 @@ module OpenTox
         end
         (cids-pubchem_cids).each { |cid| warnings << "Could not retrieve SMILES for CID '#{cid}', all entries are ignored." }
       end
-      File.open(File.join(File.dirname(__FILE__),"..","data",name+".csv"),"w+"){|f| f.puts table.collect{|row| row.join(",")}.join("\n")}
+      File.open(File.join(DATA,name+".csv"),"w+"){|f| f.puts table.collect{|row| row.join(",")}.join("\n")}
       meta = {
         :species => species,
         :endpoint => endpoint,
@@ -50,9 +57,16 @@ module OpenTox
         :qmrf => qmrf,
         :warnings => warnings
       }
-      File.open(File.join(File.dirname(__FILE__),"..","data",name+".json"),"w+"){|f| f.puts meta.to_json}
+      File.open(File.join(DATA,name+".json"),"w+"){|f| f.puts meta.to_json}
+      File.join(DATA,name+".csv")
     end
 
+    # Download regression dataset from PubChem into the data folder
+    # Uses -log10 transformed experimental data in mmol units
+    # @param [String] aid PubChem Assay ID
+    # @param [String] species Species name
+    # @param [String] endpoint Endpoint name
+    # @param [Hash] qmrf Name and group for QMRF reports (optional)
     def self.pubchem_regression aid: , species: , endpoint:, qmrf: nil
       aid_url = File.join PUBCHEM_URI, "assay/aid/#{aid}"
       
@@ -92,7 +106,7 @@ module OpenTox
         end
         (cids-pubchem_cids).each { |cid| warnings << "Could not retrieve SMILES for CID '#{cid}', all entries are ignored." }
       end
-      File.open(File.join(File.dirname(__FILE__),"..","data",name+".csv"),"w+"){|f| f.puts table.collect{|row| row.join(",")}.join("\n")}
+      File.open(File.join(DATA,name+".csv"),"w+"){|f| f.puts table.collect{|row| row.join(",")}.join("\n")}
       meta = {
         :species => species,
         :endpoint => endpoint,
@@ -101,9 +115,11 @@ module OpenTox
         :qmrf => qmrf,
         :warnings => warnings
       }
-      File.open(File.join(File.dirname(__FILE__),"..","data",name+".json"),"w+"){|f| f.puts meta.to_json}
+      File.open(File.join(DATA,name+".json"),"w+"){|f| f.puts meta.to_json}
+      File.join(DATA,name+".csv")
     end
 
+    # Combine mutagenicity data from Kazius, Hansen and EFSA and download into the data folder
     def self.mutagenicity
       $logger.debug "Mutagenicity"
       # TODO add download/conversion programs to lazar dependencies
@@ -181,8 +197,10 @@ module OpenTox
       # cleanup
       datasets << dataset
       datasets.each{|d| d.delete }
+      File.join(DATA,"Mutagenicity-Salmonella_typhimurium.csv")
     end
 
+    # Download Blood Brain Barrier Penetration dataset into the data folder
     def self.blood_brain_barrier
       url =  "http://cheminformatics.org/datasets/li/bbp2.smi"
       name = "Blood_Brain_Barrier_Penetration-Human"
@@ -204,13 +222,16 @@ module OpenTox
       File.open(File.join(DATA,name+".json"),"w+"){|f| f.puts meta.to_json}
     end
 
+    # Download the combined LOAEL dataset from Helma et al 2018 into the data folder
     def self.loael
       # TODO: fix url??
       url = "https://raw.githubusercontent.com/opentox/loael-paper/revision/data/training_log10.csv"
       name = "Lowest_observed_adverse_effect_level-Rats"
       $logger.debug name
       File.open(File.join(DATA,name+".csv"),"w+") do |f|
-        f.puts RestClientWrapper.get(url).to_s
+        CSV.parse(RestClientWrapper.get(url).to_s) do |row|
+          f.puts [row[0],row[1]].join ","
+        end
       end
       meta = {
         :species => "Rat",
@@ -225,8 +246,9 @@ module OpenTox
       File.open(File.join(DATA,name+".json"),"w+"){|f| f.puts meta.to_json}
     end
 
+    # Download Daphnia dataset from http://www.michem.unimib.it/download/data/acute-aquatic-toxicity-to-daphnia-magna/ into the public folder
+    # The original file requires an email request, this is a temporary workaround
     def self.daphnia
-      # download of original file requires email request, this is a temporary solution
       url = "https://raw.githubusercontent.com/opentox/lazar-public-data/master/regression/daphnia_magna_mmol_log10.csv"
       name = "Acute_toxicity-Daphnia_magna"
       $logger.debug name
@@ -245,6 +267,7 @@ module OpenTox
       File.open(File.join(DATA,name+".json"),"w+"){|f| f.puts meta.to_json}
     end
 
+    # Download all public lazar datasets into the data folder
     def self.public_data
 
       # Classification

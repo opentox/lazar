@@ -384,6 +384,8 @@ module OpenTox
       sdf
     end
 
+    # Get lazar predictions from a dataset
+    # @return [Hash] predictions
     def predictions
       predictions = {}
       substances.each do |s| 
@@ -448,7 +450,11 @@ module OpenTox
     end
 
     # Merge an array of datasets 
-    # @param [Array<OpenTox::Dataset>] datasets to be merged
+    # @param [Array<OpenTox::Dataset>] datasets Datasets to be merged
+    # @param [Array<OpenTox::Feature>] features Features to be merged (same size as datasets)
+    # @param [Array<Hash>] value_maps Value transfomations (use nil for keeping original values, same size as dataset)
+    # @param [Bool] keep_original_features Copy original features/values to the merged dataset
+    # @param [Bool] remove_duplicates Delete duplicated values (assuming they come from the same experiment)
     # @return [OpenTox::Dataset] merged dataset
     def self.merge datasets: , features: , value_maps: , keep_original_features: , remove_duplicates: 
       dataset = self.create(:source => datasets.collect{|d| d.id.to_s}.join(", "), :name => datasets.collect{|d| d.name}.uniq.join(", ")+" merged")
@@ -487,34 +493,6 @@ module OpenTox
       dataset.data_entries.uniq! if remove_duplicates
       dataset.save
       dataset
-    end
-
-    # Change nominal feature values
-    # @param [NominalFeature] Original feature
-    # @param [Hash] how to change feature values
-    def map feature, map
-      dataset = self.copy
-      new_feature = TransformedNominalBioActivity.find_or_create_by(:name => feature.name + " (transformed)", :original_feature_id => feature.id, :transformation => map, :accept_values => map.values.sort)
-      compounds.each do |c|
-        values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
-      end
-      dataset.save
-      dataset
-    end
-
-    def merge_nominal_features nominal_features, maps=[]
-      dataset = self.copy
-      new_feature = MergedNominalBioActivity.find_or_create_by(:name => nominal_features.collect{|f| f.name}.join("/") + " (transformed)", :original_feature_id => feature.id, :transformation => map, :accept_values => map.values.sort)
-
-      compounds.each do |c|
-        if map
-          values(c,feature).each { |v| dataset.add c, new_feature, map[v] }
-        else
-        end
-      end
-    end
-    
-    def transform # TODO
     end
 
   end
