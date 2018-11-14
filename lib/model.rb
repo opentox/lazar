@@ -36,7 +36,7 @@ module OpenTox
       #
       # @return [OpenTox::Model::Lazar]
       def self.create prediction_feature:nil, training_dataset:, algorithms:{}
-        bad_request_error "Please provide a training_dataset and a optional prediction_feature." unless prediction_feature or training_dataset
+        raise ArgumentError, "Please provide a training_dataset and a optional prediction_feature." unless prediction_feature or training_dataset
         prediction_feature ||= training_dataset.features.select{|f| f.is_a? NumericBioActivity or f.is_a? NominalBioActivity}.first unless prediction_feature
 
         # guess model type
@@ -62,7 +62,7 @@ module OpenTox
 
         # set defaults#
         substance_classes = training_dataset.substances.collect{|s| s.class.to_s}.uniq
-        bad_request_error "Cannot create models for mixed substance classes '#{substance_classes.join ', '}'." unless substance_classes.size == 1
+        raise ArgumentError, "Cannot create models for mixed substance classes '#{substance_classes.join ', '}'." unless substance_classes.size == 1
 
         if substance_classes.first == "OpenTox::Compound"
 
@@ -110,7 +110,7 @@ module OpenTox
             },
           }
         else
-          bad_request_error "Cannot create models for #{substance_classes.first}."
+          raise ArgumentError, "Cannot create models for #{substance_classes.first}."
         end
         
         # overwrite defaults with explicit parameters
@@ -175,7 +175,7 @@ module OpenTox
           model.descriptor_ids = feature_ids & property_ids
           model.independent_variables = model.descriptor_ids.collect{|i| properties.collect{|p| p[i] ? p[i].median : nil}}
         else
-          bad_request_error "Descriptor method '#{descriptor_method}' not implemented."
+          raise ArgumentError, "Descriptor method '#{descriptor_method}' not implemented."
         end
         
         if model.algorithms[:feature_selection] and model.algorithms[:feature_selection][:method]
@@ -224,7 +224,7 @@ module OpenTox
             end
           end
         else
-          bad_request_error "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
+          raise ArgumentError, "Unknown descriptor type '#{descriptors}' for similarity method '#{similarity[:method]}'."
         end
         
         prediction ||= {:warnings => [], :measurements => []}
@@ -300,7 +300,7 @@ module OpenTox
         elsif object.is_a? Dataset
           substances = object.substances
         else 
-          bad_request_error "Please provide a OpenTox::Compound an Array of OpenTox::Substances or an OpenTox::Dataset as parameter."
+          raise ArgumentError, "Please provide a OpenTox::Compound an Array of OpenTox::Substances or an OpenTox::Dataset as parameter."
         end
 
         # make predictions
@@ -486,7 +486,7 @@ module OpenTox
       # @return [OpenTox::Model::Validation] lazar model with five independent 10-fold crossvalidations
       def self.from_csv_file file
         metadata_file = file.sub(/csv$/,"json")
-        bad_request_error "No metadata file #{metadata_file}" unless File.exist? metadata_file
+        raise ArgumentError, "No metadata file #{metadata_file}" unless File.exist? metadata_file
         model_validation = self.new JSON.parse(File.read(metadata_file))
         training_dataset = Dataset.from_csv_file file
         model = Lazar.create training_dataset: training_dataset
@@ -510,7 +510,7 @@ module OpenTox
         unless training_dataset # try to import 
           Import::Enanomapper.import
           training_dataset = Dataset.where(name: "Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles").first
-          bad_request_error "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
+          raise ArgumentError, "Cannot import 'Protein Corona Fingerprinting Predicts the Cellular Interaction of Gold and Silver Nanoparticles' dataset" unless training_dataset
         end
         prediction_feature ||= Feature.where(name: "log2(Net cell association)", category: "TOX").first
 

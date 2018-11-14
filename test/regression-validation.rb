@@ -71,7 +71,7 @@ class RegressionValidationTest < MiniTest::Test
       },
     }
     model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
-    assert_raises OpenTox::BadRequestError do
+    assert_raises ArgumentError do
       loo = RegressionLeaveOneOut.create model
     end
   end

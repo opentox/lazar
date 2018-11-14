@@ -242,7 +242,7 @@ module OpenTox
             title = "log2(Net cell association [mL/ug(Mg)])"
           else
             title = feature.name
-            title += " [#{feature.unit}]" if feature.unit and !feature.unit.blank?
+            title += "-log10(#{feature.unit})" if feature.unit and !feature.unit.blank?
           end
           R.eval "image = qplot(prediction,measurement,main='#{title}',xlab='Prediction',ylab='Measurement',asp=1,xlim=range, ylim=range)"
           R.eval "image = image + geom_abline(intercept=0, slope=1)"

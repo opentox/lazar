@@ -77,7 +77,7 @@ CLASSES = ["Feature","Substance","Dataset","CrossValidation","LeaveOneOutValidat
 [ # be aware of the require sequence as it affects class/method overwrites
   "overwrite.rb",
   "rest-client-wrapper.rb", 
-  "error.rb",
+  #"error.rb",
   "opentox.rb",
   "feature.rb",
   "physchem.rb",

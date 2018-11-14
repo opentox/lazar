@@ -142,7 +142,7 @@ module OpenTox
           dataset = self.new(:source => file, :name => File.basename(file,".*"), :md5 => md5)
           dataset.parse_table table
         else
-          bad_request_error "#{file} is not a valid CSV/TSV file. Could not find "," ";" or TAB as column separator."
+          raise ArgumentError, "#{file} is not a valid CSV/TSV file. Could not find "," ";" or TAB as column separator."
         end
       end
       dataset
@@ -251,7 +251,7 @@ module OpenTox
 
       # features
       feature_names = table.shift.collect{|f| f.strip}
-      bad_request_error "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
+      raise ArgumentError, "Duplicated features in table header." unless feature_names.size == feature_names.uniq.size
 
       if feature_names[0] =~ /ID/i # check ID column
         original_id = OriginalId.find_or_create_by(:dataset_id => self.id,:name => feature_names.shift)
@@ -260,7 +260,7 @@ module OpenTox
       end
 
       compound_format = feature_names.shift
-      bad_request_error "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
+      raise ArgumentError, "#{compound_format} is not a supported compound format. Accepted formats: SMILES, InChI." unless compound_format =~ /SMILES|InChI/i
       original_smiles = OriginalSmiles.find_or_create_by(:dataset_id => self.id) if compound_format.match(/SMILES/i)
 
       numeric = []
@@ -473,7 +473,7 @@ module OpenTox
           merged_feature = MergedNumericBioActivity.find_or_create_by(:name => features.collect{|f| f.name} + " merged", :original_feature_ids => features.collect{|f| f.id}) # TODO: regression transformations 
         end
       else
-        bad_request_error "Cannot merge features of different types (#{feature_classes})."
+        raise ArgumentError, "Cannot merge features of different types (#{feature_classes})."
       end
 
       accept_values = []

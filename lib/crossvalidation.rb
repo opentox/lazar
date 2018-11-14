@@ -15,7 +15,7 @@ module OpenTox
         $logger.debug model.algorithms
         klass = ClassificationCrossValidation if model.is_a? Model::LazarClassification
         klass = RegressionCrossValidation if model.is_a? Model::LazarRegression
-        bad_request_error "Unknown model class #{model.class}." unless klass
+        raise ArgumentError, "Unknown model class #{model.class}." unless klass
 
         cv = klass.new(
           name: model.name,

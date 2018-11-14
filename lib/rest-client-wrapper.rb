@@ -28,14 +28,14 @@ module OpenTox
 
         uri = Addressable::URI.encode(uri)
         # check input
-        bad_request_error "Headers are not a hash: #{headers.inspect} for #{uri}." unless headers==nil or headers.is_a?(Hash) 
+        raise ArgumentError, "Headers are not a hash: #{headers.inspect} for #{uri}." unless headers==nil or headers.is_a?(Hash) 
         headers[:subjectid] ||= @@subjectid
-        bad_request_error "Invalid URI: '#{uri}'" unless URI.valid? uri
+        raise ArgumentError, "Invalid URI: '#{uri}'" unless URI.valid? uri
         # make sure that no header parameters are set in the payload
         [:accept,:content_type,:subjectid].each do |header|
           if defined? $aa || URI(uri).host == URI($aa[:uri]).host
           else
-            bad_request_error "#{header} should be submitted in the headers of URI: #{uri}" if payload and payload.is_a?(Hash) and payload[header]
+            raise ArgumentError, "#{header} should be submitted in the headers of URI: #{uri}" if payload and payload.is_a?(Hash) and payload[header]
           end
         end
       
@@ -56,6 +56,7 @@ module OpenTox
         @response = @request.execute do |response, request, result|
           if [301, 302, 307].include? response.code and request.method == :get
             response.follow_redirection(request, result)
+=begin
           elsif response.code >= 400 and !URI.task?(uri)
             error = known_errors.collect{|e| e if e[:code] == response.code}.compact.first
             begin # errors are returned as error reports in json, try to parse
@@ -68,6 +69,7 @@ module OpenTox
               cause = nil
             end
             Object.method(error[:method]).call "#{msg}, #{uri}, #{cause}" # call error method
+=end
           else
             response
           end
@@ -75,6 +77,7 @@ module OpenTox
       end
     end
 
+=begin
     #@return [Array] of hashes with error code, method and class
     def self.known_errors
       errors = []
@@ -88,6 +91,7 @@ module OpenTox
       end
       errors
     end
+=end
 
   end
 end
