@@ -15,6 +15,11 @@ module OpenTox
     field :dataset_id, type: BSON::ObjectId
   end
 
+  # Confidence
+  class Confidence < Feature
+    field :dataset_id, type: BSON::ObjectId
+  end
+
   # Categorical variables
   class NominalFeature < Feature
     field :accept_values, type: Array

@@ -70,6 +70,12 @@ module OpenTox
       features.select{|f| f.is_a?(Warnings)}
     end
 
+    # Get Confidence feature
+    # @return [OpenTox::Confidence] confidence feature
+    def confidence_feature
+      features.select{|f| f.is_a?(Confidence)}.first
+    end
+
     # Get nominal and numeric bioactivity features
     # @return [Array<OpenTox::NominalBioActivity,OpenTox::NumericBioActivity>]
     def bioactivity_features
@@ -392,8 +398,9 @@ module OpenTox
         predictions[s] ||= {}
         prediction_feature = prediction_features.first
         predictions[s][:value] = values(s,prediction_feature).first
-        predictions[s][:warnings] = []
-        warnings_features.each { |w| predictions[s][:warnings] += values(s,w) }
+        #predictions[s][:warnings] = []
+        #warnings_features.each { |w| predictions[s][:warnings] += values(s,w) }
+        predictions[s][:confidence] = values(s,confidence_feature).first
         if predictions[s][:value] and prediction_feature.is_a? NominalLazarPrediction
           prediction_feature.accept_values.each do |v|
             f = LazarPredictionProbability.find_by(:name => v, :model_id => prediction_feature.model_id, :training_feature_id => prediction_feature.training_feature_id)

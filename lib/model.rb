@@ -338,7 +338,8 @@ module OpenTox
           return predictions
         elsif object.is_a? Dataset
           d = object.copy
-          warning_feature = Warnings.find_or_create_by(:dataset_id => d.id)
+          #warning_feature = Warnings.find_or_create_by(:dataset_id => d.id)
+          confidence_feature = Confidence.find_or_create_by(:dataset_id => d.id)
           if prediction_feature.is_a? NominalBioActivity
             f = NominalLazarPrediction.find_or_create_by(:name => prediction_feature.name, :accept_values => prediction_feature.accept_values, :model_id => self.id, :training_feature_id => prediction_feature.id)
             probability_features = {}
@@ -356,7 +357,7 @@ module OpenTox
           # add predictions to dataset
           predictions.each do |substance_id,p|
             substance_id = BSON::ObjectId.from_string(substance_id)
-            d.add substance_id,warning_feature,p[:warnings].join(" ") unless p[:warnings].empty?
+            d.add substance_id,confidence_feature,p[:confidence]
             unless p[:value].nil?
               d.add substance_id,f,p[:value]
               p[:probabilities].each {|name,p| d.add substance_id,probability_features[name],p} if p[:probabilities]

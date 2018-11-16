@@ -179,6 +179,7 @@ class LazarRegressionTest < MiniTest::Test
     assert_equal [1.37], result.values(result.compounds[6], result.bioactivity_features[0]).collect{|v| v.round(2)}
     assert_equal [1.79], result.values(result.compounds[6], result.prediction_features[0]).collect{|v| v.round(2)}
     assert_equal [1.84,1.73], result.values(result.compounds[7], result.bioactivity_features[0]).collect{|v| v.round(2)}
+    assert_match /Low/i, result.predictions[result.compounds[6]][:confidence]
   end
 
 end
