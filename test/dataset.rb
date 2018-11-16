@@ -29,26 +29,16 @@ class DatasetTest < MiniTest::Test
     # TODO regression import
   end
 
-  def test_import_csv_with_id
+  def test_import_csv_tsv_with_id
     ["csv","tsv"].each do |ext|
       d = Dataset.from_csv_file "#{DATA_DIR}/input_53.#{ext}"
       assert_equal 53, d.compounds.size
       assert_equal 2, d.features.size
       f = d.features[1]
-      assert_equal "Id", f.name
+      assert_equal "ID", f.name
       assert_equal OriginalId, f.class
       assert_equal ["123-30-8"], d.values(d.compounds.first,f)
     end
-  end
-
-  def test_import_tsv_with_id
-    d = Dataset.from_csv_file "#{DATA_DIR}/input_53.tsv"
-    assert_equal 53, d.compounds.size
-    assert_equal 2, d.features.size
-    f = d.features[1]
-    assert_equal "Id", f.name
-    assert_equal OriginalId, f.class
-    assert_equal ["123-30-8"], d.values(d.compounds.first,f)
   end
 
   def test_import_sdf
@@ -57,7 +47,6 @@ class DatasetTest < MiniTest::Test
     assert_kind_of NumericSubstanceProperty, d.substance_property_features[1]
     assert_equal NominalSubstanceProperty, d.substance_property_features.last.class
     assert_equal 602, d.compounds.size
-    #p d.warnings
     assert_match "PUBCHEM_XLOGP3_AA", d.warnings.compact.last
   end
 
@@ -95,16 +84,12 @@ class DatasetTest < MiniTest::Test
       "InChI=1S/C8H14O4/c1-5-4-8(11-6(2)9)12-7(3)10-5/h5,7-8H,4H2,1-3H3",
       "InChI=1S/C19H30O5/c1-3-5-7-20-8-9-21-10-11-22-14-17-13-19-18(23-15-24-19)12-16(17)6-4-2/h12-13H,3-11,14-15H2,1-2H3",
     ]
-    errors = ['O=P(H)(OC)OC', 'C=CCNN.HCl' ]
     f = File.join Download::DATA, "Carcinogenicity-Rodents.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal NominalBioActivity, d.bioactivity_features.first.class
     assert_equal 1100, d.compounds.size
-    assert_equal csv.first.size-1, d.bioactivity_features.size
-    errors.each do |smi|
-      assert_match smi, d.warnings.join
-    end
+    assert_equal csv.first.size-2, d.bioactivity_features.size
     duplicates.each do |inchi|
       refute_empty d.values(Compound.from_inchi(inchi),d.warnings_features.first)
     end
@@ -189,12 +174,11 @@ class DatasetTest < MiniTest::Test
     efsa = Dataset.from_csv_file "#{Download::DATA}/parts/efsa.csv"
     datasets = [hansen,efsa,kazius]
     map = {"mutagen" => "mutagenic", "nonmutagen" => "non-mutagenic"}
-    dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,nil,map], keep_original_features: false, remove_duplicates: true
+    dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,nil,map], keep_original_features: true, remove_duplicates: true
     assert_equal 8281, dataset.compounds.size
     assert_equal 9, dataset.features.size
     c = Compound.from_smiles("C/C=C/C=O")
-    assert_equal ["mutagen"], dataset.values(c,dataset.merged_features.first)
-    #File.open("tmp.csv","w+"){|f| f.puts d.to_csv}
+    assert_equal ["mutagenic"], dataset.values(c,dataset.merged_features.first)
   end
 
   # serialisation

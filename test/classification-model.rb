@@ -89,7 +89,7 @@ class ClassificationModelTest < MiniTest::Test
     assert_equal ["non-carcinogenic"], result.values(result.compounds[5], prediction_feature)
     assert_nil result.predictions[result.compounds.first][:value]
     assert_equal "carcinogenic", result.predictions[result.compounds[1]][:value]
-    assert_equal 0.27, result.predictions[result.compounds[1]][:probabilities]["no"].round(2)
+    assert_equal 0.27, result.predictions[result.compounds[1]][:probabilities]["non-carcinogenic"].round(2)
   end
 
   def test_carcinogenicity_rf_classification

@@ -12,7 +12,7 @@ class RegressionValidationTest < MiniTest::Test
     cv = RegressionCrossValidation.create model
     assert cv.rmse[:all] < 1.5, "RMSE #{cv.rmse[:all]} should be smaller than 1.5, this may occur due to unfavorable training/test set splits"
     assert cv.mae[:all] < 1.1, "MAE #{cv.mae[:all]} should be smaller than 1.1, this may occur due to unfavorable training/test set splits"
-    assert cv.within_prediction_interval[:all]/cv.nr_predictions[:all] > 0.8, "Only #{(100*cv.within_prediction_interval[:all]/cv.nr_predictions[:all]).round(2)}% of measurement within prediction interval. This may occur due to unfavorable training/test set splits"
+    assert cv.within_prediction_interval[:all]/cv.nr_predictions[:all].to_f > 0.8, "Only #{(100.0*cv.within_prediction_interval[:all]/cv.nr_predictions[:all]).round(2)}% of measurement within prediction interval. This may occur due to unfavorable training/test set splits"
   end
 
   # parameters
