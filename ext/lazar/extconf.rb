@@ -5,7 +5,7 @@ require 'mkmf'
 main_dir = File.expand_path(File.join(File.dirname(__FILE__),"..",".."))
 
 # check for required programs
-programs = ["R","Rscript","mongod","java","getconf","wget","unzip","xls2csv"]
+programs = ["R","Rscript","mongod","java","getconf","wget","unzip","xls2csv","xlsx2csv"]
 programs.each do |program|
   abort "Please install #{program} on your system." unless find_executable program
 end

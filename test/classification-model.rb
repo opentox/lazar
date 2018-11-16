@@ -10,7 +10,7 @@ class ClassificationModelTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.5
+        :min => [0.5,0.2]
       },
       :prediction => {
         :method => "Algorithm::Classification.weighted_majority_vote",
@@ -61,7 +61,7 @@ class ClassificationModelTest < MiniTest::Test
         :type => "MACCS"
       },
       :similarity => {
-        :min => 0.4
+        :min => [0.4,0.1]
       },
     }
     training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
@@ -77,7 +77,7 @@ class ClassificationModelTest < MiniTest::Test
   end
 
   def test_dataset_prediction
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"multi_cell_call.csv")
+    training_dataset = Dataset.from_csv_file File.join(Download::DATA,"Carcinogenicity-Rodents.csv")
     test_dataset = Dataset.from_csv_file File.join(DATA_DIR,"hamster_carcinogenicity.csv")
     model = Model::Lazar.create training_dataset: training_dataset
     result = model.predict test_dataset
@@ -85,16 +85,16 @@ class ClassificationModelTest < MiniTest::Test
     assert_equal 7, result.features.size
     assert_equal 85, result.compounds.size
     prediction_feature = result.prediction_features.first
-    assert_equal ["yes"], result.values(result.compounds[1], prediction_feature)
-    assert_equal ["no"], result.values(result.compounds[5], prediction_feature)
+    assert_equal ["carcinogenic"], result.values(result.compounds[1], prediction_feature)
+    assert_equal ["non-carcinogenic"], result.values(result.compounds[5], prediction_feature)
     assert_nil result.predictions[result.compounds.first][:value]
-    assert_equal "yes", result.predictions[result.compounds[1]][:value]
+    assert_equal "carcinogenic", result.predictions[result.compounds[1]][:value]
     assert_equal 0.27, result.predictions[result.compounds[1]][:probabilities]["no"].round(2)
   end
 
   def test_carcinogenicity_rf_classification
     skip "Caret rf may run into a (endless?) loop for some compounds."
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
+    dataset = Dataset.from_csv_file File.join(Download::DATA,"Carcinogenicity-Rodents.csv")
     algorithms = {
       :prediction => {
         :method => "Algorithm::Caret.rf",

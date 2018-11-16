@@ -17,6 +17,14 @@ class DownloadTest < MiniTest::Test
     FileUtils.rm(meta_file)
   end
 
+  def test_import_daphnia
+    Download.daphnia
+    table = CSV.read File.join(Download::DATA,"Acute_toxicity-Daphnia_magna.csv")
+    assert_equal "BrC(Br)Br", table[1][1]
+    assert_equal 0.74, table[1][2].to_f.round(2)
+    assert_equal "-log[LC50_mmol/L]", table[0][2]
+  end
+
 end
 
 

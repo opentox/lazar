@@ -65,9 +65,7 @@ module OpenTox
       include ClassificationStatistics
       field :accept_values, type: Array
       field :confusion_matrix, type: Hash
-      field :weighted_confusion_matrix, type: Hash
       field :accuracy, type: Hash
-      field :weighted_accuracy, type: Hash
       field :true_rate, type: Hash
       field :predictivity, type: Hash
       field :nr_predictions, type: Hash

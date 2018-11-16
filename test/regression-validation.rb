@@ -6,7 +6,8 @@ class RegressionValidationTest < MiniTest::Test
   # defaults
   
   def test_default_regression_crossvalidation
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM_log10.csv"
+    training_dataset = Dataset.from_csv_file File.join(Download::DATA, "Acute_toxicity-Fathead_minnow.csv")
+    dataset = Dataset.from_csv_file File.join(Download::DATA, "Acute_toxicity-Fathead_minnow.csv")
     model = Model::Lazar.create training_dataset: dataset
     cv = RegressionCrossValidation.create model
     assert cv.rmse[:all] < 1.5, "RMSE #{cv.rmse[:all]} should be smaller than 1.5, this may occur due to unfavorable training/test set splits"
@@ -21,7 +22,7 @@ class RegressionValidationTest < MiniTest::Test
     algorithms = {
       :prediction => { :method => "OpenTox::Algorithm::Regression.weighted_average" },
       :descriptors => { :type => "MACCS", },
-      :similarity => {:min => 0.7}
+      :similarity => {:min => [0.9,0.1]}
     }
     model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
     assert_equal algorithms[:descriptors][:type], model.algorithms[:descriptors][:type]
@@ -64,7 +65,7 @@ class RegressionValidationTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.weighted_cosine",
-        :min => 0.5
+        :min => [0.5,0.1]
       },
       :feature_selection => {
         :method => "Algorithm::FeatureSelection.correlation_filter",
@@ -83,7 +84,7 @@ class RegressionValidationTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
-      assert cv.r_squared[:all] > 0.34, "R^2 (#{cv.r_squared[:all]}) should be larger than 0.034"
+      assert cv.r_squared[:all] > 0.34, "R^2 (#{cv.r_squared[:all]}) should be larger than 0.34"
       assert cv.rmse[:all] < 1.5, "RMSE (#{cv.rmse[:all]}) should be smaller than 0.5"
     end
   end

@@ -32,7 +32,7 @@ module OpenTox
       # @param [OpenTox::Feature, nil] prediction_feature
       #   By default the first feature of the training dataset will be predicted, specify a prediction_feature if you want to predict another feature
       # @param [Hash, nil] algorithms
-      #   Default algorithms will be used, if no algorithms parameter is provided. The algorithms hash has the following keys: :descriptors (specifies the descriptors to be used for similarity calculations and local QSAR models), :similarity (similarity algorithm and threshold), :feature_selection (feature selection algorithm), :prediction (local QSAR algorithm). Default parameters are used for unspecified keys. 
+      #   Default algorithms will be used, if no algorithms parameter is provided. The algorithms hash has the following keys: :descriptors (specifies the descriptors to be used for similarity calculations and local QSAR models), :similarity (similarity algorithm and thresholds for predictions with high and low confidence), :feature_selection (feature selection algorithm), :prediction (local QSAR algorithm). Default parameters are used for unspecified keys. 
       #
       # @return [OpenTox::Model::Lazar]
       def self.create prediction_feature:nil, training_dataset:, algorithms:{}
@@ -80,7 +80,7 @@ module OpenTox
             }
             model.algorithms[:similarity] = {
               :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.5,
+              :min => [0.5,0.2],
             }
           elsif model.class == LazarRegression
             model.algorithms[:prediction] = {
@@ -88,7 +88,7 @@ module OpenTox
             }
             model.algorithms[:similarity] = {
               :method => "Algorithm::Similarity.tanimoto",
-              :min => 0.5,
+              :min => [0.5,0.2],
             }
           end
 
@@ -100,7 +100,7 @@ module OpenTox
             },
             :similarity => {
               :method => "Algorithm::Similarity.weighted_cosine",
-              :min => 0.5,
+              :min => [0.5,0.2],
             },
             :prediction => {
               :method => "Algorithm::Caret.rf",
@@ -197,7 +197,7 @@ module OpenTox
       # Predict a substance (compound or nanoparticle)
       # @param [OpenTox::Substance]
       # @return [Hash]
-      def predict_substance substance, threshold = self.algorithms[:similarity][:min], prediction = nil
+      def predict_substance substance, threshold = self.algorithms[:similarity][:min].first, prediction = nil
         
         @independent_variables = Marshal.load $gridfs.find_one(_id: self.independent_variables_id).data
         case algorithms[:similarity][:method]
@@ -228,7 +228,7 @@ module OpenTox
         end
         
         prediction ||= {:warnings => [], :measurements => []}
-        prediction[:warnings] << "Similarity threshold #{threshold} < #{algorithms[:similarity][:min]}, prediction may be out of applicability domain." if threshold < algorithms[:similarity][:min]
+        prediction[:warnings] << "Similarity threshold #{threshold} < #{algorithms[:similarity][:min].first}, prediction may be out of applicability domain." if threshold < algorithms[:similarity][:min].first
         neighbor_ids = []
         neighbor_similarities = []
         neighbor_dependent_variables = []
@@ -238,7 +238,7 @@ module OpenTox
         substance_ids.each_with_index do |s,i|
           # handle query substance
           if substance.id.to_s == s
-            prediction[:measurements] << dependent_variables[i] unless threshold < algorithms[:similarity][:min] # add measurements only once at first pass
+            prediction[:measurements] << dependent_variables[i] unless threshold < algorithms[:similarity][:min].first # add measurements only once at first pass
             prediction[:info] = "Substance '#{substance.name}, id:#{substance.id}' has been excluded from neighbors, because it is identical with the query substance."
           else
             if fingerprints?
@@ -264,11 +264,19 @@ module OpenTox
         
         if neighbor_similarities.empty?
           prediction[:value] = nil
-          prediction[:warnings] << "Could not find similar substances with experimental data in the training dataset."
+          prediction[:warnings] << "Could not find similar substances for threshold #{threshold} with experimental data in the training dataset."
+          if threshold == algorithms[:similarity][:min].last
+            prediction[:confidence] = "Out of applicability domain: Could not find similar substances with experimental data in the training dataset (Threshold: #{algorithms[:similarity][:min].last})."
+            return prediction
+          end
         elsif neighbor_similarities.size == 1
           prediction[:value] = nil
-          prediction[:warnings] << "Cannot create prediction: Only one similar compound in the training set."
+          prediction[:warnings] << "Cannot create prediction: Only one similar compound for threshold #{threshold} in the training set (Threshold: #{algorithms[:similarity][:min].last})."
           prediction[:neighbors] = [{:id => neighbor_ids.first, :similarity => neighbor_similarities.first}]
+          if threshold == algorithms[:similarity][:min].last
+            prediction[:confidence] = "Out of applicability domain: Only one similar compound in the training set."
+            return prediction
+          end
         else
           query_descriptors.collect!{|d| d ? 1 : 0} if algorithms[:feature_selection] and algorithms[:descriptors][:method] == "fingerprint"
           # call prediction algorithm
@@ -276,11 +284,17 @@ module OpenTox
           prediction.merge! result
           prediction[:neighbors] = neighbor_ids.collect_with_index{|id,i| {:id => id, :measurement => neighbor_dependent_variables[i], :similarity => neighbor_similarities[i]}}
         end
-        if prediction[:warnings].empty? or threshold < algorithms[:similarity][:min] or threshold <= 0.2
-          prediction
-        else # try again with a lower threshold
-          prediction[:warnings] << "Lowering similarity threshold to 0.2."
-          predict_substance substance, 0.2, prediction
+        if threshold == algorithms[:similarity][:min].first
+          if prediction[:warnings].empty? 
+            prediction[:confidence] = "High (close to bioassay results)"
+            return prediction
+          else # try again with a lower threshold
+            prediction[:warnings] << "Lowering similarity threshold to #{algorithms[:similarity][:min].last}."
+            predict_substance substance, algorithms[:similarity][:min].last, prediction
+          end
+        elsif threshold < algorithms[:similarity][:min].first
+          prediction[:confidence] = "Low (lower than bioassay results)"
+          return prediction
         end
       end
 

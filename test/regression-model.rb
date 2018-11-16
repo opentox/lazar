@@ -10,14 +10,14 @@ class LazarRegressionTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.5
+        :min => [0.5,0.2]
       },
       :prediction => {
         :method => "Algorithm::Caret.rf",
       },
       :feature_selection => nil,
     }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
+    training_dataset = Dataset.from_csv_file File.join(Download::DATA, "Acute_toxicity-Fathead_minnow.csv")
     model = Model::Lazar.create  training_dataset: training_dataset
     assert_kind_of Model::LazarRegression, model
     assert_equal algorithms, model.algorithms
@@ -35,7 +35,7 @@ class LazarRegressionTest < MiniTest::Test
     training_dataset = Dataset.from_csv_file "#{DATA_DIR}/EPAFHM.medi_log10.csv"
     algorithms = {
       :similarity => {
-        :min => 0
+        :min => [0,0]
       },
       :prediction => {
         :method => "Algorithm::Regression.weighted_average",
@@ -72,7 +72,7 @@ class LazarRegressionTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.weighted_cosine",
-        :min => 0.5
+        :min => [0.5,0.1]
       },
     }
     model = Model::Lazar.create(training_dataset:training_dataset, algorithms:algorithms)
@@ -90,7 +90,7 @@ class LazarRegressionTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.weighted_cosine",
-        :min => 0.5
+        :min => [0.5,0.1]
       },
       :feature_selection => {
         :method => "Algorithm::FeatureSelection.correlation_filter",
@@ -117,7 +117,7 @@ class LazarRegressionTest < MiniTest::Test
     assert_kind_of Model::LazarRegression, model
     assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.cosine", model.algorithms[:similarity][:method]
-    assert_equal 0.5, model.algorithms[:similarity][:min]
+    assert_equal 0.5, model.algorithms[:similarity][:min].first
     algorithms[:descriptors].delete :features
     assert_equal algorithms[:descriptors], model.algorithms[:descriptors]
     prediction = model.predict training_dataset.substances[10]
@@ -130,12 +130,12 @@ class LazarRegressionTest < MiniTest::Test
         :method => "Algorithm::FeatureSelection.correlation_filter",
       },
     }
-    training_dataset = Dataset.from_csv_file File.join(DATA_DIR,"EPAFHM_log10.csv")
+    training_dataset = Dataset.from_csv_file File.join(Download::DATA, "Acute_toxicity-Fathead_minnow.csv")
     model = Model::Lazar.create  training_dataset: training_dataset, algorithms: algorithms
     assert_kind_of Model::LazarRegression, model
     assert_equal "Algorithm::Caret.rf", model.algorithms[:prediction][:method]
     assert_equal "Algorithm::Similarity.tanimoto", model.algorithms[:similarity][:method]
-    assert_equal 0.5, model.algorithms[:similarity][:min]
+    assert_equal 0.5, model.algorithms[:similarity][:min].first
     assert_equal algorithms[:feature_selection][:method], model.algorithms[:feature_selection][:method]
     prediction = model.predict training_dataset.substances[145]
     refute_nil prediction[:value]
@@ -149,7 +149,7 @@ class LazarRegressionTest < MiniTest::Test
       },
       :similarity => {
         :method => "Algorithm::Similarity.tanimoto",
-        :min => 0.3
+        :min => [0.3,0.1]
       },
       :prediction => {
         :method => "Algorithm::Regression.weighted_average",

@@ -1,3 +1,1 @@
-{ "species": "Hamster",
-"endpoint": "Carcinogenicity",
-"source": "http://www.epa.gov/ncct/dsstox/sdf_cpdbas.html" }
+{"species":"Hamster","endpoint":"Carcinogenicity","source":"https://pubchem.ncbi.nlm.nih.gov/bioassay/1199","qmrf":{"group":"QMRF 4.12. Carcinogenicity","name":"OECD 451 Carcinogenicity Studies"}}

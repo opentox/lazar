@@ -16,7 +16,6 @@ class DatasetTest < MiniTest::Test
     d1.save
     datasets = Dataset.all 
     assert datasets.first.is_a?(Dataset), "#{datasets.first} is not a Dataset."
-    d1.delete
   end
 
   # real datasets
@@ -31,13 +30,15 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_import_csv_with_id
-    d = Dataset.from_csv_file "#{DATA_DIR}/input_53.csv"
-    assert_equal 53, d.compounds.size
-    assert_equal 2, d.features.size
-    f = d.features[1]
-    assert_equal "ID", f.name
-    assert_equal OriginalId, f.class
-    assert_equal ["123-30-8"], d.values(d.compounds.first,f)
+    ["csv","tsv"].each do |ext|
+      d = Dataset.from_csv_file "#{DATA_DIR}/input_53.#{ext}"
+      assert_equal 53, d.compounds.size
+      assert_equal 2, d.features.size
+      f = d.features[1]
+      assert_equal "Id", f.name
+      assert_equal OriginalId, f.class
+      assert_equal ["123-30-8"], d.values(d.compounds.first,f)
+    end
   end
 
   def test_import_tsv_with_id
@@ -72,21 +73,16 @@ class DatasetTest < MiniTest::Test
       c = Compound.from_smiles row.shift
       assert_equal row, d.values(c,d.bioactivity_features.first)
     end
-    d.delete 
   end
 
   def test_import_kazius
-    f = File.join DATA_DIR, "kazius.csv"
-    d = OpenTox::Dataset.from_csv_file f 
-    csv = CSV.read f
-    assert_equal csv.size-1, d.compounds.size
-    assert_equal csv.first.size+1, d.features.size
+    d = Dataset.from_sdf_file "#{Download::DATA}/parts/cas_4337.sdf"
+    assert_equal 4337, d.compounds.size
+    assert_equal 3, d.features.size
     assert_empty d.warnings
-    #  493 COC1=C(C=C(C(=C1)Cl)OC)Cl,1
-    c = d.compounds[491]
-    assert_equal c.smiles, "COc1cc(Cl)c(cc1Cl)OC"
-    assert_equal ["1"], d.values(c,d.bioactivity_features.first)
-    d.delete
+    c = d.compounds[493]
+    assert_equal "CCCCOCCCC", c.smiles
+    assert_equal ["nonmutagen"], d.values(c,d.bioactivity_features.first)
   end
 
   def test_import_multicell
@@ -100,11 +96,11 @@ class DatasetTest < MiniTest::Test
       "InChI=1S/C19H30O5/c1-3-5-7-20-8-9-21-10-11-22-14-17-13-19-18(23-15-24-19)12-16(17)6-4-2/h12-13H,3-11,14-15H2,1-2H3",
     ]
     errors = ['O=P(H)(OC)OC', 'C=CCNN.HCl' ]
-    f = File.join DATA_DIR, "multi_cell_call.csv"
+    f = File.join Download::DATA, "Carcinogenicity-Rodents.csv"
     d = OpenTox::Dataset.from_csv_file f 
     csv = CSV.read f
     assert_equal NominalBioActivity, d.bioactivity_features.first.class
-    assert_equal 1056, d.compounds.size
+    assert_equal 1100, d.compounds.size
     assert_equal csv.first.size-1, d.bioactivity_features.size
     errors.each do |smi|
       assert_match smi, d.warnings.join
@@ -112,7 +108,6 @@ class DatasetTest < MiniTest::Test
     duplicates.each do |inchi|
       refute_empty d.values(Compound.from_inchi(inchi),d.warnings_features.first)
     end
-    d.delete
   end
 
   def test_import_isscan
@@ -124,14 +119,14 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_import_epafhm
-    f = File.join DATA_DIR, "EPAFHM_log10.csv"
+    f = File.join Download::DATA, "Acute_toxicity-Fathead_minnow.csv"
     d = OpenTox::Dataset.from_csv_file f
     assert_equal Dataset, d.class
     csv = CSV.read f
-    assert_equal csv.size-1, d.compounds.size
+    assert_equal csv.size-2, d.compounds.size
     assert_equal csv.first.size+1, d.features.size
-    assert_match "EPAFHM_log10.csv",  d.source
-    assert_equal "EPAFHM_log10",  d.name
+    assert_match "Acute_toxicity-Fathead_minnow.csv",  d.source
+    assert_equal "Acute_toxicity-Fathead_minnow",  d.name
     feature = d.bioactivity_features.first
     assert_kind_of NumericFeature, feature
     assert_equal -Math.log10(0.0113), d.values(d.compounds.first,feature).first
@@ -139,7 +134,6 @@ class DatasetTest < MiniTest::Test
     d2 = Dataset.find d.id
     assert_equal -Math.log10(0.0113), d2.values(d2.compounds[0],feature).first
     assert_equal -Math.log10(0.00323), d2.values(d2.compounds[4],feature).first
-    d.delete
   end
 
   def test_multiple_uploads
@@ -160,14 +154,13 @@ class DatasetTest < MiniTest::Test
       refute_nil d.id
       dataset = Dataset.find d.id
       assert_equal 3, d.compounds.size
-      d.delete
     end
   end
 
   # dataset operations
 
   def test_folds
-    dataset = Dataset.from_csv_file File.join(DATA_DIR,"loael.csv")
+    dataset = Dataset.from_csv_file File.join(Download::DATA,"Lowest_observed_adverse_effect_level-Rats.csv")
     dataset.folds(10).each do |fold|
       fold.each do |d|
         assert_operator d.compounds.size, :>=, d.compounds.uniq.size
@@ -191,12 +184,12 @@ class DatasetTest < MiniTest::Test
   end
 
   def test_merge
-    kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
-    hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
-    efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
-    datasets = [kazius,hansen,efsa]
-    map = {"1" => "mutagen", "0" => "nonmutagen"}
-    dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,map,map], keep_original_features: true, remove_duplicates: false
+    kazius = Dataset.from_sdf_file "#{Download::DATA}/parts/cas_4337.sdf"
+    hansen = Dataset.from_csv_file "#{Download::DATA}/parts/hansen.csv"
+    efsa = Dataset.from_csv_file "#{Download::DATA}/parts/efsa.csv"
+    datasets = [hansen,efsa,kazius]
+    map = {"mutagen" => "mutagenic", "nonmutagen" => "non-mutagenic"}
+    dataset = Dataset.merge datasets: datasets, features: datasets.collect{|d| d.bioactivity_features.first}, value_maps: [nil,nil,map], keep_original_features: false, remove_duplicates: true
     assert_equal 8281, dataset.compounds.size
     assert_equal 9, dataset.features.size
     c = Compound.from_smiles("C/C=C/C=O")
@@ -250,12 +243,10 @@ class DatasetTest < MiniTest::Test
     assert_equal [1.0], new_dataset.values(c,f)
     f = new_dataset.substance_property_features[2]
     assert_equal ["false"], new_dataset.values(c,f)
-    d.delete
   end
 
   def test_create_from_file_with_wrong_smiles_compound_entries
     d = Dataset.from_csv_file File.join(DATA_DIR,"wrong_dataset.csv")
-    #p d.to_csv
     refute_nil d.warnings
     assert_match /2|3|4|5|6|7|8/, d.warnings.join
   end
@@ -288,7 +279,6 @@ class DatasetTest < MiniTest::Test
       assert features[0].id==features[-1].id,"re-upload should find old feature, but created new one"
       datasets << d
     end
-    datasets.each{|d| d.delete}
   end
 
   def test_simultanous_upload
@@ -306,7 +296,6 @@ class DatasetTest < MiniTest::Test
           c = Compound.from_smiles(row.shift)
           assert_equal row, d.values(c,d.bioactivity_features.first)
         end
-        d.delete 
       end
     end
     threads.each {|aThread| aThread.join}
@@ -334,7 +323,6 @@ class DatasetTest < MiniTest::Test
       assert_equal row, d2.data_entries[i]
     end
     #p "Dowload: #{Time.now-t}"
-    d2.delete
     assert_nil Dataset.find d.id
   end
 

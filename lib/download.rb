@@ -249,11 +249,17 @@ module OpenTox
     # Download Daphnia dataset from http://www.michem.unimib.it/download/data/acute-aquatic-toxicity-to-daphnia-magna/ into the public folder
     # The original file requires an email request, this is a temporary workaround
     def self.daphnia
-      url = "https://raw.githubusercontent.com/opentox/lazar-public-data/master/regression/daphnia_magna_mmol_log10.csv"
+      #url = "https://raw.githubusercontent.com/opentox/lazar-public-data/master/regression/daphnia_magna_mmol_log10.csv"
+      src = File.join(DATA,"parts","toxicity_data.xlsx")
       name = "Acute_toxicity-Daphnia_magna"
       $logger.debug name
       File.open(File.join(DATA,name+".csv"),"w+") do |f|
-        f.puts RestClientWrapper.get(url).to_s
+        i = 0
+        CSV.parse(`xlsx2csv #{src}`) do |row|
+          i == 0 ? v = "-log[LC50_mmol/L]" : v = -Math.log10(10**-row[3].to_f*1000)
+          f.puts [row[0],row[1],v].join(",")
+          i += 1
+        end
       end
       meta = { "species": "Daphnia magna",
         "endpoint": "Acute toxicity",
@@ -289,7 +295,7 @@ module OpenTox
           :qmrf => {:group => "QMRF 4.12. Carcinogenicity", :name => "OECD 451 Carcinogenicity Studies"}
         }
       ].each do |assay|
-        Download.pubchem_classification aid: assay[:aid], species: assay[:species], endpoint: assay[:endpoint], active: "carcinogen", inactive: "non-carcinogen", qmrf: assay[:qmrf]
+        Download.pubchem_classification aid: assay[:aid], species: assay[:species], endpoint: assay[:endpoint], active: "carcinogenic", inactive: "non-carcinogenic", qmrf: assay[:qmrf]
       end
       Download.mutagenicity
       Download.blood_brain_barrier

@@ -123,7 +123,7 @@ algorithms = {
   },
   :similarity => { # similarity algorithm
     :method => "Algorithm::Similarity.tanimoto",
-    :min => 0.1 # similarity threshold for neighbors
+    :min => [0.5,0.2] # similarity thresholds for neighbors: first value for predictions with high confidence, second value for predictions with medium confidence 
   },
   :feature_selection => nil, # no feature selection
   :prediction => { # local modelling algorithm
@@ -150,7 +150,7 @@ algorithms = {
   },
   :similarity => { # similarity algorithm
     :method => "Algorithm::Similarity.weighted_cosine",
-    :min => 0.5
+    :min => [0.5,0.2]
   },
   :feature_selection => { # feature selection algorithm
     :method => "Algorithm::FeatureSelection.correlation_filter",
@@ -220,7 +220,7 @@ algorithms = {
   },
   :similarity => {
     :method => "Algorithm::Similarity.weighted_cosine",
-    :min => 0.5
+    :min => [0.5,0.2]
   },
   :feature_selection => {
     :method => "Algorithm::FeatureSelection.correlation_filter",

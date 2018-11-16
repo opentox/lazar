@@ -6,12 +6,10 @@ class ClassificationValidationTest < MiniTest::Test
   # defaults
 
   def test_default_classification_crossvalidation
-    #dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
+    dataset = Dataset.from_csv_file File.join(Download::DATA,"Carcinogenicity-Rodents.csv")
     model = Model::Lazar.create training_dataset: dataset
     cv = ClassificationCrossValidation.create model
-    assert cv.accuracy[:without_warnings] > 0.65, "Accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65, this may occur due to an unfavorable training/test set split"
-    assert cv.weighted_accuracy[:all] > cv.accuracy[:all], "Weighted accuracy (#{cv.weighted_accuracy[:all]}) should be larger than accuracy (#{cv.accuracy[:all]})."
+    assert cv.accuracy[:all] > 0.65, "Accuracy (#{cv.accuracy[:all]}) should be larger than 0.65, this may occur due to an unfavorable training/test set split"
     File.open("/tmp/tmp.pdf","w+"){|f| f.puts cv.probability_plot(format:"pdf")}
     assert_match "PDF", `file -b /tmp/tmp.pdf`
     File.open("/tmp/tmp.png","w+"){|f| f.puts cv.probability_plot(format:"png")}
@@ -23,13 +21,14 @@ class ClassificationValidationTest < MiniTest::Test
   def test_classification_crossvalidation_parameters
     dataset = Dataset.from_csv_file "#{DATA_DIR}/hamster_carcinogenicity.csv"
     algorithms = {
-      :similarity => { :min => 0.3, },
+      :similarity => { :min => [0.9,0.8] },
       :descriptors => { :type => "FP3" }
     }
     model = Model::Lazar.create training_dataset: dataset, algorithms: algorithms
     cv = ClassificationCrossValidation.create model
     params = model.algorithms
     params = JSON.parse(params.to_json) # convert symbols to string
+    p cv
     
     cv.validations.each do |validation|
       validation_params = validation.model.algorithms
@@ -47,8 +46,7 @@ class ClassificationValidationTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset
     loo = ClassificationLeaveOneOut.create model
     refute_empty loo.confusion_matrix
-    assert loo.accuracy[:without_warnings] > 0.650
-    assert loo.weighted_accuracy[:all] > loo.accuracy[:all], "Weighted accuracy (#{loo.weighted_accuracy[:all]}) should be larger than accuracy (#{loo.accuracy[:all]})."
+    assert loo.accuracy[:all] > 0.650
   end
 
   # repeated CV
@@ -58,7 +56,7 @@ class ClassificationValidationTest < MiniTest::Test
     model = Model::Lazar.create training_dataset: dataset
     repeated_cv = RepeatedCrossValidation.create model
     repeated_cv.crossvalidations.each do |cv|
-      assert_operator cv.accuracy[:without_warnings], :>, 0.65, "model accuracy < 0.65, this may happen by chance due to an unfavorable training/test set split"
+      assert_operator cv.accuracy[:all], :>, 0.65, "model accuracy < 0.65, this may happen by chance due to an unfavorable training/test set split"
     end
   end
   
@@ -71,7 +69,7 @@ class ClassificationValidationTest < MiniTest::Test
     assert m.classification?
     refute m.regression?
     m.crossvalidations.each do |cv|
-      assert cv.accuracy[:without_warnings] > 0.65, "Crossvalidation accuracy (#{cv.accuracy[:without_warnings]}) should be larger than 0.65. This may happen due to an unfavorable training/test set split."
+      assert cv.accuracy[:all] > 0.65, "Crossvalidation accuracy (#{cv.accuracy[:all]}) should be larger than 0.65. This may happen due to an unfavorable training/test set split."
     end
     prediction = m.predict Compound.from_smiles("OCC(CN(CC(O)C)N=O)O")
     assert_equal "false", prediction[:value]
@@ -80,7 +78,7 @@ class ClassificationValidationTest < MiniTest::Test
 
   def test_carcinogenicity_rf_classification
     skip "Caret rf classification may run into a (endless?) loop for some compounds."
-    dataset = Dataset.from_csv_file "#{DATA_DIR}/multi_cell_call.csv"
+    dataset = Dataset.from_csv_file File.join(Download::DATA,"Carcinogenicity-Rodents.csv")
     algorithms = {
       :prediction => {
         :method => "Algorithm::Caret.rf",
@@ -98,9 +96,9 @@ class ClassificationValidationTest < MiniTest::Test
     skip "Caret rf classification may run into a (endless?) loop for some compounds."
     source_feature = Feature.where(:name => "Ames test categorisation").first
     target_feature = Feature.where(:name => "Mutagenicity").first
-    kazius = Dataset.from_sdf_file "#{DATA_DIR}/cas_4337.sdf"
-    hansen = Dataset.from_csv_file "#{DATA_DIR}/hansen.csv"
-    efsa = Dataset.from_csv_file "#{DATA_DIR}/efsa.csv"
+    kazius = Dataset.from_sdf_file "#{Download::DATA}/parts/cas_4337.sdf"
+    hansen = Dataset.from_csv_file "#{Download::DATA}/parts/hansen.csv"
+    efsa = Dataset.from_csv_file "#{Download::DATA}/parts/efsa.csv"
     dataset = Dataset.merge [kazius,hansen,efsa], {source_feature => target_feature}, {1 => "mutagen", 0 => "nonmutagen"}
     model = Model::Lazar.create training_dataset: dataset
     repeated_cv = RepeatedCrossValidation.create model
