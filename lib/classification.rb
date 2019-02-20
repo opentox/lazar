@@ -18,11 +18,6 @@ module OpenTox
         class_weights.each do |a,w|
           probabilities[a] = w.sum/weights.sum
         end
-        # DG: hack to ensure always two probability values
-        if probabilities.keys.uniq.size == 1
-          missing_key = probabilities.keys.uniq[0].match(/^non/) ? probabilities.keys.uniq[0].sub(/non-/,"") : "non-"+probabilities.keys.uniq[0]
-          probabilities[missing_key] = 0.0
-        end
         probabilities = probabilities.collect{|a,p| [a,weights.max*p]}.to_h
         p_max = probabilities.collect{|a,p| p}.max
         prediction = probabilities.key(p_max)
