@@ -15,6 +15,14 @@ module OpenTox
       @@subjectid
     end
 
+    def self.refresh=(refresh)
+      @@refresh = refresh
+    end
+
+    def self.refresh
+      @@refresh
+    end
+
     # REST methods 
     # Raises OpenTox::Error if call fails (rescued in overwrite.rb -> halt 502)
     # Does not wait for task to finish and returns task uri
@@ -29,8 +37,8 @@ module OpenTox
         uri = Addressable::URI.encode(uri)
         # check input
         bad_request_error "Headers are not a hash: #{headers.inspect} for #{uri}." unless headers==nil or headers.is_a?(Hash) 
-        headers[:subjectid] ||= @@subjectid
         bad_request_error "Invalid URI: '#{uri}'" unless URI.valid? uri
+        headers[:subjectid] = @@subjectid
         # make sure that no header parameters are set in the payload
         [:accept,:content_type,:subjectid].each do |header|
           if defined? $aa || URI(uri).host == URI($aa[:uri]).host
