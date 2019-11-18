@@ -38,7 +38,7 @@ module OpenTox
         # check input
         bad_request_error "Headers are not a hash: #{headers.inspect} for #{uri}." unless headers==nil or headers.is_a?(Hash) 
         bad_request_error "Invalid URI: '#{uri}'" unless URI.valid? uri
-        headers[:subjectid] = @@subjectid
+        #headers[:subjectid] = @@subjectid
         # make sure that no header parameters are set in the payload
         [:accept,:content_type,:subjectid].each do |header|
           if defined? $aa || URI(uri).host == URI($aa[:uri]).host
